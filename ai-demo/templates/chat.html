@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            transition: height 0.3s, width 0.3s, max-width 0.3s;
+        }
+        .container.fullscreen {
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-message {
+            align-items: flex-end;
+        }
+        .assistant-message {
+            align-items: flex-start;
+        }
+        .error-message {
+            align-items: flex-start;
+            background-color: #e9ecef;
+            color: #c40505;
+        }
+        .message-content {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 1em;
+            line-height: 1.4;
+            cursor: pointer; /* Add cursor pointer for clickable effect */
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .user-message .message-content {
+            background-color: #dcf8c6;
+            color: #333;
+        }
+        .assistant-message .message-content {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+        .footer {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+            font-size: 1em;
+        }
+        .footer button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: none;
+            font-size: 1em;
+        }
+        .footer button:hover {
+            background-color: #0056b3;
+        }
+
+        .dialog-button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: none;
+            font-size: 1em;
+        }
+        .dialog-button:hover {
+            background-color: #0056b3;
+        }
+
+        .fullscreen-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            outline: none;
+        }
+        .loading-text {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(5%);
+            font-size: 1em;
+            color: #007bff;
+            display: none;
+            align-items: center;
+        }
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .dialog-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 80%;
+            overflow-y: auto;
+            max-height: 80%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            white-space: pre-wrap;
+        }
+        .dialog-box h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .dialog-box p {
+            font-size: 1em;
+            line-height: 1.6;
+        }
+        .dialog-box a {
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .collapsible-icon {
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            ChatGPT Demo
+            <button id="toggle-fullscreen" class="fullscreen-button">
+                <i class="fas fa-expand"></i>
+            </button>
+        </div>
+        
+        <div class="chat-container" id="chat-container">
+           
+        </div>
+        <div class="loading-text" id="loading-text">.... <i class="fas fa-pen"></i></div>
+        <div class="footer">
+            <form id="message-form" style="display: flex; width: 100%;">
+                <input type="text" id="user-message" placeholder="Type your message...">
+                <button type="submit">Send</button>
+                <button id="clear-chat">Clear</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dialog Box -->
+    <div class="dialog-overlay" id="dialog-overlay">
+        <div class="dialog-box" id="dialog-box">
+            <h2>Citation Details</h2>
+            <p id="citation-content"></p>
+            <a href="#" id="citation-link" target="_blank">Link to Document</a>
+            </br>
+            <button id="close-dialog" class="dialog-button">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const messageForm = document.getElementById('message-form');
+        const userMessageInput = document.getElementById('user-message');
+        const toggleFullscreenButton = document.getElementById('toggle-fullscreen');
+        const clearButton = document.getElementById('clear-chat');
+        const container = document.querySelector('.container');
+        const loadingText = document.getElementById('loading-text');
+        const dialogOverlay = document.getElementById('dialog-overlay');
+        const dialogBox = document.getElementById('dialog-box');
+        const citationContent = document.getElementById('citation-content');
+        const citationLink = document.getElementById('citation-link');
+        const closeDialogButton = document.getElementById('close-dialog');
+
+        const txtt = "للحصول على شتلات زراعية، يجب اتباع الإجراءات التالية:1. **التقديم عبر الموقع الإلكتروني للوزارة**: - يمكنك تقديم طلب للحصول على شتلات زراعية من خلال الموقع الإلكتروني للوزارة. يجب التوجه إلى قائمة الخدمات، ثم اختيار خدمات متنوعة، ومنها اختيار خدمة الحصول على شتلات زراعية [doc1].2. **زيارة موقع مشتل المطار**: - يمكنك الحصول على الشتلات من موقع مشتل المطار مباشرةً. يقع مشتل المطار في شارع الكورنيش بالدوحة [doc1].3. **الاتصال بمركز الاتصال الموحد**: - يمكن أيضًا التواصل مع مركز الاتصال الموحد على الرقم 184 لتقديم الطلبات والحصول على المزيد من المعلومات حول الإجراءات المطلوبة [doc1].باتباع هذه الخطوات، يمكنك التقديم للحصول على الشتلات الزراعية بسهولة ويسر.";
+       // appendMessageInteractive('assistant', txtt);
+
+        messageHistory = [];  //initiating chat history
+
+        toggleFullscreenButton.addEventListener('click', () => {
+            container.classList.toggle('fullscreen');
+            const icon = toggleFullscreenButton.querySelector('i');
+            if (container.classList.contains('fullscreen')) {
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+            } else {
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            event.preventDefault();
+            while (chatContainer.firstChild) {
+                chatContainer.removeChild(chatContainer.firstChild);
+                }
+            messageHistory = [];
+        });
+
+        messageForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const userMessage = userMessageInput.value.trim();
+            userMessageInput.value = '';
+            if (!userMessage) return;
+
+            appendMessage('user', userMessage);
+
+            toggleLoading(true); // Show the loading text
+            messageBody = JSON.stringify({
+                "role": "user",
+                "content": userMessage
+                });
+            
+            messageHistory.push(messageBody);   //saveing question to history
+
+            const response = await fetch('/chat-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify({"messageHistory": messageHistory })
+            });
+            toggleLoading(false); // Hide the loading text
+            const data = await response.json();
+        if(data.error){
+            appendMessage('error', data.message);
+            messageHistory.pop()  //remove the last question from message history
+        }else{    
+           
+            messageResponse = JSON.stringify({
+                "role": "assistant",
+                "content": data.message.content
+                });
+            messageHistory.push(messageResponse);   //saving answer to history
+            console.log(data,messageHistory);
+            if(data.message.context.citations){
+                var citations = data.message.context.citations;
+                var links = citations.map(citation => {
+                    var link = document.createElement('a');
+                    link.href = "#";
+                    link.textContent = citation.filepath;
+                    link.classList.add('citation-link'); // Add a class for styling and event handling
+                    link.addEventListener('click', () => showCitationDialog(citation.content, citation.url,citation.filepath)); // Add click event listener
+                    return link;
+                });
+            }
+            await appendMessageInteractive('assistant', data.message.content, links);
+
+            }
+        });
+
+        async function appendMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(role + '-message');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            contentDiv.textContent = content;
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function appendMessageInteractive(role, content, refs) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(role + '-message');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            content = formatText(content);
+            const collapsibleDiv = document.createElement('div');
+            //prepare references dev
+            if (refs && Array.isArray(refs)) {
+                const refDiv = document.createElement('div'); // Create a references div
+                refs.forEach(ref => {
+                    const lineBreak = document.createElement('br'); // Create a line break
+                    refDiv.appendChild(lineBreak); // Append line break to refDiv
+                    refDiv.appendChild(ref); // Append each node in refs to refDiv
+                });
+
+                 // Create container for icon and title
+                const iconWithTitleDiv = document.createElement('div');
+                iconWithTitleDiv.classList.add('icon-with-title');
+
+                // Create icon element
+                const icon = document.createElement('i');
+                icon.classList.add('fas', 'fa-chevron-down', 'collapsible-icon'); // Font Awesome icon for down arrow
+                iconWithTitleDiv.appendChild(icon);
+
+                // Create title element
+                const title = document.createElement('span');
+                title.textContent = 'References'; // Set your title text here
+                title.classList.add('title');
+                iconWithTitleDiv.appendChild(title);
+            
+
+                // Add toggle functionality
+                iconWithTitleDiv.addEventListener('click', () => {
+                    refDiv.classList.toggle('hidden');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+                collapsibleDiv.append(document.createElement('br'));
+                collapsibleDiv.appendChild(iconWithTitleDiv);
+                collapsibleDiv.appendChild(refDiv);
+                // Initial hidden state
+                refDiv.classList.add('hidden');
+               
+            }
+
+            animateText(content, contentDiv,collapsibleDiv);
+           
+           
+            
+        }
+
+        function formatText(text) {
+			
+            formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+           // Replace text between [ and ] with <a> tags
+           formattedText = formattedText.replace(/\[(.*?)\]/g, '<a href="#">$1</a>');
+           // text = text.replace(/\./g, '.<br>')
+
+           // Return the formatted text
+           return formattedText.trim();
+       }
+
+
+       function animateText(text, container,refs) {
+           let index = 0;
+           let currentText = '';
+           addNextCharacter();
+           function addNextCharacter() {
+                   currentText += text.charAt(index);
+                   container.innerHTML = currentText; // Render current text
+                   chatContainer.scrollTop = chatContainer.scrollHeight;
+                   index++;
+                   if (index < text.length) {
+                       setTimeout(addNextCharacter, 8); // Adjust speed here (milliseconds)
+                   }else{
+                    container.appendChild(refs);
+                   }
+                   }
+                  
+       }
+
+        function toggleLoading(isLoading) {
+            if (isLoading) {
+                loadingText.style.display = 'block';
+                
+            } else {
+                loadingText.style.display = 'none';
+            }
+        }
+
+        function showCitationDialog(content, url,filename) {
+            dialogOverlay.style.display = 'flex';
+            citationContent.textContent = content;
+            citationLink.href = url;
+            citationLink.textContent = filename;
+        }
+
+        closeDialogButton.addEventListener('click', () => {
+            dialogOverlay.style.display = 'none';
+        });
+
+    </script>
+</body>
+</html>
