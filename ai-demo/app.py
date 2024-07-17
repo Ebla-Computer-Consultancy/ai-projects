@@ -160,7 +160,7 @@ def chat():
                     ]
                     },
                     "in_scope": True,
-                    "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in ِArabic. and give long and desciptive answers",
+                    "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in the same question language. and give long and desciptive answers",
                     "filter": None,
                     "strictness": 3,
                     "top_n_documents": 5,
