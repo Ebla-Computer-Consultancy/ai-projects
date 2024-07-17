@@ -53,8 +53,8 @@ def search_query(search_text, filter_by=None, sort_order=None):
     #   "fields": "contentVector",
       "k": 10
     }],
-            query_type="semantic",
-            semantic_configuration_name=search_index+"-semantic-configuration",
+            #query_type="semantic",
+            #semantic_configuration_name=search_index+"-semantic-configuration",
             include_total_count=True,
         )
         return results
@@ -69,13 +69,12 @@ def home():
 # Seach Home page route
 @app.route("/search")
 def searchhome():
-    return render_template("default.html")
+    return render_template("base.html")
 
 # Search results route
 @app.route("/search-action", methods=['GET'])
 def search():
     try:
-
         # Get the search terms from the request form
         search_text = request.args["search"]
 
@@ -145,8 +144,9 @@ def chat():
                 "parameters": {
                     "endpoint": search_endpoint,
                     "index_name": search_index,
-                    "semantic_configuration": search_index+"-semantic-configuration",
-                    "query_type": "vector_semantic_hybrid",
+                    # "semantic_configuration": search_index+"-semantic-configuration",
+                    # "query_type": "vector_semantic_hybrid",
+                    "query_type": "vector",
                     "fields_mapping": {
                     "content_fields_separator": "\n",
                     "content_fields": [

@@ -5,33 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landing Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index-styles.css') }}"> 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='node_modules/@mdi/font/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/bootstrap/dist/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .main-bg {
+            position: relative;
+            background: #8A1538 url("{{ url_for('static', filename='images/background.png') }}");
+            background-size: cover;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{{ url_for('static', filename='images/ebla_logo.jpg') }}" alt="Ebla Computer Consultancy Logo" class="logo">
-        </div>
-        <div class="icon-container-wrapper">
-            <div class="icon-container">
-                <a href="/search" class="icon-link">
-                    <div class="icon search-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <p>Search</p>
-                </a>
-            </div>
-            <div class="icon-container">
-                <a href="/chat" class="icon-link">
-                    <div class="icon chat-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <p>Chat</p>
-                </a>
+<body class="main-bg h-100">
+<div class="overlay">
+</div>
+    <div class="container h-100">
+        <div class="h-100 d-flex flex-column justify-content-around align-items-center">
+            <div class="card">
+                <div class="card-body p-5">
+                    <h4 class="text-center">Ebla Computer Consultancy</h4>
+                    <img src="{{ url_for('static', filename='images/ebla_logo.jpg') }}" width="400"
+                         alt="Ebla Computer Consultancy Logo">
+                </div>
+                <div class="card-footer d-flex p-4 justify-content-around">
+                    <a href="/search" class="text-decoration-none">
+                        <div class="fw-bold font-weight-bold px-4 btn btn-sm btn-outline-primary me-3 d-flex align-items-center">
+                            <i class="mdi mdi-magnify pe-3" style="font-size: 40px"></i>
+                            Search
+                        </div>
+                    </a>
+                    <a href="/chat" class="text-decoration-none">
+                        <div class="fw-bold px-4 btn btn-sm btn-outline-primary d-flex align-items-center">
+                            <i class="mdi mdi-robot-confused-outline pe-3" style="font-size: 40px"></i>
+                            Chat
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-    
 </body>
 </html>
