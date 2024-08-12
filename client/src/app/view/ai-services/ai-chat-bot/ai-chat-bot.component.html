@@ -1,0 +1,142 @@
+<h2 class="text-center p-5 text-white">Welcome to EBLA Ai-chat</h2>
+<div class="d-flex flex-column align-items-center">
+    <div
+        class="card"
+        [ngClass]="{
+            fullscreen: fullScreen
+        }"
+        style="width: 600px; min-height: 300px"
+    >
+        <div
+            class="card-header d-flex justify-content-between align-items-center"
+        >
+            <span>
+                <i class="text-primary mdi mdi-robot-happy mdi-24px"></i>
+                ChatGPT Demo
+            </span>
+            <button
+                class="btn btn-outline-primary"
+                (click)="fullScreen = !fullScreen"
+            >
+                <i
+                    class="mdi mdi-arrow-expand-all"
+                    [ngClass]="{
+                        'mdi-arrow-expand-all': !fullScreen,
+                        'mdi-arrow-collapse-all': fullScreen
+                    }"
+                ></i>
+            </button>
+        </div>
+        <div
+            class="text-center card-body overflow-auto"
+            [style]="!fullScreen ? 'max-height: 380px' : ''"
+        >
+            @if(!this.service.messageHistory.length) {
+            <small class="fw-bold"> Let's chat with me to help you. </small>
+            }
+            <div class="chat-container">
+                @for(message of this.service.messageHistory; track
+                message.content) {
+                <div [class]="'message ' + message.role + '-message'">
+                    <div class="message-content">
+                        <span [innerHtml]="message.content"> </span>
+                        @if(message.context && message.context.citations.length)
+                        {
+                        <div>
+                            <div
+                                class="icon-with-title"
+                                (click)="linkRef.hidden = !linkRef.hidden"
+                            >
+                                <i
+                                    class="mdi"
+                                    [ngClass]="{
+                                        'mdi-chevron-down': linkRef.hidden,
+                                        'collapsible-icon': !linkRef.hidden
+                                    }"
+                                ></i>
+                                <span class="title">References</span>
+                            </div>
+                            <div #linkRef hidden>
+                                @for(link of message.context.citations; track
+                                link.filepath) {
+                                <a
+                                    class="citation-link"
+                                    (click)="openDocModal(docModal, link)"
+                                    >{{ link.filepath }}</a
+                                >
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            @if(this.service.loading) {
+            <div class="loading-text">
+                Processing....<i class="mdi mdi-pen"></i>
+            </div>
+            }
+        </div>
+        <div class="card-footer">
+            <form id="message-form">
+                <div class="input-group mb-3">
+                    <input
+                        type="text"
+                        id="user-message"
+                        [formControl]="control"
+                        class="form-control-sm form-control"
+                        placeholder="Type your message..."
+                    />
+                    <div class="input-group-append">
+                        <button
+                            class="btn btn-sm btn-primary"
+                            [disabled]="this.service.loading"
+                            (click)="ask$.next()"
+                            type="button"
+                        >
+                            <i class="mdi mdi-send"></i>
+                        </button>
+                        <button
+                            id="clear-chat"
+                            type="button"
+                            (click)="clear()"
+                            class="btn btn-sm btn-outline-secondary ms-2"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<ng-template #docModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Citation Details</h4>
+        <button
+            type="button"
+            class="btn-close close pull-right"
+            aria-label="Close"
+            (click)="modalRef?.hide()"
+        >
+            <span aria-hidden="true" class="visually-hidden">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>{{ selectedDoc.content }}</p>
+        <strong>Link to document: </strong
+        ><a [href]="selectedDoc.url" target="_blank">
+            {{ selectedDoc.filepath }}
+        </a>
+    </div>
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="modalRef?.hide()"
+        >
+            Close
+        </button>
+    </div>
+</ng-template>
