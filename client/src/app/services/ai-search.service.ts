@@ -21,14 +21,10 @@ export class AiSearchService extends ApiServiceBaseModel {
     ): Observable<IResult<SearchResult>> {
         this.startLoading();
         return this.http
-            .get<{ count: number; rs: any[] }>(this.baseUrl, {
-                params: new HttpParams({
-                    fromObject: {
-                        search: searchQuery,
-                        sort: sort,
-                        facet: facet,
-                    },
-                }),
+            .post<{ count: number; rs: any[] }>(this.baseUrl, {
+                query: searchQuery,
+                sort: sort,
+                facet: facet,
             })
             .pipe(
                 finalize(() => {

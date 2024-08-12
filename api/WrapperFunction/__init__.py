@@ -20,10 +20,10 @@ from azure.search.documents import SearchClient
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost, http://localhost:4200"],
+    allow_origins=["http://localhost", "http://localhost:4200"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["X-Requested-With", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 Roles = Enum(
@@ -45,6 +45,12 @@ class ChatMessage(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class searchCriteria(BaseModel):
+    query: str
+    facet: str = None
+    sort: str = None
 
 
 # Azure Search constants
@@ -111,21 +117,21 @@ def search_query(search_text, filter_by=None, sort_order=None):
         return json.dumps({"error": True, "message": str(error)})
 
 
-@app.get("/demo/v0.1/search-action")
-def search(search: str, facet: str = None, sort: str = None):
+@app.post("/demo/v0.1/search-action")
+def search(rs: searchCriteria):
     try:
         # Get the search terms from the request form
-        search_text = search
+        search_text = rs.query
         # If a facet is selected, use it in a filter
         filter_expression = None
-        if facet:
-            filter_expression = "metadata_author eq '{0}'".format(facet)
+        if rs.facet:
+            filter_expression = "metadata_author eq '{0}'".format(rs.facet)
 
         # If a sort field is specified, modify the search expression accordingly
         sort_expression = "search.score()"
         sort_field = "relevance"  # default sort is search.score(), which is relevance
-        if sort:
-            sort_field = sort
+        if rs.sort:
+            sort_field = rs.sort
             if sort_field == "file_name":
                 sort_expression = "metadata_storage_name asc"
             elif sort_field == "size":
