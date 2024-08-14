@@ -187,14 +187,14 @@ def chat(messageHistory: List[ChatMessage]):
                                 "vector_fields": ["text_vector"],
                             },
                             "in_scope": True,
-                            "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in the same question language. and give long and desciptive answers",
+                            "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in the same question language. and give long and descriptive answers",
                             "filter": None,
                             "strictness": 3,
                             "top_n_documents": 5,
                             "authentication": {"type": "api_key", "key": search_key},
                             "embedding_dependency": {
                                 "type": "deployment_name",
-                                "deployment_name": "TestEmbElbar",
+                                "deployment_name": openai_emb_model,
                             },
                         },
                     }
