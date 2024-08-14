@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiServiceBaseModel } from '../models/api-service-base-model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, finalize, map, Observable } from 'rxjs';
 import { IChatMessageResult } from '../interfaces/i-chat-message-result';
 import { Message } from '../models/message';
+import { Keys } from '../../function-keys';
 
 @Injectable({
     providedIn: 'root',
@@ -25,7 +26,11 @@ export class AiChatBotService extends ApiServiceBaseModel {
         this.appendMessage(new Message(message));
         this.startLoading();
         return this.http
-            .post<IChatMessageResult>(this.baseUrl, this.messageHistory)
+            .post<IChatMessageResult>(this.baseUrl, this.messageHistory, {
+                headers: new HttpHeaders({
+                    'x-functions-key': Keys.functionDefaultKey,
+                }),
+            })
             .pipe(
                 finalize(() => {
                     this.stopLoading();
