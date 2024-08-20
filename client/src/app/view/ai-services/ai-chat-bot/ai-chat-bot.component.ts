@@ -11,7 +11,7 @@ import { filter, Subject, switchMap } from 'rxjs';
 import { IChatMessageResult } from '../../../interfaces/i-chat-message-result';
 import { CommonModule } from '@angular/common';
 import { ICitations, Message } from '../../../models/message';
-import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { BsModalService, BsModalRef, ModalOptions } from 'ngx-bootstrap/modal';
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
@@ -71,7 +71,9 @@ export class AiChatBotComponent implements OnInit {
     }
     openDocModal(template: TemplateRef<void>, link: ICitations) {
         this.selectedDoc = link;
-        this.modalRef = this.modalService.show(template);
+        this.modalRef = this.modalService.show(template, {
+            class: 'modal-lg',
+        });
     }
     formatText(text: string) {
         let formattedText = text.replace(

@@ -22,7 +22,7 @@ export class AiServiceHomeComponent implements OnInit {
             title: 'Chat bot',
             route: '/ai-service/ai-chat-bot',
             description:
-                'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aperiam autem amet, rem libero, necessitatibus maiores, possimus adipisci sint quae reiciendis ab impedit quo a! Cum voluptatibus neque libero animi asperiores!',
+                'A bot that provides assistance, answers questions and provides information in an immediate and efficient manner. The intelligent bot relies on natural information technologies to understand and queries users.',
         },
         {
             id: 2,
@@ -30,15 +30,7 @@ export class AiServiceHomeComponent implements OnInit {
             title: 'AI Search',
             route: '/ai-service/ai-search',
             description:
-                'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aperiam autem amet, rem libero, necessitatibus maiores, possimus adipisci sint quae reiciendis ab impedit quo a! Cum voluptatibus neque libero animi asperiores!',
-        },
-        {
-            id: 3,
-            icon: 'microphone-message',
-            title: 'AI Speech to Text',
-            route: '/ai-service/ai-speech-to-text',
-            description:
-                'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aperiam autem amet, rem libero, necessitatibus maiores, possimus adipisci sint quae reiciendis ab impedit quo a! Cum voluptatibus neque libero animi asperiores!',
+                'Smart Search is a cutting-edge technology that uses artificial intelligence to improve the online search experience. Instead of providing a long list of links, this service analyzes the intent and context behind the question to provide the user with accurate and detailed answers.',
         },
     ];
     ngOnInit() {}

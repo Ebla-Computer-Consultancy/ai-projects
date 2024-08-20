@@ -2,7 +2,7 @@
     <div class="row">
         @for(service of services; track service.id) {
         <div class="mx-auto col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-header d-flex align-items-center">
                     <h5 class="m-0 me-auto">
                         {{ service.title }}
@@ -13,13 +13,13 @@
                         "
                     ></i>
                 </div>
-                <div class="card-body">
+                <div class="card-body h-100 d-flex flex-column">
                     <p style="font-size: 14px; text-align: justify">
                         {{ service.description }}
                     </p>
                     <button
                         [routerLink]="service.route"
-                        class="d-block w-100 btn btn-outline-primary btn-sm px-4"
+                        class="d-block w-100 btn btn-outline-primary mt-auto btn-sm px-4"
                     >
                         Try it out
                     </button>

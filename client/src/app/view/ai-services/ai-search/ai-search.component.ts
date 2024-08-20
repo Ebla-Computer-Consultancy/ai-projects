@@ -4,7 +4,7 @@ import { AiSearchService } from '../../../services/ai-search.service';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SearchResult } from '../../../models/search-result';
 import { CommonModule } from '@angular/common';
-
+import { environment } from '../../../../environments/environment.prod';
 @Component({
     selector: 'app-ai-search',
     standalone: true,
@@ -46,4 +46,5 @@ export class AiSearchComponent implements OnInit {
                 this.control.updateValueAndValidity();
             });
     }
+    readonly environment = environment;
 }

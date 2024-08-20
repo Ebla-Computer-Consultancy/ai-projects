@@ -5,4 +5,5 @@ const deployedEndpoint =
 export const environment = {
     production: false,
     endpoint: deployedEndpoint,
+    debugMode: true,
 };
