@@ -20,7 +20,11 @@ from azure.search.documents import SearchClient
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost", "http://localhost:4200"],
+    allow_origins=[
+        "https://github.com/Ebla-Computer-Consultancy",
+        "http://localhost",
+        "http://localhost:4200",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

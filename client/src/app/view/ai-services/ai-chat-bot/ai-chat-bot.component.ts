@@ -82,7 +82,10 @@ export class AiChatBotComponent implements OnInit {
         );
 
         // Replace text between [ and ] with <a> tags
-        formattedText = formattedText.replace(/\[(.*?)\]/g, '<a>$1</a>');
+        formattedText = formattedText.replace(
+            /\[(.*?)\]/g,
+            '<pre class="d-inline"><small class="px-1 text-primary">$1<i class="mdi mdi-link-variant"></i></small></pre>'
+        );
         // text = text.replace(/\./g, '.<br>')
 
         // Return the formatted text

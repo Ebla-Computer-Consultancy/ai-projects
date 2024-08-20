@@ -17,6 +17,7 @@ import { filter } from 'rxjs';
 })
 export class AppComponent implements OnInit {
     router = inject(Router);
+    collapsed: boolean = true;
     activatedRoute!: string;
     navLinks = [
         {

@@ -58,11 +58,19 @@
                             <div #linkRef hidden>
                                 @for(link of message.context.citations; track
                                 link.filepath) {
-                                <a
-                                    class="citation-link"
-                                    (click)="openDocModal(docModal, link)"
-                                    >{{ link.filepath }}</a
-                                >
+                                <div class="direction-ltr">
+                                    <div class="d-inline">
+                                        <small class="px-1 text-primary">
+                                            doc {{ $index + 1 }}
+                                            <i class="mdi mdi-link-variant"></i
+                                        ></small>
+                                    </div>
+                                    <a
+                                        class="d-inline citation-link"
+                                        (click)="openDocModal(docModal, link)"
+                                        >{{ link.filepath }}</a
+                                    >
+                                </div>
                                 }
                             </div>
                         </div>
