@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "deploy": "ng deploy"
   },
   "private": true,
   "dependencies": {
@@ -21,6 +22,7 @@
     "@mdi/font": "^7.4.47",
     "bootstrap": "^5.3.3",
     "ngx-bootstrap": "^18.0.2",
+    "process": "^0.11.10",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"

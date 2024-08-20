@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, finalize, map, Observable } from 'rxjs';
 import { IChatMessageResult } from '../interfaces/i-chat-message-result';
 import { Message } from '../models/message';
-import { Keys } from '../../function-keys';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
     providedIn: 'root',
@@ -28,7 +28,7 @@ export class AiChatBotService extends ApiServiceBaseModel {
         return this.http
             .post<IChatMessageResult>(this.baseUrl, this.messageHistory, {
                 headers: new HttpHeaders({
-                    'x-functions-key': Keys.functionDefaultKey,
+                    'x-functions-key': environment.functionDefaultKey as string,
                 }),
             })
             .pipe(
