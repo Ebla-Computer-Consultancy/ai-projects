@@ -5,5 +5,4 @@ const deployedEndpoint =
 export const environment = {
     production: false,
     endpoint: deployedEndpoint,
-    functionDefaultKey: process.env['FUNCTION_DEFAULT_KEY'],
 };

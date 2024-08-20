@@ -5,7 +5,7 @@ import { finalize, Observable } from 'rxjs';
 import { SortType } from '../types/types';
 import { IResult } from '../interfaces/i-result';
 import { SearchResult } from '../models/search-result';
-import { environment } from '../../environments/environment.prod';
+// import { environment } from '../../environments/environment.prod';
 
 @Injectable({
     providedIn: 'root',
@@ -31,8 +31,8 @@ export class AiSearchService extends ApiServiceBaseModel {
                 },
                 {
                     headers: new HttpHeaders({
-                        'x-functions-key':
-                            environment.functionDefaultKey as string,
+                        // 'x-functions-key':
+                        //     environment.functionDefaultKey as string,
                     }),
                 }
             )

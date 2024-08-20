@@ -24,9 +24,6 @@
     ],
     "types": ["node"],
   },
-  "files": [
-    "polyfills.ts",
-  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
