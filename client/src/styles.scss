@@ -4,12 +4,14 @@
 @import "ngx-bootstrap/datepicker/bs-datepicker.css";
 
 $primary: #201747; // set the $primary variable
+$primary-with-opacity: #36267eed; // set the $primary variable
 
 // merge with existing $theme-colors map
 $theme-colors: map-merge(
     $theme-colors,
     (
         "primary": $primary,
+        "primary-with-opacity": $primary-with-opacity,
     )
 );
 /* You can add global styles to this file, and also import other style files */
