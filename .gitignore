@@ -1,2 +1,190 @@
 data/*
-ai-demo/.env
+api/.env
+
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+/client/src/function-keys.ts
+# Compiled output
+/client/dist
+/client/tmp
+/client/out-tsc
+/client/bazel-out
+# Node
+/client/node_modules
+/client/npm-debug.log
+/client/yarn-error.log
+
+# IDEs and editors
+/client/.idea/
+/client/.project
+/client.classpath
+/client/.c9/
+/client/*.launch
+/client/.settings/
+/client/*.sublime-workspace
+
+# Visual Studio Code
+/client/.vscode/*
+/client/!.vscode/settings.json
+/client/!.vscode/tasks.json
+/client/!.vscode/launch.json
+/client/!.vscode/extensions.json
+/client/.history/*
+
+# Miscellaneous
+/client/.angular/cache
+/client/.sass-cache/
+/client/connect.lock
+/client/coverage
+/client/libpeerconnection.log
+/client/testem.log
+/client/typings
+
+# System files
+/client/.DS_Store
+/client/Thumbs.db
+
+
+# Visual Studio Code
+/api/.vscode/*
+/api/!.vscode/settings.json
+/api/!.vscode/tasks.json
+/api/!.vscode/launch.json
+/api/!.vscode/extensions.json
+/api/.history/*
+
+# Byte-compiled / optimized / DLL files
+/api/__pycache__/
+/api/*.py[cod]
+/api/*$py.class
+
+# C extensions
+/api/*.so
+
+# Distribution / packaging
+/api/.Python
+/api/build/
+/api/develop-eggs/
+/api/dist/
+/api/downloads/
+/api/eggs/
+/api/.eggs/
+/api/lib/
+/api/lib64/
+/api/parts/
+/api/sdist/
+/api/var/
+/api/wheels/
+/api/pip-wheel-metadata/
+/api/share/python-wheels/
+/api/*.egg-info/
+/api/.installed.cfg
+/api/*.egg
+/api/MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+/api/*.manifest
+/api/*.spec
+
+# Installer logs
+/api/pip-log.txt
+/api/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+/api/htmlcov/
+/api/.tox/
+/api/.nox/
+/api/.coverage
+/api/.coverage.*
+/api/.cache
+/api/nosetests.xml
+/api/coverage.xml
+/api/*.cover
+/api/.hypothesis/
+/api/.pytest_cache/
+
+# Translations
+/api/*.mo
+/api/*.pot
+
+# Django stuff:
+/api/*.log
+/api/local_settings.py
+/api/db.sqlite3
+
+# Flask stuff:
+/api/instance/
+/api/.webassets-cache
+
+# Scrapy stuff:
+/api/.scrapy
+
+# Sphinx documentation
+/api/docs/_build/
+
+# PyBuilder
+/api/target/
+
+# Jupyter Notebook
+/api/.ipynb_checkpoints
+
+# IPython
+/api/profile_default/
+/api/ipython_config.py
+
+# pyenv
+/api/.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don’t work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# celery beat schedule file
+/api/celerybeat-schedule
+
+# SageMath parsed files
+/api/*.sage.py
+
+# Environments
+/api/.env
+/api/.venv
+/api/env/
+/api/venv/
+/api/ENV/
+/api/env.bak/
+/api/venv.bak/
+
+# Spyder project settings
+/api/.spyderproject
+/api/.spyproject
+
+# Rope project settings
+/api/.ropeproject
+
+# mkdocs documentation
+/api/site
+
+# mypy
+/api/.mypy_cache/
+/api/.dmypy.json
+/api/dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Azure Functions artifacts
+/api/bin
+/api/obj
+/api/appsettings.json
+/api/local.settings.json
+
+# Azurite artifacts
+/api/__blobstorage__
+/api/__queuestorage__
+/api/__azurite_db*__.json
+/api/.python_packages
