@@ -191,7 +191,7 @@ def chat(messageHistory: List[ChatMessage]):
                                 "vector_fields": ["text_vector"],
                             },
                             "in_scope": True,
-                            "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in the same question language. and give long and descriptive answers",
+                            "role_information": "You are a language detector that detects the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic",
                             "filter": None,
                             "strictness": 3,
                             "top_n_documents": 5,
