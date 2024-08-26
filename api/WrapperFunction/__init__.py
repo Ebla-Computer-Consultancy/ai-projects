@@ -2,6 +2,7 @@ import os
 import json
 from typing import List
 from enum import Enum
+import uuid
 
 # Open Ai
 import openai
@@ -9,13 +10,21 @@ from openai import AzureOpenAI
 from dotenv import load_dotenv
 
 # Fast Api
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # Import search namespaces
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+
+import wrapperFunction.services.speech as speech
+from wrapperFunction.utils.blobStorage import (
+    delete_blob_snapshots,
+    download_blob_from_container,
+    upload_to_blob_container,
+)
+
 
 app = FastAPI()
 app.add_middleware(
@@ -68,6 +77,8 @@ openai_api_version = os.getenv("OPENAI_API_VERSION")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 openai_chat_model = os.getenv("OPENAI_CHAT_MODEL")
 openai_emb_model = os.getenv("OPENAI_EMB_MODEL")
+rera_storage_connection = os.getenv("RERA_STORAGE_CONNECTION")
+rera_voices_container = os.getenv("RERA_VOICES_CONTAINER")
 # Wrapper function for request to search index
 
 
@@ -86,31 +97,19 @@ def search_query(search_text, filter_by=None, sort_order=None):
         azure_credential = AzureKeyCredential(search_key)
         search_client = SearchClient(search_endpoint, search_index, azure_credential)
 
-        # Submit search query
-        """ results =  search_client.search(search_text,
-                                        search_mode="all",
-                                        include_total_count=True,
-                                        filter=filter_by,
-                                        order_by=sort_order,
-                                        facets=['metadata_author'],
-                                        highlight_fields='merged_content-3,imageCaption-3',
-                                        select = "url,metadata_storage_name,metadata_author,metadata_storage_size,metadata_storage_last_modified,language,sentiment,merged_content,keyphrases,locations,imageTags,imageCaption")
-        """
-
         jsonResult = []
         results = search_client.search(
             search_text=search_text,
             vector_queries=[
                 {
                     "kind": "vector",
-                    "vector": generate_embeddings(search_text, openai_emb_model),
+                    "vector": utils.generate_embeddings(
+                        client, search_text, openai_emb_model
+                    ),
                     "fields": "text_vector",
-                    #   "fields": "contentVector",
                     "k": 10,
                 }
             ],
-            # query_type="semantic",
-            # semantic_configuration_name=search_index+"-semantic-configuration",
             include_total_count=True,
         )
         for result in results:
@@ -158,9 +157,13 @@ def search(rs: searchCriteria):
 def chat(messageHistory: List[ChatMessage]):
     try:
         chat_history_arr = messageHistory
+        if bool(len([x for x in chat_history_arr if x.role == "system"])):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
+            )
         chat_history = []
         for item in chat_history_arr:
-            chat_history.append(item.dict())
+            chat_history.append(item.model_dump())
         # Get response from OpenAI ChatGPT
         completion = client.chat.completions.create(
             model=openai_chat_model,
@@ -205,11 +208,34 @@ def chat(messageHistory: List[ChatMessage]):
                 ]
             },
         )
-
         return json.loads(completion.choices[0].json())
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 
 
-def generate_embeddings(text, model):  # model = "deployment_name"
-    return client.embeddings.create(input=[text], model=model).data[0].embedding
+@app.post("/demo/v0.1/transcribe")
+async def transcribe(file: UploadFile):
+    splittedFileName = file.filename.lower().split(".")
+    fileExtension = splittedFileName[len(splittedFileName) - 1]
+
+    if fileExtension != "wav":
+        raise HTTPException(
+            400, f"file type { fileExtension } not allowed \n use wav audio files"
+        )
+
+    voice_name = f"voice_{uuid.uuid4()}.wav"
+    download_file_path = f"voices/{voice_name}"
+    await upload_to_blob_container(
+        file, rera_storage_connection, rera_voices_container, voice_name
+    )
+    download_blob_from_container(
+        rera_storage_connection, rera_voices_container, download_file_path, voice_name
+    )
+    transcription_result = speech.transcribe_audio_file(download_file_path)
+    os.remove(download_file_path)
+    delete_blob_snapshots(
+        connection_string=rera_storage_connection,
+        container_name=rera_voices_container,
+        blob_name=voice_name,
+    )
+    return transcription_result

@@ -9,3 +9,6 @@ openai
 python-dotenv
 pydantic
 fastapi
+azure-cognitiveservices-speech
+python-multipart
+azure-storage-blob
