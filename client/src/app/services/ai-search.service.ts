@@ -1,11 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiServiceBaseModel } from '../models/api-service-base-model';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { finalize, Observable } from 'rxjs';
 import { SortType } from '../types/types';
 import { IResult } from '../interfaces/i-result';
 import { SearchResult } from '../models/search-result';
-// import { environment } from '../../environments/environment.prod';
 
 @Injectable({
     providedIn: 'root',

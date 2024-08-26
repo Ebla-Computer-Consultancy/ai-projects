@@ -4,8 +4,6 @@ import { AiServicesComponent } from './ai-services.component';
 import { RouterModule } from '@angular/router';
 import { AiChatBotComponent } from './ai-chat-bot/ai-chat-bot.component';
 import { AiSearchComponent } from './ai-search/ai-search.component';
-import { AiSpeechToTextComponent } from './ai-speech-to-text/ai-speech-to-text.component';
-
 @NgModule({
     imports: [
         CommonModule,
@@ -26,10 +24,6 @@ import { AiSpeechToTextComponent } from './ai-speech-to-text/ai-speech-to-text.c
                     {
                         path: 'ai-search',
                         component: AiSearchComponent,
-                    },
-                    {
-                        path: 'ai-speech-to-text',
-                        component: AiSpeechToTextComponent,
                     },
                 ],
             },

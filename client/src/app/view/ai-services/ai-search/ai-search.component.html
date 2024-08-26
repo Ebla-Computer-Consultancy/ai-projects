@@ -8,15 +8,27 @@
 
     <form class="col-12 col-md-6">
         <div class="input-group mb-5">
+            <div class="input-group-append">
+                <div class="me-2">
+                    <audio-recorder
+                        [disabled]="
+                            service.loading || aiSpeechToTextService.loading
+                        "
+                        (onRecordReady)="handleSpeechToText($event)"
+                    ></audio-recorder>
+                </div>
+            </div>
             <input
                 type="text"
                 [formControl]="control"
-                class="form-control"
+                class="form-control rounded-0 rounded-start"
                 placeholder="Search..."
             />
             <div class="input-group-prepend">
                 <button
-                    [disabled]="this.service.loading"
+                    [disabled]="
+                        service.loading || aiSpeechToTextService.loading
+                    "
                     type="button"
                     (click)="search$.next()"
                     class="rounded-0 rounded-end btn btn-secondary text-white"
@@ -32,7 +44,7 @@
     <span class="badge bg-secondary">Search: "{{ searchKeyWord }}"</span>
     <span class="badge bg-secondary ms-2">Results: {{ results.length }}</span>
     <div class="pt-3">
-        @if(this.service.loading) {
+        @if(service.loading || aiSpeechToTextService.loading) {
         <div class="loading-text text-white">
             Processing....<i class="mdi mdi-pen"></i>
         </div>
