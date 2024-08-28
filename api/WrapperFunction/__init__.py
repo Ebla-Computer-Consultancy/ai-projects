@@ -64,6 +64,8 @@ class searchCriteria(BaseModel):
     query: str
     facet: str = None
     sort: str = None
+    page_size: int=1000000
+    page_number: int=1
 
 
 # Azure Search constants
@@ -91,7 +93,7 @@ client = AzureOpenAI(
 )
 
 
-def search_query(search_text, filter_by=None, sort_order=None):
+def search_query(search_text,filter_by=None, sort_order=None,page_size=1000000,page_number=1):
     try:
         # Create a search client
         azure_credential = AzureKeyCredential(search_key)
@@ -107,14 +109,18 @@ def search_query(search_text, filter_by=None, sort_order=None):
                         client, search_text, openai_emb_model
                     ),
                     "fields": "text_vector",
-                    "k": 10,
+                    # "k": 10,
                 }
             ],
             include_total_count=True,
+            # highlight_fields="chunk",
+            top=page_size,
+            skip=(page_number-1)*page_size
+
         )
         for result in results:
             jsonResult.append(json.loads(json.dumps(dict(result))))
-        return jsonResult
+        return  {"count": results.get_count(), "rs": jsonResult}
 
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
@@ -145,9 +151,9 @@ def search(rs: searchCriteria):
                 sort_expression = "sentiment desc"
 
         # submit the query and get the results
-        results = search_query(search_text, filter_expression, sort_expression)
+        results = search_query(search_text, filter_expression, sort_expression,rs.page_size,rs.page_number)
         # render the results
-        return {"count": len(results), "rs": results}
+        return results
 
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
@@ -156,6 +162,11 @@ def search(rs: searchCriteria):
 @app.post("/demo/v0.1/chat-action")
 def chat(messageHistory: List[ChatMessage]):
     try:
+        client = AzureOpenAI(
+            azure_endpoint=openai_endpoint,
+            api_key=openai_api_key,
+            api_version=openai_api_version,
+        )
         chat_history_arr = messageHistory
         if bool(len([x for x in chat_history_arr if x.role == "system"])):
             raise HTTPException(
@@ -188,10 +199,10 @@ def chat(messageHistory: List[ChatMessage]):
                             "fields_mapping": {
                                 "content_fields_separator": "\n",
                                 "content_fields": ["chunk"],
-                                "filepath_field": "title",
-                                "title_field": "chunk_id",
-                                "url_field": "metadata_storage_path",
-                                "vector_fields": ["text_vector"],
+                                "filepath_field": "metadata_storage_path",
+                                "title_field": "title",
+                                "url_field": "ref_url",
+                               "vector_fields": ["text_vector"], 
                             },
                             "in_scope": True,
                             "role_information": "You are an AI assistant that helps people find information using the defined datasource. always reply in the same question language. and give long and descriptive answers",
