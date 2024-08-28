@@ -1,15 +1,11 @@
 import os
-
 from dotenv import load_dotenv
 import azure.cognitiveservices.speech as SpeechSDK
-
 
 load_dotenv()
 region = os.getenv("APP_REGION")
 speech_service_key = os.getenv("SPEECH_SERVICE_KEY")
-
 speech_config = SpeechSDK.SpeechConfig(subscription=speech_service_key, region=region)
-
 
 def transcribe_audio_file(audio_stream: str):
     audio_input = SpeechSDK.AudioConfig(filename=audio_stream)
