@@ -10,9 +10,10 @@ import { SearchResult } from '../models/search-result';
     providedIn: 'root',
 })
 export class AiSearchService extends ApiServiceBaseModel {
+    override tag: string = 'website/';
     protected override http: HttpClient = inject(HttpClient);
     constructor() {
-        super('search-action');
+        super('search');
     }
     search(
         searchQuery: string,

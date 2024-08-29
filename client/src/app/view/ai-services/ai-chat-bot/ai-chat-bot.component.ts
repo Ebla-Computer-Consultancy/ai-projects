@@ -11,17 +11,23 @@ import { filter, Subject, switchMap } from 'rxjs';
 import { IChatMessageResult } from '../../../interfaces/i-chat-message-result';
 import { CommonModule } from '@angular/common';
 import { ICitations, Message } from '../../../models/message';
-import { BsModalService, BsModalRef, ModalOptions } from 'ngx-bootstrap/modal';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { AudioRecorderComponent } from '../../../standalone/audio-recorder/audio-recorder.component';
+import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
+import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
-    imports: [ReactiveFormsModule, CommonModule],
+    imports: [ReactiveFormsModule, CommonModule, AudioRecorderComponent],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
     providers: [BsModalService],
 })
 export class AiChatBotComponent implements OnInit {
     service = inject(AiChatBotService);
+    aiSpeechToTextService: AiSpeechToTextService = inject(
+        AiSpeechToTextService
+    );
     modalService = inject(BsModalService);
 
     modalRef?: BsModalRef | null;
@@ -90,6 +96,18 @@ export class AiChatBotComponent implements OnInit {
 
         // Return the formatted text
         return formattedText.trim();
+    }
+
+    handleSpeechToText(record: IRecordedAudioOutput) {
+        const file = new File([record.blob], record.title);
+        const formData = new FormData();
+        formData.append('file', file);
+        this.aiSpeechToTextService
+            .transcribe(formData)
+            .subscribe((stringText: string) => {
+                this.control.setValue(stringText);
+                this.ask$.next();
+            });
     }
     clear() {
         this.control.reset();

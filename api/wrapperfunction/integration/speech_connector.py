@@ -2,12 +2,13 @@ import azure.cognitiveservices.speech as speechsdk
 import wrapperfunction.core.config as config
 
 
-
-def transcribe_audio_file(audio_stream: str):
-    speech_config = speechsdk.SpeechConfig(subscription=config.SPEECH_SERVICE_KEY, region=config.SPEECH_APP_REGION)
+def transcribe_audio_file(audio_filename: str):
+    speech_config = speechsdk.SpeechConfig(
+        subscription=config.SPEECH_SERVICE_KEY, region=config.SPEECH_APP_REGION
+    )
     # speech_config.set_property(property_id=speechsdk.PropertyId.SpeechServiceConnection_LanguageIdMode, value='Continuous')
     # speech_config.speech_recognition_language="ar-QA"
-    audio_input = speechsdk.AudioConfig(filename=audio_stream)
+    audio_input = speechsdk.AudioConfig(filename=audio_filename)
 
     auto_detect_source_language_config = (
         speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
@@ -21,7 +22,6 @@ def transcribe_audio_file(audio_stream: str):
         auto_detect_source_language_config=auto_detect_source_language_config,
     )
 
-    
     result = speech_recognizer.recognize_once_async().get()
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
         return result.text
