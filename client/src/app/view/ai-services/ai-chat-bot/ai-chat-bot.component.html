@@ -87,18 +87,33 @@
         </div>
         <div class="card-footer">
             <form id="message-form">
-                <div class="input-group mb-3">
+                <div class="input-group">
+                    <div class="input-group-append">
+                        <div class="me-2">
+                            <audio-recorder
+                                class="chat-bot-audio-recorder me-2"
+                                [disabled]="
+                                    service.loading ||
+                                    aiSpeechToTextService.loading
+                                "
+                                (onRecordReady)="handleSpeechToText($event)"
+                            ></audio-recorder>
+                        </div>
+                    </div>
                     <input
                         type="text"
                         id="user-message"
                         [formControl]="control"
-                        class="form-control-sm form-control"
+                        class="form-control-sm form-control rounded-0 rounded-start"
                         placeholder="Type your message..."
                     />
                     <div class="input-group-append">
                         <button
-                            class="btn btn-sm btn-primary"
-                            [disabled]="this.service.loading"
+                            class="rounded-0 rounded-end btn btn-sm btn-primary"
+                            [disabled]="
+                                this.service.loading ||
+                                aiSpeechToTextService.loading
+                            "
                             (click)="ask$.next()"
                             type="button"
                         >

@@ -13,4 +13,5 @@ export class SearchResult {
     parent_id!: string;
     text_vector: number[] = [];
     title!: string;
+    ref_url!: string;
 }
