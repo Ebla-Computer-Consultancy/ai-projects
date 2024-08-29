@@ -90,3 +90,12 @@
     height: 100%;
     z-index: 1;
 }
+::ng-deep .chat-bot-audio-recorder {
+    display: block;
+    width: 28px;
+    height: 28px;
+    .mic-container {
+        position: relative;
+        top: -4px;
+    }
+}

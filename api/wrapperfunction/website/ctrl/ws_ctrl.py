@@ -6,9 +6,11 @@ from typing import List
 
 router = APIRouter()
 
+
 @router.post("/search")
 def search(rs: searchCriteria):
     return wsservice.search(rs)
+
 
 @router.post("/chat")
 async def search(message_payload: ChatPayload):

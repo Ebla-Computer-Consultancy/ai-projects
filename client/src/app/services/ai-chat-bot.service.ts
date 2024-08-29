@@ -10,10 +10,11 @@ import { Message } from '../models/message';
     providedIn: 'root',
 })
 export class AiChatBotService extends ApiServiceBaseModel {
+    override tag: string = 'website/';
     protected override http: HttpClient = inject(HttpClient);
     messageHistory: Message[] = [];
     constructor() {
-        super('chat-action');
+        super('chat');
     }
 
     appendMessage(message: Message) {

@@ -52,15 +52,13 @@
         <ul class="list-group">
             @for(search_result of results; track search_result.chunk_id) {
             <li
-                class="list-group-item py-3 text-wrap"
+                class="list-group-item py-3"
                 style="text-align: right"
                 dir="rtl"
             >
-                <a
-                    href="{{ search_result.metadata_storage_path }}"
-                    target="_blank"
-                    >{{ search_result.title }}</a
-                >
+                <a href="{{ search_result.ref_url }}" target="_blank">{{
+                    search_result.title
+                }}</a>
                 @if(search_result['@search.highlights']) {
                 @if(search_result['@search.highlights']['merged_content'].length
                 > 0) {
@@ -81,7 +79,10 @@
                     }
                 </div>
                 } }
-                <div class="mt-3 mb-1" style="text-align: justify">
+                <div
+                    class="mt-3 mb-1"
+                    style="text-align: justify; overflow-wrap: break-word"
+                >
                     {{ search_result.chunk }}
                 </div>
                 @if(environment.debugMode) {
