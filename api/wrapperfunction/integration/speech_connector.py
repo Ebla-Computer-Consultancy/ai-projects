@@ -1,33 +1,35 @@
-import os
-from dotenv import load_dotenv
-import azure.cognitiveservices.speech as SpeechSDK
+import azure.cognitiveservices.speech as speechsdk
+import wrapperfunction.core.config as config
 
-load_dotenv()
-region = os.getenv("APP_REGION")
-speech_service_key = os.getenv("SPEECH_SERVICE_KEY")
-speech_config = SpeechSDK.SpeechConfig(subscription=speech_service_key, region=region)
+
 
 def transcribe_audio_file(audio_stream: str):
-    audio_input = SpeechSDK.AudioConfig(filename=audio_stream)
+    speech_config = speechsdk.SpeechConfig(subscription=config.SPEECH_SERVICE_KEY, region=config.SPEECH_APP_REGION)
+    speech_config.set_property(property_id=speechsdk.PropertyId.SpeechServiceConnection_LanguageIdMode, value='Continuous')
+    # speech_config.speech_recognition_language="ar-QA"
+    print("action called")
+    audio_input = speechsdk.AudioConfig(filename=audio_stream)
 
     auto_detect_source_language_config = (
-        SpeechSDK.languageconfig.AutoDetectSourceLanguageConfig(
+        speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
             languages=["en-GB", "ar-QA", "es-ES"]
         )
     )
-    speech_recognizer = SpeechSDK.SpeechRecognizer(
+
+    speech_recognizer = speechsdk.SpeechRecognizer(
         speech_config=speech_config,
         audio_config=audio_input,
         auto_detect_source_language_config=auto_detect_source_language_config,
     )
 
+    
     result = speech_recognizer.recognize_once_async().get()
-    if result.reason == SpeechSDK.ResultReason.RecognizedSpeech:
+    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
         return result.text
-    elif result.reason == SpeechSDK.ResultReason.NoMatch:
+    elif result.reason == speechsdk.ResultReason.NoMatch:
         return "No speech could be recognized."
-    elif result.reason == SpeechSDK.ResultReason.Canceled:
+    elif result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = result.cancellation_details
-        if cancellation_details.reason == SpeechSDK.CancellationReason.Error:
+        if cancellation_details.reason == speechsdk.CancellationReason.Error:
             return f"Transcription canceled: {cancellation_details.reason}. Error details: {cancellation_details.error_details}"
         return f"Transcription canceled: {cancellation_details.reason}"
