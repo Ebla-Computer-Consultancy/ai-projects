@@ -56,4 +56,6 @@ def chat_completion(search_index,chat_history,system_message):
                 ]
             },
         )
-    return json.loads(completion.choices[0].json())
+    compl_data=json.loads(completion.choices[0].json())
+    compl_data["usage"] = json.loads(completion.usage.json())
+    return compl_data

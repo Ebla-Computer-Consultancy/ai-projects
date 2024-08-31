@@ -7,11 +7,12 @@ from wrapperfunction.common.ctrl import common_ctrl
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://github.com/Ebla-Computer-Consultancy",
-        "http://localhost",
-        "http://localhost:7071",
-    ],
+    # allow_origins=[
+    #     "https://github.com/Ebla-Computer-Consultancy",
+    #     "http://localhost",
+    #     "http://localhost:7071",
+    # ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,4 +20,3 @@ app.add_middleware(
 
 app.include_router(ws_ctrl.router, prefix="/api/v1/website", tags=["website"])
 app.include_router(common_ctrl.router, prefix="/api/v1/common", tags=["common"])
-

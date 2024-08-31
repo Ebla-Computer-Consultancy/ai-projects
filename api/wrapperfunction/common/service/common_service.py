@@ -2,7 +2,7 @@ from io import BytesIO
 import os
 import tempfile
 import wrapperfunction.integration as integration
-from fastapi import UploadFile, HTTPException
+from fastapi import Request, UploadFile, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
@@ -45,3 +45,31 @@ async def fast_file(file: UploadFile ):
         # Return the processed audio as a streaming response
         return processed_audio_stream.getvalue()
     else: return contents
+
+
+def start_stream(stream_id: str):
+    return integration.avatarconnector.start_stream(stream_id)
+
+
+async def send_candidate(stream_id: str,request: Request):
+    data = await request.json()
+    candidate_ = data.get("candidate")
+    jsonData={"candidate": candidate_}
+    return integration.avatarconnector.send_candidate(stream_id,jsonData)
+    
+
+async def send_answer(stream_id: str,request: Request):
+    data = await request.json()
+    answer = data.get("answer")
+    jsonData={"answer": answer}
+    return integration.avatarconnector.send_answer(stream_id,jsonData)
+   
+
+async def render_text(stream_id: str,request: Request):
+    data = await request.json()
+    text = data.get("text")
+    return integration.avatarconnector.render_text(stream_id,text)
+   
+
+def close_stream(stream_id: str):
+     return integration.avatarconnector.close_stream(stream_id)
