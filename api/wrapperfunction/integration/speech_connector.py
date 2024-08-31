@@ -5,9 +5,8 @@ import wrapperfunction.core.config as config
 
 def transcribe_audio_file(audio_stream: str):
     speech_config = speechsdk.SpeechConfig(subscription=config.SPEECH_SERVICE_KEY, region=config.SPEECH_APP_REGION)
-    speech_config.set_property(property_id=speechsdk.PropertyId.SpeechServiceConnection_LanguageIdMode, value='Continuous')
+    # speech_config.set_property(property_id=speechsdk.PropertyId.SpeechServiceConnection_LanguageIdMode, value='Continuous')
     # speech_config.speech_recognition_language="ar-QA"
-    print("action called")
     audio_input = speechsdk.AudioConfig(filename=audio_stream)
 
     auto_detect_source_language_config = (
