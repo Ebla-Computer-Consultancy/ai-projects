@@ -13,7 +13,7 @@ export class AiSearchService extends ApiServiceBaseModel {
     override tag: string = 'website/';
     protected override http: HttpClient = inject(HttpClient);
     constructor() {
-        super('search');
+        super('speech/search');
     }
     search(
         searchQuery: string,
