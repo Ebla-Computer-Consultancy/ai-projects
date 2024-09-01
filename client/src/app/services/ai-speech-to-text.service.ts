@@ -11,7 +11,7 @@ export class AiSpeechToTextService extends ApiServiceBaseModel {
     override tag: string = 'common/';
     protected override http: HttpClient = inject(HttpClient);
     constructor() {
-        super('transcribe');
+        super('speech/transcribe');
     }
     transcribe(formData: FormData): Observable<string> {
         this.startLoading();
