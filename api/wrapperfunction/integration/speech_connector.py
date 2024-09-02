@@ -1,3 +1,6 @@
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+import requests
 import azure.cognitiveservices.speech as speechsdk
 import wrapperfunction.core.config as config
 
@@ -32,3 +35,24 @@ def transcribe_audio_file(audio_stream: str):
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             return f"Transcription canceled: {cancellation_details.reason}. Error details: {cancellation_details.error_details}"
         return f"Transcription canceled: {cancellation_details.reason}"
+    
+    
+def get_speech_token():
+    speech_key = config.SPEECH_SERVICE_KEY
+    speech_region = config.SPEECH_SERVICE_REGION
+
+    if speech_key == 'paste-your-speech-key-here' or speech_region == 'paste-your-speech-region-here':
+        raise HTTPException(status_code=400, detail='You forgot to add your speech key or region to the .env file.')
+
+    headers = {
+        'Ocp-Apim-Subscription-Key': speech_key,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    try:
+        response = requests.post(f'https://{speech_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken', headers=headers)
+        response.raise_for_status()
+        return JSONResponse(content={'token': response.text, 'region': speech_region})
+    except requests.exceptions.RequestException:
+        raise HTTPException(status_code=401, detail='There was an error authorizing your speech key.')
+

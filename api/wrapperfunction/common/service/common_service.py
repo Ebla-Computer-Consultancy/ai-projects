@@ -46,6 +46,9 @@ async def fast_file(file: UploadFile ):
         return processed_audio_stream.getvalue()
     else: return contents
 
+    
+def get_speech_token():
+    return integration.speechconnector.get_speech_token()
 
 def start_stream(stream_id: str):
     return integration.avatarconnector.start_stream(stream_id)

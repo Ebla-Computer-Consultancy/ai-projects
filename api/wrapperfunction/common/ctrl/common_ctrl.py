@@ -4,11 +4,15 @@ import wrapperfunction.common.service.common_service as commonservice
 
 router = APIRouter()
 
-@router.post("/speech/transcribe/")
+@router.post("/speech/transcribe")
 async def transcribe(file: UploadFile):
     return await commonservice.transcribe(file)
 
-@router.post("/avatar/start-stream/")
+@router.get("/speech/token")
+def get_speech_token():
+    return commonservice.get_speech_token()
+
+@router.post("/avatar/start-stream")
 def start_stream(stream_id: str = None):
     return commonservice.start_stream(stream_id)
 
