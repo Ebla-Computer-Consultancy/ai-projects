@@ -1,9 +1,12 @@
 import {
+    AfterViewInit,
     Component,
+    ElementRef,
     HostListener,
     inject,
     OnInit,
     TemplateRef,
+    ViewChild,
 } from '@angular/core';
 import { AiChatBotService } from '../../../services/ai-chat-bot.service';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -23,7 +26,9 @@ import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-outpu
     styleUrls: ['./ai-chat-bot.component.scss'],
     providers: [BsModalService],
 })
-export class AiChatBotComponent implements OnInit {
+export class AiChatBotComponent implements OnInit, AfterViewInit {
+    @ViewChild('chat_container') chat_container!: ElementRef;
+    @ViewChild('chat_body') chat_body!: ElementRef;
     service = inject(AiChatBotService);
     aiSpeechToTextService: AiSpeechToTextService = inject(
         AiSpeechToTextService
@@ -48,7 +53,19 @@ export class AiChatBotComponent implements OnInit {
     ngOnInit() {
         this.listenToAskQuestion();
     }
-
+    ngAfterViewInit() {
+        this.scrollToMessage();
+    }
+    scrollToMessage() {
+        this.chat_body &&
+            this.chat_container &&
+            this.chat_container.nativeElement.lastElementChild &&
+            (this.chat_body.nativeElement.scrollTop =
+                this.chat_body?.nativeElement.scrollHeight -
+                this.chat_container.nativeElement.lastElementChild
+                    .scrollHeight -
+                20);
+    }
     listenToAskQuestion() {
         this.ask$
             .pipe(
@@ -61,6 +78,9 @@ export class AiChatBotComponent implements OnInit {
             )
             .pipe(
                 switchMap(() => {
+                    setTimeout(() => {
+                        this.scrollToMessage();
+                    }, 200);
                     return this.service.askQuestion(this.control.value);
                 })
             )
@@ -73,6 +93,9 @@ export class AiChatBotComponent implements OnInit {
                         content: this.formatText(response.message.content),
                     })
                 );
+                setTimeout(() => {
+                    this.scrollToMessage();
+                }, 200);
             });
     }
     openDocModal(template: TemplateRef<void>, link: ICitations) {

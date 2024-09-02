@@ -22,6 +22,8 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     @Output() onRecordReady: EventEmitter<IRecordedAudioOutput> =
         new EventEmitter<IRecordedAudioOutput>();
     @Input() disabled: boolean = false;
+    @Input() isProcessing: boolean = false;
+
     isRecording = false;
     recordedTime!: string;
     blobUrl!: SafeUrl | null;
