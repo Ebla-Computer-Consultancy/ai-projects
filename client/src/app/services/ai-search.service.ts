@@ -17,15 +17,19 @@ export class AiSearchService extends ApiServiceBaseModel {
     }
     search(
         searchQuery: string,
+        page_size: number,
+        page_number: number,
         sort: SortType = 'date',
         facet: string = ''
     ): Observable<IResult<SearchResult>> {
         this.startLoading();
         return this.http
-            .post<{ count: number; rs: any[] }>(
+            .post<IResult<SearchResult>>(
                 this.baseUrl,
                 {
                     query: searchQuery,
+                    page_size,
+                    page_number,
                     sort: sort,
                     facet: facet,
                 },

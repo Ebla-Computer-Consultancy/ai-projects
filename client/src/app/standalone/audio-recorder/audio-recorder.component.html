@@ -1,11 +1,15 @@
-<div class="mic-container">
+<div
+    class="mic-container rounded-circle"
+    style="box-shadow: 0px 1px 13px #00000080"
+>
+    <div class="spinner" [ngClass]="{ processing: isProcessing }"></div>
     <button
-        class="btn circle"
+        class="btn circle border-0"
         type="button"
         [disabled]="disabled"
         (click)="!isRecording ? startRecording() : stopRecording()"
         [ngClass]="{
-            active: isRecording && !blobUrl
+            active: isRecording
         }"
     >
         <i class="mdi mdi-microphone"></i>

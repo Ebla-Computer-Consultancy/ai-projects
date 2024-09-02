@@ -2,9 +2,12 @@
     <div
         class="card col-12 col-md-6"
         [ngClass]="{
-            fullscreen: fullScreen
+            fullscreen: fullScreen,
         }"
-        style="min-height: 300px"
+        [style]="
+            'min-height: 300px; ' +
+            (!fullScreen ? 'height: calc(100vh - 90px - 6rem);' : '')
+        "
     >
         <div
             class="card-header d-flex justify-content-between align-items-center"
@@ -28,12 +31,13 @@
         </div>
         <div
             class="text-center card-body overflow-auto"
-            [style]="!fullScreen ? 'max-height: 380px' : ''"
+            #chat_body
+            [style]="!fullScreen ? 'max-height: 100%' : ''"
         >
             @if(!this.service.messageHistory.length) {
             <small class="fw-bold"> Let's chat with me to help you. </small>
             }
-            <div class="chat-container">
+            <div class="chat-container" #chat_container>
                 @for(message of this.service.messageHistory; track
                 message.content) {
                 <div [class]="'message ' + message.role + '-message'">
@@ -67,6 +71,7 @@
                                     </div>
                                     <a
                                         class="d-inline citation-link"
+                                        style="cursor: pointer"
                                         (click)="openDocModal(docModal, link)"
                                         >{{ link.filepath }}</a
                                     >
@@ -93,6 +98,10 @@
                             <audio-recorder
                                 class="chat-bot-audio-recorder me-2"
                                 [disabled]="
+                                    service.loading ||
+                                    aiSpeechToTextService.loading
+                                "
+                                [isProcessing]="
                                     service.loading ||
                                     aiSpeechToTextService.loading
                                 "

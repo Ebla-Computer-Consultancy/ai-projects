@@ -29,3 +29,12 @@ $theme-colors: map-merge(
     height: 100%;
     z-index: 1;
 }
+.page-link {
+    color: var(--bs-secondary) !important;
+}
+.page-link.active,
+.active > .page-link {
+    background: var(--bs-secondary) !important;
+    border-color: var(--bs-secondary) !important;
+    color: white !important;
+}
