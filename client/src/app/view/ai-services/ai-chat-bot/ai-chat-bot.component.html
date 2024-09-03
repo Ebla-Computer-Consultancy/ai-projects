@@ -62,7 +62,7 @@
                             <div #linkRef hidden>
                                 @for(link of message.context.citations; track
                                 link.filepath) {
-                                <div class="direction-ltr">
+                                <div dir="auto">
                                     <div class="d-inline">
                                         <small class="px-1 text-primary">
                                             doc {{ $index + 1 }}
@@ -86,7 +86,7 @@
             </div>
             @if(this.service.loading) {
             <div class="loading-text">
-                Processing....<i class="mdi mdi-pen"></i>
+                <app-loading></app-loading>
             </div>
             }
         </div>
@@ -101,10 +101,7 @@
                                     service.loading ||
                                     aiSpeechToTextService.loading
                                 "
-                                [isProcessing]="
-                                    service.loading ||
-                                    aiSpeechToTextService.loading
-                                "
+                                [isProcessing]="aiSpeechToTextService.loading"
                                 (onRecordReady)="handleSpeechToText($event)"
                             ></audio-recorder>
                         </div>

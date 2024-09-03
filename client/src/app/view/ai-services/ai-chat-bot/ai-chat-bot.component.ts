@@ -18,10 +18,16 @@ import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { AudioRecorderComponent } from '../../../standalone/audio-recorder/audio-recorder.component';
 import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
 import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
+import { LoadingComponent } from '../../../standalone/loading/loading.component';
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
-    imports: [ReactiveFormsModule, CommonModule, AudioRecorderComponent],
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        AudioRecorderComponent,
+        LoadingComponent,
+    ],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
     providers: [BsModalService],
