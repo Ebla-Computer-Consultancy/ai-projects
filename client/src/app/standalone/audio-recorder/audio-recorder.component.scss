@@ -37,8 +37,6 @@
     }
 
     .circle.active {
-        background: #b2b1b1;
-
         &:before {
             background: var(--bs-primary);
             animation: bounce 0.8s linear infinite 0.5s;
