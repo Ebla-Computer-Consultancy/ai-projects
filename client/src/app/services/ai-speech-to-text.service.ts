@@ -11,12 +11,12 @@ export class AiSpeechToTextService extends ApiServiceBaseModel {
     override tag: string = 'common/';
     protected override http: HttpClient = inject(HttpClient);
     constructor() {
-        super('speech/transcribe');
+        super('speech');
     }
     transcribe(formData: FormData): Observable<string> {
         this.startLoading();
         return this.http
-            .post<string>(this.baseUrl, formData, {
+            .post<string>(this.baseUrl + '/transcribe', formData, {
                 headers: new HttpHeaders({
                     enctype: 'multipart/form-data',
                     // 'x-functions-key': environment.functionDefaultKey as string,
@@ -27,5 +27,15 @@ export class AiSpeechToTextService extends ApiServiceBaseModel {
                     this.stopLoading();
                 })
             );
+    }
+    requestAuthorizationToken() {
+        return this.http.get<{ token: string; region: string }>(
+            this.baseUrl + '/token',
+            {
+                headers: new HttpHeaders({
+                    'Content-Type': 'application/json',
+                }),
+            }
+        );
     }
 }

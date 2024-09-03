@@ -113,6 +113,7 @@
                                 "
                                 [isProcessing]="aiSpeechToTextService.loading"
                                 (onRecordReady)="handleSpeechToText($event)"
+                                (onStopRecording)="stopRecording()"
                             ></audio-recorder>
                         </div>
                     </div>
@@ -161,8 +162,8 @@
             <span aria-hidden="true" class="visually-hidden">&times;</span>
         </button>
     </div>
-    <div class="modal-body">
-        <p>{{ selectedDoc.content }}</p>
+    <div class="modal-body" style="overflow-wrap: break-word">
+        <p style="text-align: justify">{{ selectedDoc.content }}</p>
         <strong>Link to document: </strong
         ><a [href]="selectedDoc.url" target="_blank">
             {{ selectedDoc.filepath }}

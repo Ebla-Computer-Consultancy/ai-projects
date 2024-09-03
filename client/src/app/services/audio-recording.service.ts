@@ -36,7 +36,14 @@ export class AudioRecordingService {
 
         this._recordingTime.next('00:00');
         navigator.mediaDevices
-            .getUserMedia({ audio: true })
+            .getUserMedia({
+                video: false,
+                audio: {
+                    channelCount: 1,
+                    sampleRate: 16000,
+                    sampleSize: 16,
+                },
+            })
             .then((s) => {
                 this.stream = s;
                 this.record();
@@ -84,8 +91,11 @@ export class AudioRecordingService {
                         const fileName = encodeURIComponent(
                             'audio_' + new Date().getTime() + '.wav'
                         );
+                        this._recorded.next({
+                            blob: blob,
+                            title: fileName,
+                        });
                         this.stopMedia();
-                        this._recorded.next({ blob: blob, title: fileName });
                     }
                 },
                 () => {
