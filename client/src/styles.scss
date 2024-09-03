@@ -38,3 +38,12 @@ $theme-colors: map-merge(
     border-color: var(--bs-secondary) !important;
     color: white !important;
 }
+
+.rtl {
+    text-align: right;
+    direction: rtl;
+}
+.ltr {
+    text-align: left;
+    direction: ltr;
+}

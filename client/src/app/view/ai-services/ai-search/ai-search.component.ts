@@ -10,6 +10,7 @@ import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-outpu
 import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { isRTL } from '../../../utils';
 @Component({
     selector: 'app-ai-search',
     standalone: true,
@@ -34,6 +35,7 @@ export class AiSearchComponent implements OnInit {
     total_count: number = 0;
     currentPage: number = 1;
     searchKeyWord = '';
+    readonly isRTL = isRTL;
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'Enter') {

@@ -20,6 +20,7 @@ import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.servi
 import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
+import { formateString, isRTL } from '../../../utils';
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
@@ -48,7 +49,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     ask$: Subject<void> = new Subject<void>();
     selectedDoc!: ICitations;
     fullScreen: boolean = false;
-
+    readonly isRTL = isRTL;
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'Enter') {
@@ -93,6 +94,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                 })
             )
             .subscribe((response: IChatMessageResult) => {
+                formateString(this.formatText(response.message.content));
                 this.control.reset();
                 this.control.updateValueAndValidity();
                 this.service.appendMessage(
