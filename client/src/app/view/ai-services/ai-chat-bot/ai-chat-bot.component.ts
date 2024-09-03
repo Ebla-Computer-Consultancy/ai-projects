@@ -19,6 +19,7 @@ import { AudioRecorderComponent } from '../../../standalone/audio-recorder/audio
 import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
 import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
+import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
@@ -27,6 +28,7 @@ import { LoadingComponent } from '../../../standalone/loading/loading.component'
         CommonModule,
         AudioRecorderComponent,
         LoadingComponent,
+        TextWriterAnimatorDirective,
     ],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
