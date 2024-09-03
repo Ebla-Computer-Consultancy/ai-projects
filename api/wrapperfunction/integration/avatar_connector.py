@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import HTTPException
 import requests
 from wrapperfunction.common.model.service_return import ServiceReturn, StatusCode
@@ -46,11 +47,19 @@ def send_answer(stream_id: str,jsonData: dict):
 
 
 def render_text(stream_id: str,text: str):
-    response = requests.post(f"{config.AVATAR_API_URL}/streams/render/{stream_id}", headers=get_headers(), json={"text": text})
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Failed to render text")
-    return ServiceReturn(status=StatusCode.SUCCESS, message="Text rendered successfully").to_dict()
+    print(f"Rendering text on stream: {stream_id}")
+    try:
+        response = requests.post(f"{config.AVATAR_API_URL}/streams/render/{stream_id}", headers=get_headers(), json={"text": text})
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Failed to render text")
+        print("Text rendered successfully")
+        return ServiceReturn(status=StatusCode.SUCCESS, message="Text rendered successfully").to_dict()
+    except Exception as error:
+        print(f"Failed to render text: {str(error)}")
+        raise
 
+async def render_text_async(stream_id: str,text: str):
+        render_text(stream_id,text)
 
 def close_stream(stream_id: str):
     response = requests.delete(f"{config.AVATAR_API_URL}/streams/{stream_id}", headers=get_headers())

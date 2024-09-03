@@ -1,9 +1,11 @@
+import asyncio
 import json
+import re
 from typing import List
+from wrapperfunction.website.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
 import wrapperfunction.integration as integration
 from wrapperfunction.website.model.search_criterial import searchCriteria
-from wrapperfunction.website.model.chat_message import ChatMessage
 from fastapi import status, HTTPException
 
 def search(rs: searchCriteria):
@@ -26,14 +28,14 @@ def search(rs: searchCriteria):
     
 
 
-def chat(messageHistory: List[ChatMessage]):
+async def chat(chat_payload: ChatPayload):
     try:
-        chat_history_arr = messageHistory
+        chat_history_arr = chat_payload.messages
         if bool(len([x for x in chat_history_arr if x.role == "system"])):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
             )
-        system_message="You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation. Your goal is to provide accurate and reliable information about the regulations, laws, and procedures pertaining to the Authority, as well as any other inquiries related to the real estate sector in the country.You will detect the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic"
+        system_message="You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation. Your goal is to provide accurate and reliable information about the regulations, laws, and procedures pertaining to the Authority, as well as any other inquiries related to the real estate sector in the country.You will detect the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic.represent any numbers in the answer by alphabet"
         chat_history = [{
              "role": "system",
              "content":system_message
@@ -42,6 +44,19 @@ def chat(messageHistory: List[ChatMessage]):
             chat_history.append(item.model_dump())
         # Get response from OpenAI ChatGPT
         results = integration.openaiconnector.chat_completion(config.SEARCH_INDEX,chat_history,system_message)
+        if chat_payload.stream_id is not None:
+            #await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
+            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,clean_text(results['message']['content'])))
+            print("after calling the render")
         return results  
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
+    
+def clean_text(text):
+    # Remove any pattern like [doc*], where * represents numbers
+    text = re.sub(r'\[doc\d+\]', '', text)
+    
+    # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
+    # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
+    
+    return text
