@@ -16,6 +16,7 @@
                     "
                     [isProcessing]="aiSpeechToTextService.loading"
                     (onRecordReady)="handleSpeechToText($event)"
+                    (onStopRecording)="stopRecording()"
                 ></audio-recorder>
             </div>
         </div>
@@ -45,6 +46,7 @@
     </form>
     @if(service.loading) {
     <div class="loading-text text-white">
+        Processing
         <app-loading [color]="'white'"></app-loading>
     </div>
     }

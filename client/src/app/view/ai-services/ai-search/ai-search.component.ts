@@ -6,7 +6,6 @@ import { SearchResult } from '../../../models/search-result';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment.prod';
 import { AudioRecorderComponent } from '../../../standalone/audio-recorder/audio-recorder.component';
-import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
 import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
@@ -63,6 +62,12 @@ export class AiSearchComponent implements OnInit {
                     if (!this.control.value) {
                         this.control.setValue(this.searchKeyWord);
                     }
+                    if (
+                        this.control.value &&
+                        this.searchKeyWord !== this.control.value
+                    ) {
+                        this.currentPage = 1;
+                    }
                 })
             )
             .pipe(
@@ -79,18 +84,12 @@ export class AiSearchComponent implements OnInit {
             });
     }
 
-    handleSpeechToText(record: IRecordedAudioOutput) {
-        const file = new File([record.blob], record.title);
-        const formData = new FormData();
-        formData.append('file', file);
-        this.aiSpeechToTextService
-            .transcribe(formData)
-            .subscribe((stringText: string) => {
-                if (stringText !== 'No speech could be recognized.') {
-                    this.control.setValue(stringText);
-                    this.search$.next(1);
-                }
-            });
+    handleSpeechToText(result: string) {
+        this.control.setValue(result);
     }
+    stopRecording() {
+        this.search$.next(1);
+    }
+
     readonly environment = environment;
 }

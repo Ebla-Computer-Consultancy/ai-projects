@@ -1,16 +1,21 @@
 import {
     Component,
     EventEmitter,
+    inject,
     Input,
     OnDestroy,
     OnInit,
     Output,
 } from '@angular/core';
-import { AudioRecordingService } from '../../services/audio-recording.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { IRecordedAudioOutput } from '../../interfaces/i-recorded-audio-output';
 import { CommonModule } from '@angular/common';
-
+import { AiSpeechToTextService } from '../../services/ai-speech-to-text.service';
+import {
+    SpeechConfig,
+    SpeechRecognizer,
+    ResultReason,
+    AudioConfig,
+    AutoDetectSourceLanguageConfig,
+} from 'microsoft-cognitiveservices-speech-sdk';
 @Component({
     selector: 'audio-recorder',
     standalone: true,
@@ -19,70 +24,80 @@ import { CommonModule } from '@angular/common';
     styleUrls: ['./audio-recorder.component.scss'],
 })
 export class AudioRecorderComponent implements OnInit, OnDestroy {
-    @Output() onRecordReady: EventEmitter<IRecordedAudioOutput> =
-        new EventEmitter<IRecordedAudioOutput>();
+    @Output() onRecordReady: EventEmitter<string> = new EventEmitter<string>();
+    @Output() onStopRecording: EventEmitter<void> = new EventEmitter<void>();
+    result = '';
+    recognizedText = '';
     @Input() disabled: boolean = false;
     @Input() isProcessing: boolean = false;
-
+    aiSpeechToTextService = inject(AiSpeechToTextService);
     isRecording = false;
-    recordedTime!: string;
-    blobUrl!: SafeUrl | null;
-    record!: IRecordedAudioOutput;
-
-    constructor(
-        private audioRecordingService: AudioRecordingService,
-        private sanitizer: DomSanitizer
-    ) {
-        this.audioRecordingService
-            .recordingFailed()
-            .subscribe(() => (this.isRecording = false));
-        this.audioRecordingService
-            .getRecordedTime()
-            .subscribe((time) => (this.recordedTime = time));
-        this.audioRecordingService.getRecordedBlob().subscribe((data) => {
-            this.record = data;
-            this.onRecordReady.emit(this.record);
-            this.blobUrl = this.sanitizer.bypassSecurityTrustUrl(
-                URL.createObjectURL(data.blob)
-            );
-        });
+    recognizer!: SpeechRecognizer;
+    speechConfig!: SpeechConfig;
+    stream!: MediaStream;
+    constraints = {
+        video: false,
+        audio: {
+            channelCount: 1,
+            sampleRate: 16000,
+            sampleSize: 16,
+            volume: 1,
+        },
+    };
+    constructor() {}
+    ngOnInit(): void {
+        this.aiSpeechToTextService
+            .requestAuthorizationToken()
+            .subscribe(({ token, region }) => {
+                this.speechConfig = SpeechConfig.fromAuthorizationToken(
+                    token,
+                    region
+                );
+            });
     }
-    ngOnInit(): void {}
-
     startRecording() {
         if (!this.isRecording) {
             this.isRecording = true;
-            this.audioRecordingService.startRecording();
+            navigator.mediaDevices
+                .getUserMedia(this.constraints)
+                .then((stream) => {
+                    this.stream = stream;
+                    const audioConfig = AudioConfig.fromStreamInput(stream);
+                    const autoDetectSourceLanguageConfig =
+                        AutoDetectSourceLanguageConfig.fromLanguages([
+                            'ar-QA',
+                            'en-US',
+                        ]);
+                    this.recognizer = SpeechRecognizer.FromConfig(
+                        this.speechConfig,
+                        autoDetectSourceLanguageConfig,
+                        audioConfig
+                    );
+                    this.recognizedText = '';
+                    this.recognizer.recognized = (s, e) => {
+                        if (e.result.reason === ResultReason.RecognizedSpeech) {
+                            this.recognizedText += e.result.text;
+                            this.onRecordReady.emit(this.recognizedText);
+                        } else if (e.result.reason === ResultReason.NoMatch) {
+                            console.error(
+                                'NOMATCH: Speech could not be recognized.'
+                            );
+                        }
+                    };
+                    this.recognizer.startContinuousRecognitionAsync();
+                });
         }
     }
-
-    abortRecording() {
-        if (this.isRecording) {
-            this.isRecording = false;
-            this.audioRecordingService.abortRecording();
-        }
-    }
-
     stopRecording() {
         if (this.isRecording) {
-            this.audioRecordingService.stopRecording();
+            this.onStopRecording.emit();
+            this.stream.getTracks().forEach((track) => {
+                track.stop();
+            });
+            this.recognizer.stopContinuousRecognitionAsync();
             this.isRecording = false;
         }
     }
 
-    clearRecordedData() {
-        this.blobUrl = null;
-    }
-
-    download(): void {
-        const url = window.URL.createObjectURL(this.record.blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = this.record.title;
-        link.click();
-    }
-
-    ngOnDestroy(): void {
-        this.abortRecording();
-    }
+    ngOnDestroy(): void {}
 }

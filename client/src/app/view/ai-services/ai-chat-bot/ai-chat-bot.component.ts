@@ -17,10 +17,10 @@ import { ICitations, Message } from '../../../models/message';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { AudioRecorderComponent } from '../../../standalone/audio-recorder/audio-recorder.component';
 import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.service';
-import { IRecordedAudioOutput } from '../../../interfaces/i-recorded-audio-output';
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
 import { formateString, isRTL } from '../../../utils';
+
 @Component({
     selector: 'app-ai-chat-bot',
     standalone: true,
@@ -131,16 +131,11 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
         return formattedText.trim();
     }
 
-    handleSpeechToText(record: IRecordedAudioOutput) {
-        const file = new File([record.blob], record.title);
-        const formData = new FormData();
-        formData.append('file', file);
-        this.aiSpeechToTextService
-            .transcribe(formData)
-            .subscribe((stringText: string) => {
-                this.control.setValue(stringText);
-                this.ask$.next();
-            });
+    handleSpeechToText(result: string) {
+        this.control.setValue(result);
+    }
+    stopRecording() {
+        this.ask$.next();
     }
     clear() {
         this.control.reset();
