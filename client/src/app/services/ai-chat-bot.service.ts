@@ -23,15 +23,22 @@ export class AiChatBotService extends ApiServiceBaseModel {
     private _drawBack() {
         this.messageHistory.pop();
     }
-    askQuestion(message: string): Observable<IChatMessageResult> {
+    askQuestion(
+        message: string,
+        stream_id?: string
+    ): Observable<IChatMessageResult> {
         this.appendMessage(new Message(message));
         this.startLoading();
         return this.http
-            .post<IChatMessageResult>(this.baseUrl, this.messageHistory, {
-                headers: new HttpHeaders({
-                    // 'x-functions-key': environment.functionDefaultKey as string,
-                }),
-            })
+            .post<IChatMessageResult>(
+                this.baseUrl,
+                { messages: this.messageHistory, stream_id },
+                {
+                    headers: new HttpHeaders({
+                        // 'x-functions-key': environment.functionDefaultKey as string,
+                    }),
+                }
+            )
             .pipe(
                 finalize(() => {
                     this.stopLoading();
