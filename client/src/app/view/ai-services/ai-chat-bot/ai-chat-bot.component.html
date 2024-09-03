@@ -41,7 +41,13 @@
                 @for(message of this.service.messageHistory; track
                 message.content) {
                 <div [class]="'message ' + message.role + '-message'">
-                    <div class="message-content">
+                    <div
+                        class="message-content"
+                        [ngClass]="{
+                            rtl: isRTL(message.content),
+                            ltr: !isRTL(message.content)
+                        }"
+                    >
                         @if(message.role === 'assistant') {
                         <span TextWriterAnimator [text]="message.content">
                         </span>

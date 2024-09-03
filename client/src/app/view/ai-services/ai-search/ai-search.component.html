@@ -60,8 +60,10 @@
             @for(search_result of results; track search_result.chunk_id) {
             <li
                 class="list-group-item py-3"
-                style="text-align: right"
-                dir="auto"
+                [ngClass]="{
+                    rtl: isRTL(search_result.chunk),
+                    ltr: !isRTL(search_result.chunk)
+                }"
             >
                 <a href="{{ search_result.ref_url }}" target="_blank">{{
                     search_result.title
@@ -91,7 +93,35 @@
                     style="text-align: justify; overflow-wrap: break-word"
                 >
                     {{ search_result.chunk.slice(0, 400) }}
-                    {{ search_result.chunk.length > 400 ? "..." : "" }}
+                    @if(completion.hidden) {
+                    {{ "..." }}
+                    }
+                    <span hidden #completion>
+                        {{
+                            search_result.chunk.slice(
+                                400,
+                                search_result.chunk.length
+                            )
+                        }}
+                    </span>
+                    @if(search_result.chunk.length > 400) {
+                    <button
+                        class="btn btn-link"
+                        (click)="completion.hidden = !completion.hidden"
+                    >
+                        @if(completion.hidden) {
+                        {{
+                            isRTL(search_result.chunk)
+                                ? "عرض المزيد"
+                                : "Show more"
+                        }}
+                        } @else {
+                        {{
+                            isRTL(search_result.chunk) ? "عرض اقل" : "Show less"
+                        }}
+                        }
+                    </button>
+                    }
                 </div>
                 @if(environment.debugMode) {
                 <div>
