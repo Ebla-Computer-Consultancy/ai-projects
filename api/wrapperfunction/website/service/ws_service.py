@@ -35,7 +35,7 @@ async def chat(chat_payload: ChatPayload):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
             )
-        system_message="You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation. Your goal is to provide accurate and reliable information about the regulations, laws, and procedures pertaining to the Authority, as well as any other inquiries related to the real estate sector in the country.You will detect the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic.represent any numbers in the answer by alphabet"
+        system_message=f"{config.SYSTEM_MESSAGE} You will detect the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic"  #.represent any numbers in the answer by alphabet"
         chat_history = [{
              "role": "system",
              "content":system_message
