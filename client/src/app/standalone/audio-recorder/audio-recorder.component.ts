@@ -28,7 +28,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     @Output() onStopRecording: EventEmitter<void> = new EventEmitter<void>();
     result = '';
     recognizedText = '';
-    @Input() disabled: boolean = false;
+    @Input() disabled: boolean = true;
     @Input() isProcessing: boolean = false;
     aiSpeechToTextService = inject(AiSpeechToTextService);
     isRecording = false;
@@ -53,6 +53,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
                     token,
                     region
                 );
+                this.disabled = false;
             });
     }
     startRecording() {
@@ -61,39 +62,47 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
             navigator.mediaDevices
                 .getUserMedia(this.constraints)
                 .then((stream) => {
-                    this.stream = stream;
-                    const audioConfig = AudioConfig.fromStreamInput(stream);
-                    const autoDetectSourceLanguageConfig =
-                        AutoDetectSourceLanguageConfig.fromLanguages([
-                            'ar-QA',
-                            'en-US',
-                        ]);
-                    this.recognizer = SpeechRecognizer.FromConfig(
-                        this.speechConfig,
-                        autoDetectSourceLanguageConfig,
-                        audioConfig
-                    );
-                    this.recognizedText = '';
-                    this.recognizer.recognized = (s, e) => {
-                        if (e.result.reason === ResultReason.RecognizedSpeech) {
-                            this.recognizedText += e.result.text;
+                    try {
+                        this.stream = stream;
+                        const audioConfig = AudioConfig.fromStreamInput(stream);
+                        const autoDetectSourceLanguageConfig =
+                            AutoDetectSourceLanguageConfig.fromLanguages([
+                                'ar-QA',
+                                'en-US',
+                            ]);
+                        this.recognizer = SpeechRecognizer.FromConfig(
+                            this.speechConfig,
+                            autoDetectSourceLanguageConfig,
+                            audioConfig
+                        );
+                        this.recognizer.recognizing = (s, e) => {
+                            this.isProcessing = true;
+                            if (e.result.text) {
+                                this.onRecordReady.emit(e.result.text);
+                            }
+                        };
+                        this.recognizedText = '';
+                        this.recognizer.recognized = (s, e) => {
+                            this.isProcessing = false;
+                            if (e.result.text) {
+                                this.recognizedText += ' ' + e.result.text;
+                            }
                             this.onRecordReady.emit(this.recognizedText);
-                        } else if (e.result.reason === ResultReason.NoMatch) {
-                            console.error(
-                                'NOMATCH: Speech could not be recognized.'
-                            );
-                        }
-                    };
-                    this.recognizer.startContinuousRecognitionAsync();
+                        };
+
+                        this.recognizer.startContinuousRecognitionAsync();
+                    } catch {
+                        this.isRecording = false;
+                        this.stream.getTracks().forEach((track) => {
+                            track.stop();
+                        });
+                    }
                 });
         }
     }
     stopRecording() {
         if (this.isRecording) {
             this.onStopRecording.emit();
-            this.stream.getTracks().forEach((track) => {
-                track.stop();
-            });
             this.recognizer.stopContinuousRecognitionAsync();
             this.isRecording = false;
         }
