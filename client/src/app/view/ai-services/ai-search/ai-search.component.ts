@@ -10,6 +10,7 @@ import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.servi
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { isRTL } from '../../../utils';
+import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-btn/stop-processing-btn.component';
 @Component({
     selector: 'app-ai-search',
     standalone: true,
@@ -19,6 +20,7 @@ import { isRTL } from '../../../utils';
         AudioRecorderComponent,
         LoadingComponent,
         PaginationModule,
+        StopProcessingBtnComponent,
     ],
     templateUrl: './ai-search.component.html',
     styleUrls: ['./ai-search.component.scss'],

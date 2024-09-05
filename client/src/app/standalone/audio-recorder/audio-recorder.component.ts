@@ -12,14 +12,14 @@ import { AiSpeechToTextService } from '../../services/ai-speech-to-text.service'
 import {
     SpeechConfig,
     SpeechRecognizer,
-    ResultReason,
     AudioConfig,
     AutoDetectSourceLanguageConfig,
 } from 'microsoft-cognitiveservices-speech-sdk';
+import { StopProcessingBtnComponent } from '../stop-processing-btn/stop-processing-btn.component';
 @Component({
     selector: 'audio-recorder',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, StopProcessingBtnComponent],
     templateUrl: './audio-recorder.component.html',
     styleUrls: ['./audio-recorder.component.scss'],
 })
@@ -107,6 +107,9 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
             this.isRecording = false;
         }
     }
-
+    canceledRecording() {
+        this.recognizer.close();
+        this.isRecording = false;
+    }
     ngOnDestroy(): void {}
 }

@@ -49,7 +49,11 @@
                         }"
                     >
                         @if(message.role === 'assistant') {
-                        <span TextWriterAnimator [text]="message.content">
+                        <span
+                            TextWriterAnimator
+                            (animating)="animating = $event"
+                            [text]="message.content"
+                        >
                         </span>
                         } @else {
                         <span [innerHtml]="message.content"> </span>
@@ -102,7 +106,7 @@
         </div>
         <div class="card-footer">
             <form id="message-form">
-                <div class="input-group">
+                <div class="input-group position-relative">
                     <div class="input-group-append">
                         <div class="me-2">
                             <audio-recorder
@@ -117,6 +121,10 @@
                             ></audio-recorder>
                         </div>
                     </div>
+                    <stop-processing-btn
+                        [active]="this.service.loading || animating"
+                        (onClick)="stopAnimation()"
+                    ></stop-processing-btn>
                     <input
                         type="text"
                         id="user-message"

@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { AiChatBotService } from '../../../services/ai-chat-bot.service';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { filter, Subject, switchMap } from 'rxjs';
+import { filter, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { IChatMessageResult } from '../../../interfaces/i-chat-message-result';
 import { CommonModule } from '@angular/common';
 import { ICitations, Message } from '../../../models/message';
@@ -20,6 +20,7 @@ import { AiSpeechToTextService } from '../../../services/ai-speech-to-text.servi
 import { LoadingComponent } from '../../../standalone/loading/loading.component';
 import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
 import { formateString, isRTL } from '../../../utils';
+import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-btn/stop-processing-btn.component';
 
 @Component({
     selector: 'app-ai-chat-bot',
@@ -30,6 +31,7 @@ import { formateString, isRTL } from '../../../utils';
         AudioRecorderComponent,
         LoadingComponent,
         TextWriterAnimatorDirective,
+        StopProcessingBtnComponent,
     ],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
@@ -43,12 +45,14 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
         AiSpeechToTextService
     );
     modalService = inject(BsModalService);
-
+    stopProcessing$: Subject<void> = new Subject<void>();
     modalRef?: BsModalRef | null;
     control: FormControl = new FormControl('', Validators.required);
     ask$: Subject<void> = new Subject<void>();
     selectedDoc!: ICitations;
     fullScreen: boolean = false;
+    animating: boolean = false;
+    subscription!: Subscription;
     readonly isRTL = isRTL;
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
@@ -76,7 +80,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                 20);
     }
     listenToAskQuestion() {
-        this.ask$
+        this.subscription = this.ask$
             .pipe(
                 filter(
                     () =>
@@ -90,7 +94,9 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                     setTimeout(() => {
                         this.scrollToMessage();
                     }, 200);
-                    return this.service.askQuestion(this.control.value);
+                    return this.service
+                        .askQuestion(this.control.value)
+                        .pipe(takeUntil(this.stopProcessing$));
                 })
             )
             .subscribe((response: IChatMessageResult) => {
@@ -130,7 +136,18 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
         // Return the formatted text
         return formattedText.trim();
     }
-
+    stopAnimation() {
+        this.stopProcessing$.next();
+        if (
+            this.service.messageHistory[this.service.messageHistory.length - 1]
+                .role == 'assistant'
+        ) {
+            this.service.messageHistory[
+                this.service.messageHistory.length - 1
+            ].content =
+                this.chat_container.nativeElement.lastElementChild.children[0].children[0].innerHTML;
+        }
+    }
     handleSpeechToText(result: string) {
         this.control.setValue(result);
     }
