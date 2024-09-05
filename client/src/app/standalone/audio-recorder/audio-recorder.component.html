@@ -1,7 +1,11 @@
 <div
-    class="mic-container rounded-circle"
+    class="mic-container rounded-circle position-relative"
     style="box-shadow: 0px 1px 13px #00000080"
 >
+    <stop-processing-btn
+        [active]="isRecording"
+        (onClick)="canceledRecording()"
+    ></stop-processing-btn>
     <div class="spinner" [ngClass]="{ processing: isProcessing }"></div>
     <button
         class="btn circle border-0"

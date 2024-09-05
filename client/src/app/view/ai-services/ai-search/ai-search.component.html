@@ -7,23 +7,21 @@
         Empowering Insights, Unleashing Intelligence!
     </h5>
 
-    <form class="col-12 col-md-6 d-flex">
-        <div class="input-group-append">
-            <div class="me-2">
-                <audio-recorder
-                    [disabled]="
-                        service.loading || aiSpeechToTextService.loading
-                    "
-                    [isProcessing]="aiSpeechToTextService.loading"
-                    (onRecordReady)="handleSpeechToText($event)"
-                    (onStopRecording)="stopRecording()"
-                ></audio-recorder>
-            </div>
+    <form class="col-12 col-md-6 d-flex mb-5 position-relative">
+        <!-- <stop-processing-btn
+            [active]="this.service.loading"
+            [position]="'bottom'"
+            (onClick)="stopSearch()"
+        ></stop-processing-btn> -->
+        <div class="me-2">
+            <audio-recorder
+                [disabled]="service.loading || aiSpeechToTextService.loading"
+                [isProcessing]="aiSpeechToTextService.loading"
+                (onRecordReady)="handleSpeechToText($event)"
+                (onStopRecording)="stopRecording()"
+            ></audio-recorder>
         </div>
-        <div
-            class="input-group mb-5"
-            style="box-shadow: 0px 1px 13px #00000080"
-        >
+        <div class="input-group" style="box-shadow: 0px 1px 13px #00000080">
             <input
                 type="text"
                 [formControl]="control"
