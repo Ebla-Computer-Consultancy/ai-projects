@@ -1,7 +1,18 @@
-import { Component, HostListener, inject, OnInit } from '@angular/core';
-import { filter, Subject, switchMap, tap } from 'rxjs';
+import {
+    Component,
+    HostListener,
+    inject,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
+import { filter, map, Subject, switchMap, tap } from 'rxjs';
 import { AiSearchService } from '../../../services/ai-search.service';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+    FormControl,
+    FormsModule,
+    ReactiveFormsModule,
+    Validators,
+} from '@angular/forms';
 import { SearchResult } from '../../../models/search-result';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment.prod';
@@ -17,6 +28,7 @@ import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-
     imports: [
         ReactiveFormsModule,
         CommonModule,
+        FormsModule,
         AudioRecorderComponent,
         LoadingComponent,
         PaginationModule,
@@ -26,6 +38,7 @@ import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-
     styleUrls: ['./ai-search.component.scss'],
 })
 export class AiSearchComponent implements OnInit {
+    @ViewChild('recorder') recorder!: AudioRecorderComponent;
     service: AiSearchService = inject(AiSearchService);
     aiSpeechToTextService: AiSpeechToTextService = inject(
         AiSpeechToTextService
@@ -61,6 +74,16 @@ export class AiSearchComponent implements OnInit {
             )
             .pipe(
                 tap(() => {
+                    if (
+                        this.recorder.isProcessing ||
+                        this.recorder.isRecording
+                    ) {
+                        this.recorder.canceledRecording();
+                    }
+                })
+            )
+            .pipe(
+                map((page) => {
                     if (!this.control.value) {
                         this.control.setValue(this.searchKeyWord);
                     }
@@ -69,7 +92,10 @@ export class AiSearchComponent implements OnInit {
                         this.searchKeyWord !== this.control.value
                     ) {
                         this.currentPage = 1;
+                    } else {
+                        this.currentPage = page;
                     }
+                    return this.currentPage;
                 })
             )
             .pipe(

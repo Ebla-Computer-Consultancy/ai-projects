@@ -77,7 +77,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
                         );
                         this.recognizer.recognizing = (s, e) => {
                             this.isProcessing = true;
-                            if (e.result.text) {
+                            if (e.result.text && this.isRecording) {
                                 this.onRecordReady.emit(e.result.text);
                             }
                         };
@@ -87,7 +87,9 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
                             if (e.result.text) {
                                 this.recognizedText += ' ' + e.result.text;
                             }
-                            this.onRecordReady.emit(this.recognizedText);
+                            if (this.isRecording) {
+                                this.onRecordReady.emit(this.recognizedText);
+                            }
                         };
 
                         this.recognizer.startContinuousRecognitionAsync();
@@ -102,9 +104,9 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     }
     stopRecording() {
         if (this.isRecording) {
+            this.isRecording = false;
             this.onStopRecording.emit();
             this.recognizer.stopContinuousRecognitionAsync();
-            this.isRecording = false;
         }
     }
     canceledRecording() {

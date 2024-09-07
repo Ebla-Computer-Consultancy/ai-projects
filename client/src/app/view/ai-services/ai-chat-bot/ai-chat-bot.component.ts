@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { AiChatBotService } from '../../../services/ai-chat-bot.service';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { filter, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import { filter, Subject, Subscription, switchMap, takeUntil, tap } from 'rxjs';
 import { IChatMessageResult } from '../../../interfaces/i-chat-message-result';
 import { CommonModule } from '@angular/common';
 import { ICitations, Message } from '../../../models/message';
@@ -40,6 +40,8 @@ import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-
 export class AiChatBotComponent implements OnInit, AfterViewInit {
     @ViewChild('chat_container') chat_container!: ElementRef;
     @ViewChild('chat_body') chat_body!: ElementRef;
+    @ViewChild('recorder') recorder!: AudioRecorderComponent;
+
     service = inject(AiChatBotService);
     aiSpeechToTextService: AiSpeechToTextService = inject(
         AiSpeechToTextService
@@ -88,6 +90,16 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                         this.control.valid &&
                         !!this.control.value.trim()
                 )
+            )
+            .pipe(
+                tap(() => {
+                    if (
+                        this.recorder.isProcessing ||
+                        this.recorder.isRecording
+                    ) {
+                        this.recorder.canceledRecording();
+                    }
+                })
             )
             .pipe(
                 switchMap(() => {
