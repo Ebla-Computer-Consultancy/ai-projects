@@ -8,6 +8,7 @@
     ></stop-processing-btn>
     <div class="spinner" [ngClass]="{ processing: isProcessing }"></div>
     <button
+        [tooltip]="!isRecording ? 'Start Recording' : 'Stop Recording'"
         class="btn circle border-0"
         type="button"
         [disabled]="disabled"

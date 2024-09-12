@@ -7,6 +7,7 @@ import {
     RouterOutlet,
 } from '@angular/router';
 import { filter } from 'rxjs';
+import { environment } from '../environments/environment.prod';
 
 @Component({
     selector: 'app-root',
@@ -17,6 +18,7 @@ import { filter } from 'rxjs';
 })
 export class AppComponent implements OnInit {
     router = inject(Router);
+    logo = environment.logo;
     collapsed: boolean = true;
     activatedRoute!: string;
     navLinks = [

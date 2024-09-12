@@ -107,11 +107,16 @@
         <div class="card-footer">
             <form id="message-form">
                 <div class="input-group position-relative">
-                    <div class="input-group-append">
+                    <div
+                        class="d-flex input-group-append position-relative"
+                        style="top: -2px"
+                    >
+                        <!-- <div class="me-2">
+                            <ai-avatar></ai-avatar>
+                        </div> -->
                         <div class="me-2">
                             <audio-recorder
                                 #recorder
-                                class="chat-bot-audio-recorder me-2"
                                 [disabled]="
                                     service.loading ||
                                     aiSpeechToTextService.loading

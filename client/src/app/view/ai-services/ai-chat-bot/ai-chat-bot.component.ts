@@ -21,6 +21,8 @@ import { LoadingComponent } from '../../../standalone/loading/loading.component'
 import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
 import { formateString, isRTL } from '../../../utils';
 import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-btn/stop-processing-btn.component';
+import { AiAvatarComponent } from '../../../standalone/ai-avatar/ai-avatar.component';
+import { environment } from '../../../../environments/environment.prod';
 
 @Component({
     selector: 'app-ai-chat-bot',
@@ -32,6 +34,7 @@ import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-
         LoadingComponent,
         TextWriterAnimatorDirective,
         StopProcessingBtnComponent,
+        AiAvatarComponent,
     ],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
@@ -106,9 +109,15 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                     setTimeout(() => {
                         this.scrollToMessage();
                     }, 200);
-                    return this.service
-                        .askQuestion(this.control.value)
-                        .pipe(takeUntil(this.stopProcessing$));
+                    const streamId = localStorage.getItem(
+                        environment.STREAM_ID_STORAGE_KEY
+                    );
+                    return (
+                        this.service
+                            .askQuestion(this.control.value)
+                            // +(streamId as string)
+                            .pipe(takeUntil(this.stopProcessing$))
+                    );
                 })
             )
             .subscribe((response: IChatMessageResult) => {

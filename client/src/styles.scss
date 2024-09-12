@@ -47,3 +47,7 @@ $theme-colors: map-merge(
     text-align: left;
     direction: ltr;
 }
+.tooltip {
+    white-space: nowrap;
+    font-size: 12px;
+}

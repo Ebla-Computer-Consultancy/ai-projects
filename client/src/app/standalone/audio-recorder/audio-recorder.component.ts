@@ -16,10 +16,11 @@ import {
     AutoDetectSourceLanguageConfig,
 } from 'microsoft-cognitiveservices-speech-sdk';
 import { StopProcessingBtnComponent } from '../stop-processing-btn/stop-processing-btn.component';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 @Component({
     selector: 'audio-recorder',
     standalone: true,
-    imports: [CommonModule, StopProcessingBtnComponent],
+    imports: [CommonModule, StopProcessingBtnComponent, TooltipModule],
     templateUrl: './audio-recorder.component.html',
     styleUrls: ['./audio-recorder.component.scss'],
 })

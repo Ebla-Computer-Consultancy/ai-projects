@@ -1,0 +1,35 @@
+<div
+    class="avatar-container rounded-circle position-relative"
+    style="box-shadow: 0px 1px 13px #00000080"
+>
+    @if(toggled) {
+    <div class="avatar-popup-container">
+        <div class="card h-100">
+            <div
+                class="card-header d-flex align-items-center justify-content-between"
+            >
+                <h6 class="m-0">Reactive Avatar</h6>
+                <button
+                    tooltip="Close Avatar"
+                    (click)="toggled = false"
+                    class="btn btn-icon btn-sm btn-outline-secondary"
+                >
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <video #videoRef id="video" autoplay controls></video>
+            </div>
+        </div>
+    </div>
+    }
+    <div class="spinner" [ngClass]="{ processing: isProcessing }"></div>
+    <button
+        [tooltip]="toggled ? 'Close Avatar' : 'Open Avatar'"
+        (click)="toggleVideo()"
+        class="btn circle border-0"
+        type="button"
+    >
+        <i class="mdi mdi-face-agent"></i>
+    </button>
+</div>

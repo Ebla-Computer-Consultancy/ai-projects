@@ -1,0 +1,108 @@
+.avatar-container {
+    height: 34px;
+    width: 34px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .avatar-popup-container {
+        position: absolute;
+        bottom: 46px;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        &::after {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-width: var(--bs-border-width);
+            border-color: var(--bs-border-color);
+            border-style: var(--bs-border-style);
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
+            position: absolute;
+            bottom: -5px;
+            right: 12px;
+        }
+    }
+    video {
+        width: 100%;
+        height: 100%;
+    }
+    .circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        opacity: 1;
+        transition: 0.5s;
+        box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
+            0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
+
+        i {
+            color: #b2b1b1;
+            font-size: 23px;
+            transition: 0.9s;
+        }
+    }
+
+    .spinner {
+        width: 41px;
+        height: 41px;
+        border-radius: 50%;
+        position: absolute;
+        transform: rotate(0);
+        background: linear-gradient(
+            to left,
+            #dede4e,
+            transparent,
+            transparent,
+            #70f570,
+            #8c8cff,
+            transparent,
+            transparent,
+            #dede4e
+        );
+        animation: spin 2s linear infinite 0.5s;
+        opacity: 0;
+        &.processing {
+            opacity: 1;
+        }
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .avatar-container {
+        .avatar-popup-container {
+            width: 200px;
+            height: 200px;
+            right: auto;
+            left: 0;
+            &::after {
+                right: auto;
+                left: 12px;
+            }
+            .card {
+                .card-header {
+                    white-space: nowrap;
+                }
+            }
+        }
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
