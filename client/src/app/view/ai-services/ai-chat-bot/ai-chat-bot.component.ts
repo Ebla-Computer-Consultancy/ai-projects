@@ -44,7 +44,6 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     @ViewChild('chat_container') chat_container!: ElementRef;
     @ViewChild('chat_body') chat_body!: ElementRef;
     @ViewChild('recorder') recorder!: AudioRecorderComponent;
-
     service = inject(AiChatBotService);
     aiSpeechToTextService: AiSpeechToTextService = inject(
         AiSpeechToTextService
@@ -57,6 +56,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     selectedDoc!: ICitations;
     fullScreen: boolean = false;
     animating: boolean = false;
+    activeAvatar: boolean = false;
     subscription!: Subscription;
     readonly isRTL = isRTL;
     @HostListener('document:keypress', ['$event'])

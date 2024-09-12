@@ -10,6 +10,6 @@ export const environment = {
     production: true,
     endpoint: deployedEndpoint,
     debugMode: false,
-    logo: meccLogo,
+    logo: qatardiarLogo,
     STREAM_ID_STORAGE_KEY: 'streamId',
 };

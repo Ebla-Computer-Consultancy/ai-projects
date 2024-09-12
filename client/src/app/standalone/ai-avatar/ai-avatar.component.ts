@@ -2,9 +2,11 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
+    EventEmitter,
     inject,
     OnDestroy,
     OnInit,
+    Output,
     ViewChild,
 } from '@angular/core';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
@@ -24,6 +26,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('video_ref') video_ref!: ElementRef;
+    @Output() onToggle: EventEmitter<boolean> = new EventEmitter<boolean>();
     service = inject(AiAvatarService);
     toggled: boolean = false;
     isProcessing: boolean = false;
@@ -48,6 +51,7 @@ export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     toggleVideo() {
         this.toggled = !this.toggled;
+        this.onToggle.emit(this.toggled);
         const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
         if (!streamId) {
             this.isProcessing = true;

@@ -5,18 +5,11 @@
     <div [hidden]="!toggled" class="avatar-popup-container">
         <div class="card h-100">
             <div
-                class="card-header d-flex align-items-center justify-content-between"
+                class="card-header d-flex align-items-center justify-lg-content-between"
             >
                 <h6 class="m-0">Reactive Avatar</h6>
-                <button
-                    tooltip="Close Avatar"
-                    (click)="toggleVideo()"
-                    class="btn btn-icon btn-sm btn-outline-secondary"
-                >
-                    <i class="mdi mdi-close"></i>
-                </button>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <video #video_ref id="video" autoplay controls></video>
             </div>
         </div>

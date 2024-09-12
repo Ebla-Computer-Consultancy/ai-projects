@@ -6,14 +6,15 @@
     align-items: center;
     justify-content: center;
     .avatar-popup-container {
+        z-index: 1;
         position: absolute;
-        bottom: 46px;
-        right: 0;
+        bottom: 0;
+        right: 68px;
         &::after {
             content: "";
             display: block;
-            width: 12px;
-            height: 12px;
+            width: 18px;
+            height: 18px;
             background: white;
             border-width: var(--bs-border-width);
             border-color: var(--bs-border-color);
@@ -22,12 +23,13 @@
             border-left: none;
             transform: rotate(45deg);
             position: absolute;
-            bottom: -5px;
-            right: 12px;
+            bottom: 12px;
+            right: -9px;
+            clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%);
         }
     }
     video {
-        width: 300px;
+        width: 380px;
         height: 300px;
     }
     .circle {
@@ -76,14 +78,17 @@
     }
 }
 
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 767px) {
     .avatar-container {
         .avatar-popup-container {
             right: auto;
             left: 0;
+            bottom: 50px;
             &::after {
                 right: auto;
                 left: 12px;
+                transform: rotate(135deg);
+                bottom: -9px;
             }
             .card {
                 .card-header {
@@ -92,8 +97,8 @@
             }
         }
         video {
-            width: 200px;
-            height: 200px;
+            width: 260px;
+            height: 260px;
         }
     }
 }
