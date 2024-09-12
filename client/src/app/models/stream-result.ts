@@ -8,6 +8,6 @@ export class StreamResult {
 }
 
 class Data {
-    id!: number;
+    id!: string;
     webrtcData!: webrtcData;
 }

@@ -17,20 +17,20 @@ export class AiAvatarService extends ApiServiceBaseModel {
         return this.http.post<StreamResult>(this.baseUrl + '/start-stream', {});
     }
 
-    sendCandidate(streamId: number, candidate: any) {
+    sendCandidate(streamId: string, candidate: any) {
         return this.http.post(`${this.baseUrl}/send-candidate/${streamId}`, {
             candidate: candidate,
         });
     }
-    sendAnswer(streamId: number, answer: any) {
+    sendAnswer(streamId: string, answer: any) {
         return this.http.put(`${this.baseUrl}/send-answer/${streamId}`, {
             answer: answer,
         });
     }
-    closeStream(streamId: number) {
-        return this.http.delete(`/close-stream/${streamId}`);
+    closeStream(streamId: string) {
+        return this.http.delete(`${this.baseUrl}/close-stream/${streamId}`);
     }
-    renderText(streamId: number, text: string) {
+    renderText(streamId: string, text: string) {
         return this.http.post(`${this.baseUrl}/render-text/${streamId}`, {
             text,
         });

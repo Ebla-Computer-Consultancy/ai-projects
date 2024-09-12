@@ -109,15 +109,13 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                     setTimeout(() => {
                         this.scrollToMessage();
                     }, 200);
-                    const streamId = localStorage.getItem(
-                        environment.STREAM_ID_STORAGE_KEY
-                    );
-                    return (
-                        this.service
-                            .askQuestion(this.control.value)
-                            // +(streamId as string)
-                            .pipe(takeUntil(this.stopProcessing$))
-                    );
+                    const streamId =
+                        localStorage.getItem(
+                            environment.STREAM_ID_STORAGE_KEY
+                        ) || undefined;
+                    return this.service
+                        .askQuestion(this.control.value, streamId)
+                        .pipe(takeUntil(this.stopProcessing$));
                 })
             )
             .subscribe((response: IChatMessageResult) => {

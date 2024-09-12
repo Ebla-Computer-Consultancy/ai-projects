@@ -23,31 +23,28 @@ import { CommonModule } from '@angular/common';
     providers: [],
 })
 export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
-    @ViewChild('videoRef') videoRef!: ElementRef;
+    @ViewChild('video_ref') video_ref!: ElementRef;
     service = inject(AiAvatarService);
     toggled: boolean = false;
     isProcessing: boolean = false;
     constructor() {}
     STREAM_ID_STORAGE_KEY: string = environment.STREAM_ID_STORAGE_KEY;
     ngOnInit() {
-        localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
+        const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
+        if (streamId) {
+            this.closeStream();
+        }
     }
     ngAfterViewInit(): void {}
     closeStream() {
-        this.videoRef.nativeElement.srcObject = null;
         const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
 
         if (streamId) {
-            this.service.closeStream(+streamId).subscribe(() => {
+            this.service.closeStream(streamId).subscribe(() => {
                 localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
             });
         }
-    }
-    renderText(text: string) {
-        const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
-        if (streamId) {
-            this.service.renderText(+streamId, text).subscribe();
-        }
+        this.video_ref.nativeElement.srcObject = null;
     }
     toggleVideo() {
         this.toggled = !this.toggled;
@@ -62,36 +59,42 @@ export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
                         const { offer, iceServers } = webrtcData;
                         const { id } = stream.data;
 
-                        localStorage.setItem(
-                            this.STREAM_ID_STORAGE_KEY,
-                            JSON.stringify(id)
-                        );
+                        localStorage.setItem(this.STREAM_ID_STORAGE_KEY, id);
 
                         const peerConnection = new RTCPeerConnection({
                             iceTransportPolicy: 'relay',
                             iceServers,
                         });
-
-                        peerConnection.onicecandidate = async (e) => {
+                        peerConnection.onicecandidate = (e) => {
+                            console.log('onicecandidate', e);
                             if (!e.candidate) return;
-                            this.service.sendCandidate(id, e.candidate);
+                            this.service
+                                .sendCandidate(id, e.candidate)
+                                .subscribe();
                         };
 
                         peerConnection.onicegatheringstatechange = (e) => {
+                            console.log('onicegatheringstatechange', e);
+                            console.log(
+                                'srcObject',
+                                this.video_ref.nativeElement.srcObject
+                            );
+
                             const iceGatheringState = (e.target as any)
                                 .iceGatheringState;
                             if (
                                 iceGatheringState === 'complete' &&
-                                this.videoRef.nativeElement.paused &&
-                                this.videoRef.nativeElement.srcObject
+                                this.video_ref.nativeElement.paused &&
+                                this.video_ref.nativeElement.srcObject
                             ) {
-                                this.videoRef.nativeElement.play();
+                                this.video_ref.nativeElement.play();
                             }
                         };
 
-                        peerConnection.ontrack = async (event) => {
-                            const [remoteStream] = event.streams;
-                            this.videoRef.nativeElement.srcObject =
+                        peerConnection.ontrack = (e) => {
+                            console.log('ontrack', e);
+                            const [remoteStream] = e.streams;
+                            this.video_ref.nativeElement.srcObject =
                                 remoteStream;
                         };
                         return from(
@@ -114,8 +117,8 @@ export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
                                         ).pipe(
                                             map(() => {
                                                 return {
-                                                    answer_,
                                                     id,
+                                                    answer_,
                                                 };
                                             })
                                         );
@@ -125,16 +128,16 @@ export class AiAvatarComponent implements OnInit, AfterViewInit, OnDestroy {
                     })
                 )
                 .pipe(
+                    finalize(() => {
+                        this.isProcessing = false;
+                    }),
                     switchMap(({ id, answer_ }) => {
                         return this.service.sendAnswer(id, answer_);
                     })
                 )
-                .pipe(
-                    finalize(() => {
-                        this.isProcessing = false;
-                    })
-                )
                 .subscribe();
+        } else {
+            this.closeStream();
         }
     }
     ngOnDestroy(): void {
