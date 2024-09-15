@@ -6,10 +6,11 @@ const qatardiarLogo =
     'https://www.qataridiar.com/themes/custom/qataridiar/logo.svg';
 const meccLogo =
     'assets/images/Primary-Logo-Bilingual-RGB_Ministry-of-Environment-and-Climate-Change.png';
+const qrepLogo = 'assets/images/qrep-newlogo-colored.png';
 export const environment = {
     production: false,
     endpoint: deployedEndpoint,
     debugMode: true,
-    logo: qatardiarLogo,
+    logo: qrepLogo,
     STREAM_ID_STORAGE_KEY: 'streamId',
 };
