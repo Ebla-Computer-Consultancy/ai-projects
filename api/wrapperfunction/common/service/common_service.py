@@ -5,6 +5,10 @@ import wrapperfunction.integration as integration
 from fastapi import Request, UploadFile, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
+import re
+from num2words import num2words
+import mishkal.tashkeel
+vocalizer = mishkal.tashkeel.TashkeelClass()
 
 async def transcribe(file: UploadFile):
     splittedFileName = file.filename.lower().split(".")

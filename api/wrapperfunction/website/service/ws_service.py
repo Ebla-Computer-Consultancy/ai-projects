@@ -7,6 +7,8 @@ from wrapperfunction.core import config
 import wrapperfunction.integration as integration
 from wrapperfunction.website.model.search_criterial import searchCriteria
 from fastapi import status, HTTPException
+from num2words import num2words
+import mishkal.tashkeel
 
 def search(rs: searchCriteria):
     try:
@@ -53,10 +55,26 @@ async def chat(chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
     
 def clean_text(text):
+    vocalizer = mishkal.tashkeel.TashkeelClass()
     # Remove any pattern like [doc*], where * represents numbers
-    text = re.sub(r'\[doc\d+\]', '', text)
-    
     # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
     # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
+    text = re.sub(r'\[doc\d+\]', '', text)
+    def add_tashkeel(text):
+        vocalized_text = vocalizer.tashkeel(text)
+        return vocalized_text
     
+    def number_to_arabic_with_tashkeel(number):
+        arabic_word = num2words(int(number), lang='ar')
+        arabic_word_with_tashkeel = add_tashkeel(arabic_word)
+        return arabic_word_with_tashkeel
+    
+    def replace_arabic_numbers_with_words(phrase):
+        def replace_number(match):
+            number = match.group(0)
+            return number_to_arabic_with_tashkeel(number)
+        arabic_digit_pattern = r'[\u0660-\u0669]+'
+        converted_phrase = re.sub(arabic_digit_pattern, replace_number, phrase)
+        phrase_with_tashkeel = add_tashkeel(converted_phrase)
+        return phrase_with_tashkeel
     return text
