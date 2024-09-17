@@ -1,9 +1,11 @@
-import asyncio
 from fastapi import HTTPException
 import requests
 from wrapperfunction.common.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
-
+from num2words import num2words
+import mishkal.tashkeel
+import re
+import time
 def get_headers():
     return {
         "Authorization": f"Bearer {config.AVATAR_AUTH_KEY}",
@@ -59,10 +61,40 @@ def render_text(stream_id: str,text: str):
         raise
 
 async def render_text_async(stream_id: str,text: str):
-        render_text(stream_id,text)
+        render_text(stream_id,clean_text(text))
 
 def close_stream(stream_id: str):
     response = requests.delete(f"{config.AVATAR_API_URL}/streams/{stream_id}", headers=get_headers())
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail="Failed to close stream")
     return ServiceReturn(status=StatusCode.SUCCESS, message="Stream closed successfully").to_dict()
+
+
+def clean_text(text):
+    # Remove any pattern like [doc*], where * represents numbers
+    # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
+    # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
+    text = re.sub(r'\[doc\d+\]', '', text)
+    # text =  replace_numbers_with_words_tashkeel(text)
+    return text
+
+def add_tashkeel(text):
+    start_time = time.time()  # Record start time
+    vocalizer = mishkal.tashkeel.TashkeelClass()
+    vocalized_text = vocalizer.tashkeel(text)
+    end_time = time.time()  # Record end time
+    time_taken = end_time - start_time  # Calculate time taken
+    print(f"Time taken for the tashkeel operation: {time_taken:.4f} seconds")
+    return vocalized_text
+
+def replace_number(match):
+        number = match.group(0)
+        number = number.replace(',', '')
+        return num2words(int(number), lang='ar')
+
+def replace_numbers_with_words_tashkeel(phrase):
+    digit_pattern = r'[\u0660-\u0669\u0030-\u0039]+(?:,[\u0660-\u0669\u0030-\u0039]+)*'
+    phrase = re.sub(digit_pattern, replace_number, phrase)
+    phrase = add_tashkeel(phrase)
+    return phrase
+

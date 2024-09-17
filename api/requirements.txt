@@ -13,3 +13,5 @@ azure-cognitiveservices-speech
 python-multipart
 azure-storage-blob
 pydub
+num2words
+mishkal
