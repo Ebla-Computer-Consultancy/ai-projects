@@ -1,14 +1,12 @@
 import asyncio
 import json
-import re
-from typing import List
 from wrapperfunction.website.model.chat_payload import ChatPayload
+from wrapperfunction.website.model.chat_message import ChatMessage
+from wrapperfunction.website.model.chat_message import Roles
 from wrapperfunction.core import config
 import wrapperfunction.integration as integration
 from wrapperfunction.website.model.search_criterial import searchCriteria
 from fastapi import status, HTTPException
-from num2words import num2words
-import mishkal.tashkeel
 
 def search(rs: searchCriteria):
     try:
@@ -37,44 +35,48 @@ async def chat(chat_payload: ChatPayload):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
             )
-        system_message=f"{config.SYSTEM_MESSAGE} You will detect the input language and responds in the same language. You must add Arabic diacritics to your output answer if the prompt is in Arabic"  #.represent any numbers in the answer by alphabet"
-        chat_history = [{
-             "role": "system",
+        chat_history = []
+        is_ar = is_arabic(chat_history_arr[-1].content)
+        if chat_payload.stream_id:
+            if is_ar:
+                system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+                chat_history= [{
+                "role": Roles.User.value,
+                "content":"من انت؟"
+                },
+                {
+                "role": Roles.Assistant.value,
+                "content":"أنا مساعد ذكي مصمم خصيصًا للمساعدة"
+                },{
+                "role": Roles.User.value,
+                "content":"أضف تشكيل اللغة العربية إلى الإجابة دائما."
+                },{
+                "role": Roles.Assistant.value,
+                "content":"أنا مُساعِد ذكي مُصَمَّم خِصِّيصًا للمُساعَدةِ"
+                }
+                ]
+            else:
+                system_message=f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
+        else:
+            system_message=f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
+        
+        chat_history.insert(0, {
+             "role":Roles.System.value,
              "content":system_message
-            }]
+            })
         for item in chat_history_arr:
             chat_history.append(item.model_dump())
+        
         # Get response from OpenAI ChatGPT
-        results = integration.openaiconnector.chat_completion(config.SEARCH_INDEX,chat_history,system_message)
+        results = integration.openaiconnector.chat_completion_mydata(config.SEARCH_INDEX,chat_history,system_message)
         if chat_payload.stream_id is not None:
+            is_ar=is_arabic(results['message']['content'][:30])
             #await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
-            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,clean_text(results['message']['content'])))
-            print("after calling the render")
+            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'],is_ar))
         return results  
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
     
-def clean_text(text):
-    vocalizer = mishkal.tashkeel.TashkeelClass()
-    # Remove any pattern like [doc*], where * represents numbers
-    # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
-    # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
-    text = re.sub(r'\[doc\d+\]', '', text)
-    def add_tashkeel(text):
-        vocalized_text = vocalizer.tashkeel(text)
-        return vocalized_text
-    
-    def number_to_arabic_with_tashkeel(number):
-        arabic_word = num2words(int(number), lang='ar')
-        arabic_word_with_tashkeel = add_tashkeel(arabic_word)
-        return arabic_word_with_tashkeel
-    
-    def replace_arabic_numbers_with_words(phrase):
-        def replace_number(match):
-            number = match.group(0)
-            return number_to_arabic_with_tashkeel(number)
-        arabic_digit_pattern = r'[\u0660-\u0669]+'
-        converted_phrase = re.sub(arabic_digit_pattern, replace_number, phrase)
-        phrase_with_tashkeel = add_tashkeel(converted_phrase)
-        return phrase_with_tashkeel
-    return text
+def is_arabic(text):
+    arabic_range = (0x0600, 0x06FF)  # Arabic script range
+    return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)

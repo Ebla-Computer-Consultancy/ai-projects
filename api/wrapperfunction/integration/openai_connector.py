@@ -12,7 +12,7 @@ def generate_embeddings(text):
     return client.embeddings.create(input=[text], model=config.OPENAI_EMB_MODEL).data[0].embedding
 
 
-def chat_completion(search_index,chat_history,system_message):
+def chat_completion_mydata(search_index,chat_history,system_message):
     completion = client.chat.completions.create(
             model=config.OPENAI_CHAT_MODEL,
             messages=chat_history,
@@ -56,6 +56,23 @@ def chat_completion(search_index,chat_history,system_message):
                 ]
             },
         )
+    compl_data=json.loads(completion.choices[0].json())
+    compl_data["usage"] = json.loads(completion.usage.json())
+    return compl_data
+
+def chat_completion(system_message,user_message):
+    message_text = [{"role":"system","content":system_message} ]
+    message_text.append({"role":"user","content":user_message})
+    completion = client.chat.completions.create(
+      model=config.OPENAI_CHAT_MODEL,
+      messages = message_text,
+      temperature=0.7,
+      max_tokens=1500,
+      top_p=0.95,
+      frequency_penalty=0,
+      presence_penalty=0,
+      stop=None
+    )
     compl_data=json.loads(completion.choices[0].json())
     compl_data["usage"] = json.loads(completion.usage.json())
     return compl_data

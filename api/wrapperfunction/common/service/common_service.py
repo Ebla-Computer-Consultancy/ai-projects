@@ -5,10 +5,6 @@ import wrapperfunction.integration as integration
 from fastapi import Request, UploadFile, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-import re
-from num2words import num2words
-import mishkal.tashkeel
-vocalizer = mishkal.tashkeel.TashkeelClass()
 
 async def transcribe(file: UploadFile):
     splittedFileName = file.filename.lower().split(".")
@@ -80,23 +76,3 @@ async def render_text(stream_id: str,request: Request):
 
 def close_stream(stream_id: str):
      return integration.avatarconnector.close_stream(stream_id)
-
-def add_tashkeel(text):
-    vocalized_text = vocalizer.tashkeel(text)
-    return vocalized_text
-
-def number_to_arabic_with_tashkeel(number):
-    arabic_word = num2words(int(number), lang='ar')
-    arabic_word_with_tashkeel = add_tashkeel(arabic_word)
-    return arabic_word_with_tashkeel
-
-def replace_arabic_numbers_with_words(phrase):
-    def replace_number(match):
-        number = match.group(0)
-        return number_to_arabic_with_tashkeel(number)
-    arabic_digit_pattern = r'[\u0660-\u0669]+'
-    converted_phrase = re.sub(arabic_digit_pattern, replace_number, phrase)
-    
-    phrase_with_tashkeel = add_tashkeel(converted_phrase)
-    
-    return phrase_with_tashkeel
