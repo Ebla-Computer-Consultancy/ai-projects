@@ -68,7 +68,7 @@ export class AiAvatarButtonComponent
         if (this.type == 'outer') {
             this.onToggle.emit();
             window.open(
-                window.location.origin + '/ai-avatar',
+                window.location.origin + environment.base + '/ai-avatar',
                 'myWindow',
                 'fullscreen=1'
             );
