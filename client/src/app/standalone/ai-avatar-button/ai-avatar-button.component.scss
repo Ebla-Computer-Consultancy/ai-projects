@@ -76,8 +76,15 @@
             opacity: 1;
         }
     }
+    .new-tap-icon {
+        position: absolute;
+        font-size: 26px !important;
+        top: -2px;
+    }
 }
-
+.disabled {
+    opacity: 0.5!important;
+}
 @media screen and (max-width: 767px) {
     .avatar-container {
         .avatar-popup-container {

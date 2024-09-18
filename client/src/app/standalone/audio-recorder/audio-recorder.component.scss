@@ -81,6 +81,9 @@
     }
 }
 
+.disabled {
+    opacity: 0.5 !important;
+}
 @keyframes bounce {
     0%,
     100% {

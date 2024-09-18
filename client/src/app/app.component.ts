@@ -1,13 +1,6 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import {
-    NavigationEnd,
-    Router,
-    RouterModule,
-    RouterOutlet,
-} from '@angular/router';
-import { filter } from 'rxjs';
-import { environment } from '../environments/environment.prod';
+import { Component, OnInit } from '@angular/core';
+import { RouterModule, RouterOutlet } from '@angular/router';
 
 @Component({
     selector: 'app-root',
@@ -17,29 +10,5 @@ import { environment } from '../environments/environment.prod';
     styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-    router = inject(Router);
-    logo = environment.logo;
-    collapsed: boolean = true;
-    activatedRoute!: string;
-    navLinks = [
-        {
-            route: '/',
-            title: 'Home',
-        },
-        {
-            route: '/ai-service/ai-search',
-            title: 'AI Search',
-        },
-        {
-            route: '/ai-service/ai-chat-bot',
-            title: 'Chat Bot',
-        },
-    ];
-    ngOnInit() {
-        this.router.events
-            .pipe(filter((event) => event instanceof NavigationEnd))
-            .subscribe((data) => {
-                this.activatedRoute = data.url;
-            });
-    }
+    ngOnInit() {}
 }

@@ -3,7 +3,7 @@
     style="box-shadow: 0px 1px 13px #00000080"
 >
     <stop-processing-btn
-        [active]="isRecording"
+        [active]="isRecording && !recordOnHold"
         (onClick)="canceledRecording()"
     ></stop-processing-btn>
     <div class="spinner" [ngClass]="{ processing: isProcessing }"></div>
@@ -12,7 +12,12 @@
         class="btn circle border-0"
         type="button"
         [disabled]="disabled"
-        (click)="!isRecording ? startRecording() : stopRecording()"
+        [ngClass]="{disabled}"
+        (click)="
+            !isRecording && !recordOnHold ? startRecording() : stopRecording()
+        "
+        (mousedown)="recordOnHold && startRecording()"
+        (mouseup)="recordOnHold && stopRecording()"
         [ngClass]="{
             active: isRecording
         }"

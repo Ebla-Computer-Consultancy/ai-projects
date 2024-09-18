@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { AiChatBotService } from '../../../services/ai-chat-bot.service';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { filter, Subject, Subscription, switchMap, takeUntil, tap } from 'rxjs';
+import { filter, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { IChatMessageResult } from '../../../interfaces/i-chat-message-result';
 import { CommonModule } from '@angular/common';
 import { ICitations, Message } from '../../../models/message';
@@ -21,8 +21,9 @@ import { LoadingComponent } from '../../../standalone/loading/loading.component'
 import { TextWriterAnimatorDirective } from '../../../directives/text-writer-animator.directive';
 import { formateString, isRTL } from '../../../utils';
 import { StopProcessingBtnComponent } from '../../../standalone/stop-processing-btn/stop-processing-btn.component';
-import { AiAvatarComponent } from '../../../standalone/ai-avatar/ai-avatar.component';
+import { AiAvatarButtonComponent } from '../../../standalone/ai-avatar-button/ai-avatar-button.component';
 import { environment } from '../../../../environments/environment.prod';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 @Component({
     selector: 'app-ai-chat-bot',
@@ -34,7 +35,8 @@ import { environment } from '../../../../environments/environment.prod';
         LoadingComponent,
         TextWriterAnimatorDirective,
         StopProcessingBtnComponent,
-        AiAvatarComponent,
+        AiAvatarButtonComponent,
+        TooltipModule,
     ],
     templateUrl: './ai-chat-bot.component.html',
     styleUrls: ['./ai-chat-bot.component.scss'],
@@ -57,8 +59,13 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     fullScreen: boolean = false;
     animating: boolean = false;
     activeAvatar: boolean = false;
-    subscription!: Subscription;
     readonly isRTL = isRTL;
+    readonly OUTER_AVATAR_IS_ACTIVE_KEY =
+        environment.OUTER_AVATAR_IS_ACTIVE_KEY;
+    readonly MESSAGE_TEXT_KEY = environment.MESSAGE_TEXT_KEY;
+    readonly AVATAR_IS_RECORDING_KEY = environment.AVATAR_IS_RECORDING_KEY;
+    readonly STREAM_ID_STORAGE_KEY = environment.STREAM_ID_STORAGE_KEY;
+
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'Enter') {
@@ -70,9 +77,35 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         this.listenToAskQuestion();
+        this.handleOuterAvatar();
     }
     ngAfterViewInit() {
         this.scrollToMessage();
+    }
+    handleOuterAvatar() {
+        const interval = setInterval(() => {
+            if (
+                localStorage.getItem(this.MESSAGE_TEXT_KEY) &&
+                !JSON.parse(
+                    localStorage.getItem(this.AVATAR_IS_RECORDING_KEY) ||
+                        'false'
+                )
+            ) {
+                this.control.setValue(
+                    localStorage.getItem(this.MESSAGE_TEXT_KEY)
+                );
+                this.ask$.next();
+            }
+            if (
+                !JSON.parse(
+                    localStorage.getItem(this.OUTER_AVATAR_IS_ACTIVE_KEY) ||
+                        'false'
+                )
+            ) {
+                clearInterval(interval);
+                this.clear();
+            }
+        }, 200);
     }
     scrollToMessage() {
         this.chat_body &&
@@ -85,7 +118,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                 20);
     }
     listenToAskQuestion() {
-        this.subscription = this.ask$
+        this.ask$
             .pipe(
                 filter(
                     () =>
@@ -110,9 +143,8 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                         this.scrollToMessage();
                     }, 200);
                     const streamId =
-                        localStorage.getItem(
-                            environment.STREAM_ID_STORAGE_KEY
-                        ) || undefined;
+                        localStorage.getItem(this.STREAM_ID_STORAGE_KEY) ||
+                        undefined;
                     return this.service
                         .askQuestion(this.control.value, streamId)
                         .pipe(takeUntil(this.stopProcessing$));
@@ -120,8 +152,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
             )
             .subscribe((response: IChatMessageResult) => {
                 formateString(this.formatText(response.message.content));
-                this.control.reset();
-                this.control.updateValueAndValidity();
+                this.reset();
                 this.service.appendMessage(
                     new Message().clone({
                         ...response.message,
@@ -166,6 +197,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
             ].content =
                 this.chat_container.nativeElement.lastElementChild.children[0].children[0].innerHTML;
         }
+        this.reset();
     }
     handleSpeechToText(result: string) {
         this.control.setValue(result);
@@ -173,9 +205,13 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     stopRecording() {
         this.ask$.next();
     }
-    clear() {
+    reset() {
         this.control.reset();
+        localStorage.setItem(this.MESSAGE_TEXT_KEY, '');
         this.control.updateValueAndValidity();
+    }
+    clear() {
+        this.reset();
         this.service.resetMessageHistory();
     }
 }

@@ -4,6 +4,8 @@ import { AiServicesComponent } from './ai-services.component';
 import { RouterModule } from '@angular/router';
 import { AiChatBotComponent } from './ai-chat-bot/ai-chat-bot.component';
 import { AiSearchComponent } from './ai-search/ai-search.component';
+import { AiAvatarComponent } from './ai-avatar/ai-avatar.component';
+import { AiServiceHomeComponent } from './ai-service-home/ai-service-home.component';
 @NgModule({
     imports: [
         CommonModule,
@@ -18,12 +20,20 @@ import { AiSearchComponent } from './ai-search/ai-search.component';
                         redirectTo: '/ai-service-home',
                     },
                     {
+                        path: 'ai-service-home',
+                        component: AiServiceHomeComponent,
+                    },
+                    {
                         path: 'ai-chat-bot',
                         component: AiChatBotComponent,
                     },
                     {
                         path: 'ai-search',
                         component: AiSearchComponent,
+                    },
+                    {
+                        path: 'ai-service-home',
+                        component: AiServiceHomeComponent,
                     },
                 ],
             },

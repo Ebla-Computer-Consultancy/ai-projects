@@ -1,15 +1,11 @@
 import { Routes } from '@angular/router';
-import { AiServiceHomeComponent } from './view/ai-service-home/ai-service-home.component';
+import { AiAvatarComponent } from './view/ai-services/ai-avatar/ai-avatar.component';
 
 export const routes: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: '/ai-service-home',
-    },
-    {
-        path: 'ai-service-home',
-        component: AiServiceHomeComponent,
+        redirectTo: '/ai-service/ai-service-home',
     },
     {
         path: 'ai-service',
@@ -17,5 +13,9 @@ export const routes: Routes = [
             import('./view/ai-services/ai-services.module').then(
                 (m) => m.AiServicesModule
             ),
+    },
+    {
+        path: 'ai-avatar',
+        component: AiAvatarComponent,
     },
 ];

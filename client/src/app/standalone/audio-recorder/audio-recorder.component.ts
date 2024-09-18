@@ -17,6 +17,7 @@ import {
 } from 'microsoft-cognitiveservices-speech-sdk';
 import { StopProcessingBtnComponent } from '../stop-processing-btn/stop-processing-btn.component';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { environment } from '../../../environments/environment.prod';
 @Component({
     selector: 'audio-recorder',
     standalone: true,
@@ -27,10 +28,12 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
 export class AudioRecorderComponent implements OnInit, OnDestroy {
     @Output() onRecordReady: EventEmitter<string> = new EventEmitter<string>();
     @Output() onStopRecording: EventEmitter<void> = new EventEmitter<void>();
-    result = '';
-    recognizedText = '';
     @Input() disabled: boolean = true;
     @Input() isProcessing: boolean = false;
+    @Input() recordOnHold: boolean = false;
+    readonly AVATAR_IS_RECORDING_KEY = environment.AVATAR_IS_RECORDING_KEY;
+    result = '';
+    recognizedText = '';
     aiSpeechToTextService = inject(AiSpeechToTextService);
     isRecording = false;
     recognizer!: SpeechRecognizer;
@@ -60,6 +63,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     startRecording() {
         if (!this.isRecording) {
             this.isRecording = true;
+            localStorage.setItem(this.AVATAR_IS_RECORDING_KEY, String(true));
             navigator.mediaDevices
                 .getUserMedia(this.constraints)
                 .then((stream) => {
@@ -105,6 +109,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     }
     stopRecording() {
         if (this.isRecording) {
+            localStorage.setItem(this.AVATAR_IS_RECORDING_KEY, String(false));
             this.isRecording = false;
             this.onStopRecording.emit();
             this.recognizer.stopContinuousRecognitionAsync();
@@ -113,6 +118,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     canceledRecording() {
         this.recognizer.close();
         this.isRecording = false;
+        localStorage.setItem(this.AVATAR_IS_RECORDING_KEY, String(false));
     }
     ngOnDestroy(): void {}
 }

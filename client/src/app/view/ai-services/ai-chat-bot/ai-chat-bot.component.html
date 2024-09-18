@@ -118,9 +118,15 @@
                         style="top: -2px"
                     >
                         <div class="me-2">
-                            <ai-avatar
+                            <ai-avatar-button
                                 (onToggle)="activeAvatar = $event"
-                            ></ai-avatar>
+                            ></ai-avatar-button>
+                        </div>
+                        <div class="me-2">
+                            <ai-avatar-button
+                                (onToggle)="handleOuterAvatar()"
+                                [type]="'outer'"
+                            ></ai-avatar-button>
                         </div>
                         <div class="me-2">
                             <audio-recorder
