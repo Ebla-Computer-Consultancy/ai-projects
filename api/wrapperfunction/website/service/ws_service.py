@@ -1,6 +1,8 @@
 import asyncio
 import json
 from wrapperfunction.website.model.chat_payload import ChatPayload
+from wrapperfunction.website.model.chat_message import ChatMessage
+from wrapperfunction.website.model.chat_message import Roles
 from wrapperfunction.core import config
 import wrapperfunction.integration as integration
 from wrapperfunction.website.model.search_criterial import searchCriteria
@@ -34,24 +36,43 @@ async def chat(chat_payload: ChatPayload):
                 status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
             )
         chat_history = []
-        for item in chat_history_arr:
-            chat_history.append(item.model_dump())
-
-        if chat_payload.stream_id and is_arabic(chat_history[-1]['content']):
-            system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always give short answers. {config.SYSTEM_MESSAGE}"
+        is_ar = is_arabic(chat_history_arr[-1].content)
+        if chat_payload.stream_id:
+            if is_ar:
+                system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+                chat_history= [{
+                "role": Roles.User.value,
+                "content":"من انت؟"
+                },
+                {
+                "role": Roles.Assistant.value,
+                "content":"أنا مساعد ذكي مصمم خصيصًا للمساعدة"
+                },{
+                "role": Roles.User.value,
+                "content":"أضف تشكيل اللغة العربية إلى الإجابة دائما."
+                },{
+                "role": Roles.Assistant.value,
+                "content":"أنا مُساعِد ذكي مُصَمَّم خِصِّيصًا للمُساعَدةِ"
+                }
+                ]
+            else:
+                system_message=f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
         else:
-            system_message=f"{config.SYSTEM_MESSAGE}, You will detect the input language and responds in the same language."
+            system_message=f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
         
         chat_history.insert(0, {
-             "role": "system",
+             "role":Roles.System.value,
              "content":system_message
             })
+        for item in chat_history_arr:
+            chat_history.append(item.model_dump())
         
         # Get response from OpenAI ChatGPT
         results = integration.openaiconnector.chat_completion_mydata(config.SEARCH_INDEX,chat_history,system_message)
         if chat_payload.stream_id is not None:
+            is_ar=is_arabic(results['message']['content'][:30])
             #await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
-            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content']))
+            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'],is_ar))
         return results  
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
