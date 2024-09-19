@@ -17,11 +17,17 @@ import {
 } from 'microsoft-cognitiveservices-speech-sdk';
 import { StopProcessingBtnComponent } from '../stop-processing-btn/stop-processing-btn.component';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { AlertModule } from 'ngx-bootstrap/alert';
 import { environment } from '../../../environments/environment.prod';
 @Component({
     selector: 'audio-recorder',
     standalone: true,
-    imports: [CommonModule, StopProcessingBtnComponent, TooltipModule],
+    imports: [
+        CommonModule,
+        StopProcessingBtnComponent,
+        TooltipModule,
+        AlertModule,
+    ],
     templateUrl: './audio-recorder.component.html',
     styleUrls: ['./audio-recorder.component.scss'],
 })
@@ -39,6 +45,7 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
     recognizer!: SpeechRecognizer;
     speechConfig!: SpeechConfig;
     stream!: MediaStream;
+    showMessageEmptyPopup: boolean = false;
     constraints = {
         video: false,
         audio: {
@@ -113,6 +120,12 @@ export class AudioRecorderComponent implements OnInit, OnDestroy {
             this.isRecording = false;
             this.onStopRecording.emit();
             this.recognizer.stopContinuousRecognitionAsync();
+            if (!this.recognizedText) {
+                this.showMessageEmptyPopup = true;
+                setTimeout(() => {
+                    this.showMessageEmptyPopup = false;
+                }, 1000);
+            }
         }
     }
     canceledRecording() {

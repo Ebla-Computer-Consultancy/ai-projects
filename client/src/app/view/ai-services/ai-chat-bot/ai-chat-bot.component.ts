@@ -4,6 +4,7 @@ import {
     ElementRef,
     HostListener,
     inject,
+    OnDestroy,
     OnInit,
     TemplateRef,
     ViewChild,
@@ -42,7 +43,7 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
     styleUrls: ['./ai-chat-bot.component.scss'],
     providers: [BsModalService],
 })
-export class AiChatBotComponent implements OnInit, AfterViewInit {
+export class AiChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('chat_container') chat_container!: ElementRef;
     @ViewChild('chat_body') chat_body!: ElementRef;
     @ViewChild('recorder') recorder!: AudioRecorderComponent;
@@ -59,6 +60,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     fullScreen: boolean = false;
     animating: boolean = false;
     activeAvatar: boolean = false;
+    interval!: NodeJS.Timeout;
     readonly isRTL = isRTL;
     readonly OUTER_AVATAR_IS_ACTIVE_KEY =
         environment.OUTER_AVATAR_IS_ACTIVE_KEY;
@@ -83,7 +85,7 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
         this.scrollToMessage();
     }
     handleOuterAvatar() {
-        const interval = setInterval(() => {
+        this.interval = setInterval(() => {
             if (
                 localStorage.getItem(this.MESSAGE_TEXT_KEY) &&
                 !JSON.parse(
@@ -95,15 +97,6 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
                     localStorage.getItem(this.MESSAGE_TEXT_KEY)
                 );
                 this.ask$.next();
-            }
-            if (
-                !JSON.parse(
-                    localStorage.getItem(this.OUTER_AVATAR_IS_ACTIVE_KEY) ||
-                        'false'
-                )
-            ) {
-                clearInterval(interval);
-                this.clear();
             }
         }, 200);
     }
@@ -213,5 +206,14 @@ export class AiChatBotComponent implements OnInit, AfterViewInit {
     clear() {
         this.reset();
         this.service.resetMessageHistory();
+        clearInterval(this.interval);
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    beforeUnloadHandler() {
+        this.clear();
+    }
+    ngOnDestroy(): void {
+        this.clear();
     }
 }

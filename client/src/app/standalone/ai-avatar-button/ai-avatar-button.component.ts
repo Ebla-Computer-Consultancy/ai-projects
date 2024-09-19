@@ -14,10 +14,10 @@ import {
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { AiAvatarService } from '../../services/ai-avatar.service';
 import { StreamResult } from '../../models/stream-result';
-import { finalize, from, map, switchMap } from 'rxjs';
+import { catchError, finalize, from, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment.prod';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'ai-avatar-button',
@@ -58,9 +58,19 @@ export class AiAvatarButtonComponent
         const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
 
         if (streamId) {
-            this.service.closeStream(streamId).subscribe(() => {
-                localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
-            });
+            localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
+            this.service
+                .closeStream(streamId)
+                .pipe(
+                    catchError((e) => {
+                        localStorage.setItem(
+                            this.STREAM_ID_STORAGE_KEY,
+                            streamId
+                        );
+                        throw e;
+                    })
+                )
+                .subscribe();
         }
         this.video_ref && (this.video_ref.nativeElement.srcObject = null);
     }
@@ -104,12 +114,6 @@ export class AiAvatarButtonComponent
                             };
 
                             peerConnection.onicegatheringstatechange = (e) => {
-                                console.log('onicegatheringstatechange', e);
-                                console.log(
-                                    'srcObject',
-                                    this.video_ref.nativeElement.srcObject
-                                );
-
                                 const iceGatheringState = (e.target as any)
                                     .iceGatheringState;
                                 if (
@@ -177,10 +181,6 @@ export class AiAvatarButtonComponent
     }
     @HostListener('window:beforeunload', ['$event'])
     beforeUnloadHandler() {
-        this.closeStream();
-    }
-    @HostListener('window:unload', ['$event'])
-    unloadHandler() {
         this.closeStream();
     }
     ngOnDestroy(): void {

@@ -18,10 +18,20 @@
         "
         (mousedown)="recordOnHold && startRecording()"
         (mouseup)="recordOnHold && stopRecording()"
+        (touchstart)="recordOnHold && startRecording()"
+        (touchend)="recordOnHold && stopRecording()"
         [ngClass]="{
             active: isRecording
         }"
     >
         <i class="mdi mdi-microphone"></i>
     </button>
+    <alert
+        [isOpen]="showMessageEmptyPopup"
+        type="danger py-0 px-3 rounded-pill"
+        class="text-nowrap position-absolute"
+        style="z-index: 2; top: -40px"
+    >
+        <small style="font-size: 12px"> No speech recognized </small>
+    </alert>
 </div>

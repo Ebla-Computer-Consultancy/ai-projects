@@ -8,6 +8,7 @@
                     <audio-recorder
                         #recorder
                         [disabled]="isLoading"
+                        [isProcessing]="isProcessing"
                         (onRecordReady)="handleSpeechToText($event)"
                         (onStopRecording)="stopRecording()"
                         [recordOnHold]="true"

@@ -47,18 +47,19 @@ export class AiAvatarComponent implements AfterViewInit, OnInit, OnDestroy {
     isLoading: boolean = false;
     readonly STREAM_ID_STORAGE_KEY: string = environment.STREAM_ID_STORAGE_KEY;
     readonly MESSAGE_TEXT_KEY: string = environment.MESSAGE_TEXT_KEY;
+    readonly AVATAR_IS_RECORDING_KEY: string =
+        environment.AVATAR_IS_RECORDING_KEY;
     readonly OUTER_AVATAR_IS_ACTIVE_KEY: string =
         environment.OUTER_AVATAR_IS_ACTIVE_KEY;
     ask$: Subject<void> = new Subject<void>();
     constructor() {}
-    ngOnInit() {
+    ngOnInit() {}
+    ngAfterViewInit(): void {
         localStorage.setItem(this.OUTER_AVATAR_IS_ACTIVE_KEY, String(true));
         const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
         if (streamId) {
             this.closeStream();
         }
-    }
-    ngAfterViewInit(): void {
         this.isLoading = true;
         this._cd.detectChanges();
         this.service
@@ -141,18 +142,32 @@ export class AiAvatarComponent implements AfterViewInit, OnInit, OnDestroy {
             )
             .subscribe();
     }
+    get isProcessing(): boolean {
+        return (
+            !!localStorage.getItem(this.MESSAGE_TEXT_KEY) &&
+            !JSON.parse(
+                localStorage.getItem(this.AVATAR_IS_RECORDING_KEY) || 'false'
+            )
+        );
+    }
     closeStream() {
         const streamId = localStorage.getItem(this.STREAM_ID_STORAGE_KEY);
 
         if (streamId) {
-            this.service.closeStream(streamId).subscribe(() => {
-                localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
-            });
+            localStorage.removeItem(this.STREAM_ID_STORAGE_KEY);
+            this.service.closeStream(streamId).subscribe();
         }
         this.video_ref.nativeElement.srcObject = null;
     }
     stopRecording() {
-        localStorage.setItem(this.MESSAGE_TEXT_KEY, this.control.value);
+        if (this.control.value) {
+            localStorage.setItem(this.MESSAGE_TEXT_KEY, this.control.value);
+        }
+        this.reset();
+    }
+    reset() {
+        this.control.reset();
+        this.control.updateValueAndValidity();
     }
     handleSpeechToText(result: string) {
         this.control.setValue(result);
@@ -160,11 +175,6 @@ export class AiAvatarComponent implements AfterViewInit, OnInit, OnDestroy {
 
     @HostListener('window:beforeunload', ['$event'])
     beforeUnloadHandler() {
-        localStorage.setItem(this.OUTER_AVATAR_IS_ACTIVE_KEY, String(false));
-        this.closeStream();
-    }
-    @HostListener('window:unload', ['$event'])
-    unloadHandler() {
         localStorage.setItem(this.OUTER_AVATAR_IS_ACTIVE_KEY, String(false));
         this.closeStream();
     }
