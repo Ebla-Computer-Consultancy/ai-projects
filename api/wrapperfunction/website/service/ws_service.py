@@ -7,6 +7,16 @@ from wrapperfunction.core import config
 import wrapperfunction.integration as integration
 from wrapperfunction.website.model.search_criterial import searchCriteria
 from fastapi import status, HTTPException
+<<<<<<< HEAD
+=======
+from azure.data.tables import TableServiceClient
+from azure.core.exceptions import HttpResponseError
+
+connection_string = config.CONNECTION_STRING
+table_service_client = TableServiceClient.from_connection_string(conn_str=connection_string)
+
+table_client = table_service_client.get_table_client(config.CONTAINER_NAME)
+>>>>>>> 6d7568a (connecting cosmosDB to chat history)
 
 def search(rs: searchCriteria):
     try:
@@ -25,9 +35,7 @@ def search(rs: searchCriteria):
 
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
-    
-
-
+        
 async def chat(chat_payload: ChatPayload):
     try:
         chat_history_arr = chat_payload.messages
@@ -72,11 +80,38 @@ async def chat(chat_payload: ChatPayload):
         if chat_payload.stream_id is not None:
             is_ar=is_arabic(results['message']['content'][:30])
             #await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
+<<<<<<< HEAD
             asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'],is_ar))
+=======
+            asyncio.create_task(integration.avatarconnector.render_text_async(chat_payload.stream_id,clean_text(results['message']['content'])))
+            print("after calling the render")
+
+        #Here we save chat history to Cosmos DB
+        chat_data = {
+            "PartitionKey": chat_payload.user_id,  # user_id as PartitionKey
+            "RowKey": str(chat_payload.stream_id),  # stream_id as RowKey 
+            "user_id": chat_payload.user_id,
+            "stream_id": chat_payload.stream_id,
+            "messages": chat_history,
+            "response": results['message']['content']
+        }
+        table_client.upsert_entity(chat_data) # here we store chat history in Cosmos DB
+>>>>>>> 6d7568a (connecting cosmosDB to chat history)
         return results  
+    except HttpResponseError as cosmos_error:
+        return {"error": True, "message": f"Cosmos DB Table API error: {str(cosmos_error)}"}
     except Exception as error:
-        return json.dumps({"error": True, "message": str(error)})
+        return {"error": True, "message": str(error)}
     
+<<<<<<< HEAD
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
+=======
+def clean_text(text):
+    # Remove any pattern like [doc*], where * represents numbers
+    # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
+    # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
+    text = re.sub(r'\[doc\d+\]', '', text)
+    return text
+>>>>>>> 6d7568a (connecting cosmosDB to chat history)
