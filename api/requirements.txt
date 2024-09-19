@@ -13,3 +13,4 @@ azure-cognitiveservices-speech
 python-multipart
 azure-storage-blob
 pydub
+scrapy
