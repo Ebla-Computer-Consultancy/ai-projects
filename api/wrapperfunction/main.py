@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from wrapperfunction.website.ctrl import ws_ctrl
 from wrapperfunction.common.ctrl import common_ctrl
+from wrapperfunction.admin.ctrl import admin_ctrl
 
 app = FastAPI()
 app.add_middleware(
@@ -20,3 +21,4 @@ app.add_middleware(
 
 app.include_router(ws_ctrl.router, prefix="/api/v1/website", tags=["website"])
 app.include_router(common_ctrl.router, prefix="/api/v1/common", tags=["common"])
+app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"])
