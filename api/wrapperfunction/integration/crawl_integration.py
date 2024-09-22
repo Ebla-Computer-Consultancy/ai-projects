@@ -9,7 +9,7 @@ import wrapperfunction.core.config as config
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from azure.core.credentials import AzureKeyCredential
-from azure.ai.formrecognizer import DocumentAnalysisClient
+# from azure.ai.formrecognizer import DocumentAnalysisClient
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
@@ -19,7 +19,7 @@ DOCS_SUBFOLDER_NAME = config.RERA_DOCS_SUBFOLDER_NAME
 # Azure AI Document Intelligence configuration
 AI_DI_endpoint = "https://rera-alaa-di.cognitiveservices.azure.com/t"
 AI_DI_api_key = "55941486c1f643c083855fc2cf770e3d"
-document_analysis_client = DocumentAnalysisClient(AI_DI_endpoint, AzureKeyCredential(AI_DI_api_key))
+# document_analysis_client = DocumentAnalysisClient(AI_DI_endpoint, AzureKeyCredential(AI_DI_api_key))
 
 def run_crawler(link: str):
     # Generate a unique filename
@@ -183,7 +183,8 @@ def process_pdf(blob_name,container_name=CONTAINER_NAME,connection_string =AZURE
 
     # Analyze PDF using Document Intelligence
     print("------------------------0---------------------------")
-    poller = document_analysis_client.begin_analyze_document("prebuilt-document", pdf_content)
+    # poller = document_analysis_client.begin_analyze_document("prebuilt-document", pdf_content)
+    poller = None
     print("------------------------0.1---------------------------")
     result = poller.result()
     print("------------------------0.2---------------------------")
