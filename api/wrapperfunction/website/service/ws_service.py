@@ -39,22 +39,23 @@ async def chat(chat_payload: ChatPayload):
         is_ar = is_arabic(chat_history_arr[-1].content)
         if chat_payload.stream_id:
             if is_ar:
-                system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
-                chat_history= [{
-                "role": Roles.User.value,
-                "content":"من انت؟"
-                },
-                {
-                "role": Roles.Assistant.value,
-                "content":"أنا مساعد ذكي مصمم خصيصًا للمساعدة"
-                },{
-                "role": Roles.User.value,
-                "content":"أضف تشكيل اللغة العربية إلى الإجابة دائما."
-                },{
-                "role": Roles.Assistant.value,
-                "content":"أنا مُساعِد ذكي مُصَمَّم خِصِّيصًا للمُساعَدةِ"
-                }
-                ]
+                 system_message=f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+                # system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+                # chat_history= [{
+                # "role": Roles.User.value,
+                # "content":"من انت؟"
+                # },
+                # {
+                # "role": Roles.Assistant.value,
+                # "content":"أنا مساعد ذكي مصمم خصيصًا للمساعدة"
+                # },{
+                # "role": Roles.User.value,
+                # "content":"أضف تشكيل اللغة العربية إلى الإجابة دائما."
+                # },{
+                # "role": Roles.Assistant.value,
+                # "content":"أنا مُساعِد ذكي مُصَمَّم خِصِّيصًا للمُساعَدةِ"
+                # }
+                # ]
             else:
                 system_message=f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
         else:

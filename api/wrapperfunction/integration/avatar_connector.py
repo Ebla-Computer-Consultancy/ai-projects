@@ -73,7 +73,8 @@ def clean_text(text: str,is_ar: bool = False):
     # Remove any pattern like [doc*], where * represents numbers
     # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
     # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
-    text = re.sub(r'<[^>]*>|\[doc\d+\]', '', text)
+    # text = re.sub(r'<[^>]*>|\[doc\d+\]', '', text)
+    text = re.sub(r'<[^>]*>|\[doc\d+\]|<pre[^>]*>.*?</pre>|doc\d+', '', text)
     if is_ar:
         text = replace_numbers_with_words(text)
     return text
