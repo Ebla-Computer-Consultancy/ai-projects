@@ -18,8 +18,8 @@
         "
         (mousedown)="recordOnHold && startRecording()"
         (mouseup)="recordOnHold && stopRecording()"
-        (touchstart)="recordOnHold && startRecording()"
-        (touchend)="recordOnHold && stopRecording()"
+        (touchstart)="startRecording()"
+        (touchend)="stopRecording()"
         [ngClass]="{
             active: isRecording
         }"

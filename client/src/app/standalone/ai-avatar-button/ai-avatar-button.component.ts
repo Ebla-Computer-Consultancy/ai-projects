@@ -78,7 +78,7 @@ export class AiAvatarButtonComponent
         if (this.type == 'outer') {
             this.onToggle.emit();
             window.open(
-                window.location.origin + environment.base + '/ai-avatar',
+                window.location.origin + environment.base + '/ebla-ai-avatar',
                 'myWindow',
                 'fullscreen=1'
             );

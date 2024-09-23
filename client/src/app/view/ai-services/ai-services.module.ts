@@ -4,7 +4,6 @@ import { AiServicesComponent } from './ai-services.component';
 import { RouterModule } from '@angular/router';
 import { AiChatBotComponent } from './ai-chat-bot/ai-chat-bot.component';
 import { AiSearchComponent } from './ai-search/ai-search.component';
-import { AiAvatarComponent } from './ai-avatar/ai-avatar.component';
 import { AiServiceHomeComponent } from './ai-service-home/ai-service-home.component';
 @NgModule({
     imports: [
@@ -17,7 +16,7 @@ import { AiServiceHomeComponent } from './ai-service-home/ai-service-home.compon
                     {
                         path: '',
                         pathMatch: 'full',
-                        redirectTo: '/ai-service-home',
+                        redirectTo: '/ebla-ai-service/ai-service-home',
                     },
                     {
                         path: 'ai-service-home',

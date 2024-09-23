@@ -19,11 +19,11 @@ export class AiServicesComponent implements OnInit {
             title: 'Home',
         },
         {
-            route: '/ai-service/ai-search',
+            route: '/ebla-ai-service/ai-search',
             title: 'AI Search',
         },
         {
-            route: '/ai-service/ai-chat-bot',
+            route: '/ebla-ai-service/ai-chat-bot',
             title: 'Chat Bot',
         },
     ];

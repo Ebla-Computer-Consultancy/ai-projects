@@ -5,17 +5,17 @@ export const routes: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: '/ai-service/ai-service-home',
+        redirectTo: '/ebla-ai-service/ai-service-home',
     },
     {
-        path: 'ai-service',
+        path: 'ebla-ai-service',
         loadChildren: () =>
             import('./view/ai-services/ai-services.module').then(
                 (m) => m.AiServicesModule
             ),
     },
     {
-        path: 'ai-avatar',
+        path: 'ebla-ai-avatar',
         component: AiAvatarComponent,
     },
 ];
