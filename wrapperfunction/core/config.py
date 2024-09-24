@@ -32,3 +32,12 @@ RERA_SUBFOLDER_NAME = os.getenv('SUBFOLDER_NAME')
 RERA_DOCS_SUBFOLDER_NAME = os.getenv('DOCS_SUBFOLDER_NAME')
 
 SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
+
+COSMOS_DB_ENDPOINT = os.getenv("cosmos_db_uri")
+COSMOS_DB_KEY = os.getenv("cosmos_db_key")
+DATABASE_NAME = os.getenv("database_name")
+CONTAINER_NAME = os.getenv("container_name")
+CONNECTION_STRING=os.getenv("connection_string")
+
+TEXT_ANALYTICS_KEY=os.getenv("text_analytics_key")
+TEXT_ANALYTICS_ENDPOINT=os.getenv("text_analytic_endpoint")

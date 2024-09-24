@@ -9,16 +9,16 @@ import wrapperfunction.core.config as config
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from azure.core.credentials import AzureKeyCredential
-# from azure.ai.formrecognizer import DocumentAnalysisClient
 
+# from azure.ai.formrecognizer import DocumentAnalysisClient
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
 SUBFOLDER_NAME = config.RERA_SUBFOLDER_NAME
 DOCS_SUBFOLDER_NAME = config.RERA_DOCS_SUBFOLDER_NAME
 
 # Azure AI Document Intelligence configuration
-AI_DI_endpoint = "https://rera-alaa-di.cognitiveservices.azure.com/t"
-AI_DI_api_key = "55941486c1f643c083855fc2cf770e3d"
+AI_DI_endpoint = ""
+AI_DI_api_key = ""
 # document_analysis_client = DocumentAnalysisClient(AI_DI_endpoint, AzureKeyCredential(AI_DI_api_key))
 
 def run_crawler(link: str):
