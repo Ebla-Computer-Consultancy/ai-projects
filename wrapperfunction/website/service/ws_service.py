@@ -68,6 +68,7 @@ async def chat(chat_payload: ChatPayload):
         else:
             system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
 
+        system_message+=" If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
         chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
         for item in chat_history_arr:
             chat_history.append(item.model_dump())

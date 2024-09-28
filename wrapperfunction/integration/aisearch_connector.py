@@ -33,6 +33,8 @@ def search_query(
                     # "k": 10,
                 }
             ],
+            query_type="semantic",
+            semantic_configuration_name=search_index+"-semantic-configuration",
             include_total_count=True,
             # highlight_fields="chunk",
             top=page_size,
