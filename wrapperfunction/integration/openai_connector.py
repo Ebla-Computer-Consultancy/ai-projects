@@ -35,9 +35,9 @@ def chat_completion_mydata(search_index, chat_history, system_message):
                     "parameters": {
                         "endpoint": config.SEARCH_ENDPOINT,
                         "index_name": search_index,
-                        # "semantic_configuration": search_index+"-semantic-configuration",
-                        # "query_type": "vector_semantic_hybrid",
-                        "query_type": "vector",
+                        "semantic_configuration": search_index+"-semantic-configuration",
+                        "query_type": "vector_semantic_hybrid",
+                        # "query_type": "vector",
                         "fields_mapping": {
                             "content_fields_separator": "\n",
                             "content_fields": ["chunk"],
