@@ -15,8 +15,8 @@ def get_speech_token():
 
 
 @router.post("/avatar/start-stream")
-def start_stream(stream_id: str = None):
-    return commonservice.start_stream(stream_id)
+def start_stream(size: str = 'half-size',stream_id: str = None):
+    return commonservice.start_stream(size,stream_id)
 
 
 @router.post("/avatar/send-candidate/{stream_id}")

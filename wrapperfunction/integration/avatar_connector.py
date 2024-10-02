@@ -13,9 +13,10 @@ def get_headers():
     }
 
 
-def start_stream(stream_id: str):
+def start_stream(size: str,stream_id: str):
+    avatar_code = config.AVATAR_CODE_FULL_SIZE if size=='life-size' else config.AVATAR_CODE
     data = {
-        "avatarCode": config.AVATAR_CODE,
+        "avatarCode": avatar_code,
         "voiceId": config.AVATAR_VOICE_ID,
         "voiceProvider": config.AVATAR_VOICE_PROVIDER,
     }
