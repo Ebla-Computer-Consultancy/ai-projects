@@ -97,6 +97,19 @@ async def render_text_async(stream_id: str, text: str, is_ar: bool):
     render_text(stream_id, clean_text(text, is_ar))
 
 
+def stop_render(stream_id: str):
+    response = requests.delete(
+       f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+        headers=get_headers()
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code, detail="Failed to stop rendering text"
+        )
+    return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Text rendering stopped successfully"
+    ).to_dict()
+
 def close_stream(stream_id: str):
     response = requests.delete(
         f"{config.AVATAR_API_URL}/streams/{stream_id}", headers=get_headers()

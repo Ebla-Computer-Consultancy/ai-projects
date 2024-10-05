@@ -81,6 +81,8 @@ async def render_text(stream_id: str, request: Request):
     text = data.get("text")
     return integration.avatarconnector.render_text(stream_id, text)
 
+def stop_render(stream_id: str):
+    return integration.avatarconnector.stop_render(stream_id)
 
 def close_stream(stream_id: str):
     return integration.avatarconnector.close_stream(stream_id)

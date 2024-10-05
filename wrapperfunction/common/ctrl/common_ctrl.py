@@ -33,6 +33,9 @@ async def send_answer(stream_id: str, request: Request):
 async def render_text(stream_id: str, request: Request):
     return await commonservice.render_text(stream_id, request)
 
+@router.delete("/avatar/stop-render/{stream_id}")
+def stop_render(stream_id: str):
+    return commonservice.stop_render(stream_id)
 
 @router.delete("/avatar/close-stream/{stream_id}")
 def close_stream(stream_id: str):
