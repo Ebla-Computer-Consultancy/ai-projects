@@ -12,6 +12,7 @@ fastapi
 azure-cognitiveservices-speech
 python-multipart
 azure-storage-blob
+azure-ai-documentintelligence
 pydub
 scrapy
 num2words

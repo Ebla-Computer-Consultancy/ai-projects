@@ -1,4 +1,4 @@
-from wrapperfunction.integration.crawl_integration import run_crawler, process_and_upload, upload_files_to_blob,delete_blobs_base_on_metadata, delete_base_on_subfolder, edit_blob_by_new_jsonfile,transcript_pdfs
+from wrapperfunction.integration.crawl_integration import run_crawler, process_and_upload, upload_files_to_blob,delete_blobs_base_on_metadata, delete_base_on_subfolder, edit_blob_by_new_jsonfile
 from fastapi import HTTPException , UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import json
@@ -57,9 +57,3 @@ def edit_blob(new_content_file,metadata_key,metadata_value):
         raise HTTPException(status_code=500, detail=f"Failed to read new content file: {str(e)}")
     edit_blob_by_new_jsonfile(metadata_key,metadata_value,new_content)
     
-async def add_pdfs():
-    try:
-        transcript_pdfs()
-        return JSONResponse(content={"message": f"done"}, status_code=200)
-    except:
-        raise HTTPException(status_code=404, detail="Blob not found")

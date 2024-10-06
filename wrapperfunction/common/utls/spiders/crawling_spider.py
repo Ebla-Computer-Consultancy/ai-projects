@@ -62,12 +62,12 @@ class CrawlingSpider(CrawlSpider):
                 title = url.split("/")[-1]
             return title
 
-        # document_links = response.xpath('//a[contains(@href, ".pdf")]/@href').getall()# //a[contains(@href, ".pdf")]/@href | //a[contains(@data-pdf, ".pdf")]/@data-pdf
+        document_links = response.xpath('//a[contains(@data-pdf, ".pdf")]/@data-pdf').getall()# //a[contains(@href, ".pdf")]/@href | //a[contains(@data-pdf, ".pdf")]/@data-pdf
         # print(f"1-----------------------{type(document_links)}------------------------------{len(document_links)}")
         # document_links.append( response.xpath('//a[contains(@href, ".pdf")]/@href').getall())
         # print(f"2-----------------------{type(document_links)}------------------------------{len(document_links)}")
-        # for link in document_links:
-        #    self.download_document(response.urljoin(link))
+        for link in document_links:
+            self.download_document(response.urljoin(link))
         yield {'url': response.url,
                'title': get_title(url=response.url,title=response.meta['link_text']),
                'body': remove_html_tags('\n'.join(response.xpath("//div[not(descendant::nav) and not(descendant::style) and not(descendant::script) and not(ancestor::header) and not(ancestor::footer)]//text()").extract()))

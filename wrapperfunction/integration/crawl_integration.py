@@ -3,8 +3,8 @@ import os
 import json
 from scrapy.crawler import CrawlerProcess
 from azure.storage.blob import BlobServiceClient, BlobBlock, BlobPrefix
-from wrapperfunction.admin.utls.spiders.crawling_spider import CrawlingSpider
-from wrapperfunction.admin.utls.helper import process_text_name
+from wrapperfunction.common.utls.spiders.crawling_spider import CrawlingSpider
+from wrapperfunction.common.utls.helper import process_text_name
 import wrapperfunction.core.config as config
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
@@ -16,10 +16,6 @@ CONTAINER_NAME = config.RERA_CONTAINER_NAME
 SUBFOLDER_NAME = config.RERA_SUBFOLDER_NAME
 DOCS_SUBFOLDER_NAME = config.RERA_DOCS_SUBFOLDER_NAME
 
-# Azure AI Document Intelligence configuration
-AI_DI_endpoint = "https://rera-alaa-di.cognitiveservices.azure.com/t"
-AI_DI_api_key = "55941486c1f643c083855fc2cf770e3d"
-# document_analysis_client = DocumentAnalysisClient(AI_DI_endpoint, AzureKeyCredential(AI_DI_api_key))
 
 def run_crawler(link: str):
     # Generate a unique filename
@@ -49,7 +45,7 @@ def process_and_upload(filepath: str, link: str):
         folder_path = "./export/" + filepath[2:-5]
         os.makedirs(folder_path, exist_ok=True)
         process_json_data_and_upload(data, blob_service_client, folder_path, link)
-    os.remove(filepath)
+    # os.remove(filepath)
 
 def process_json_data_and_upload(data, blob_service_client,folder_path,link):
     for i, item in enumerate(data):
@@ -83,7 +79,7 @@ def process_json_data_and_upload(data, blob_service_client,folder_path,link):
                 # Set metadata on the blob
                 blob_client.set_blob_metadata(metadata=blob_metadata)
 
-            os.remove(individual_filepath)
+            # os.remove(individual_filepath)
 
 def upload_files_to_blob(folder_path, subfolder_name=DOCS_SUBFOLDER_NAME, container_name=CONTAINER_NAME, connection_string=AZURE_STORAGE_CONNECTION_STRING):
         # Initialize the BlobServiceClient
@@ -170,44 +166,3 @@ def edit_blob_by_new_jsonfile(metadata_key,metadata_value,new_content, subfolder
 
             return JSONResponse(content={"message": f"Blob with metadata {metadata_key}={metadata_value} edited successfully"}, status_code=200)
     return HTTPException(status_code=404, detail="Blob not found")    
-
-
-
-def process_pdf(blob_name,container_name=CONTAINER_NAME,connection_string =AZURE_STORAGE_CONNECTION_STRING):
-    # Download PDF from Blob Storage
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    print("------------------------start---------------------------")
-    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
-    download_stream = blob_client.download_blob()
-    pdf_content = download_stream.readall()
-
-    # Analyze PDF using Document Intelligence
-    print("------------------------0---------------------------")
-    # poller = document_analysis_client.begin_analyze_document("prebuilt-document", pdf_content)
-    poller = None
-    print("------------------------0.1---------------------------")
-    result = poller.result()
-    print("------------------------0.2---------------------------")
-    # Extract and process data
-    extracted_data = {}
-    for page in result.pages:
-        for table in page.tables:
-            for cell in table.cells:
-                extracted_data[cell.content] = cell.bounding_box
-
-    # Save processed data back to Blob Storage or another database
-    print("------------------------1---------------------------")
-    processed_blob_name = f"processed_{blob_name}.json"
-    processed_blob_client = blob_service_client.get_blob_client(container=container_name, blob=processed_blob_name)
-    print("------------------------2---------------------------")
-    processed_blob_client.upload_blob(str(extracted_data), overwrite=True)
-    print("------------------------3---------------------------")
-    print(f"Processed data saved to {processed_blob_name}")
-
-
-def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORAGE_CONNECTION_STRING):
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    blob_list = blob_service_client.get_container_client(container_name).list_blobs()
-    for blob in blob_list:
-        if blob.name.endswith(".pdf"):
-            process_pdf(blob.name)

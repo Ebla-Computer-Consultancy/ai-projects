@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 import wrapperfunction.admin.service.admin_service as adminservice
-from fastapi import HTTPException , UploadFile, File, Form
-# import wrapperfunction.admin.model.crawl_model as CrawlRequest
-import json
+from fastapi import HTTPException , UploadFile, File
 
 router = APIRouter()
 
@@ -33,12 +31,5 @@ async def edit_blob(metadata_key: str, metadata_value: str,
     try:
         # Read the content of the file
         return adminservice.edit_blob(new_content_file,metadata_key,metadata_value)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@router.post("/add_pdfs/")
-async def add_pdfs(request: Request):
-    try:
-        return await adminservice.add_pdfs()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
