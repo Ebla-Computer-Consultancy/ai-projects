@@ -37,8 +37,11 @@ SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 
 def load_ar_replacement_data():
     file_path = os.path.join(os.path.dirname(__file__), f'dict_AR/{SEARCH_INDEX}.json')
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return json.load(file)
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    else:
+        return {}
     
 
 AR_DICT = load_ar_replacement_data()
