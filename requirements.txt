@@ -17,3 +17,5 @@ azure-ai-formrecognizer
 pydub
 scrapy
 num2words
+aiofiles
+
