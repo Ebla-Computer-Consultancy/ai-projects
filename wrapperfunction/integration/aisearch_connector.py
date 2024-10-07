@@ -25,10 +25,8 @@ def search_query(
             search_text=search_text,
             vector_queries=[
                 {
-                    "kind": "vector",
-                    "vector": integration.openaiconnector.generate_embeddings(
-                        search_text
-                    ),
+                    "kind": "text",
+                    "text":search_text,
                     "fields": "text_vector",
                     # "k": 10,
                 }

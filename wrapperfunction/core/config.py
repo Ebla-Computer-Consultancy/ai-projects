@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 
@@ -23,6 +24,7 @@ SPEECH_SERVICE_KEY = os.getenv("SPEECH_SERVICE_KEY")
 AVATAR_API_URL = os.getenv('AVATAR_API_URL')
 AVATAR_AUTH_KEY = os.getenv('AVATAR_AUTH_KEY') 
 AVATAR_CODE= os.getenv('AVATAR_CODE')
+AVATAR_CODE_FULL_SIZE = os.getenv('AVATAR_CODE_FULL_SIZE')
 AVATAR_VOICE_ID= os.getenv('AVATAR_VOICE_ID')
 AVATAR_VOICE_PROVIDER= os.getenv('AVATAR_VOICE_PROVIDER')
 
@@ -32,3 +34,14 @@ RERA_SUBFOLDER_NAME = os.getenv('SUBFOLDER_NAME')
 RERA_DOCS_SUBFOLDER_NAME = os.getenv('DOCS_SUBFOLDER_NAME')
 
 SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
+
+def load_ar_replacement_data():
+    file_path = os.path.join(os.path.dirname(__file__), f'dict_AR/{SEARCH_INDEX}.json')
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    else:
+        return {}
+    
+
+AR_DICT = load_ar_replacement_data()

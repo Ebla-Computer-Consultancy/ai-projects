@@ -2,8 +2,7 @@ from fastapi import HTTPException
 import requests
 from wrapperfunction.common.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
-import re
-from num2words import num2words
+import wrapperfunction.admin.utls.helper as helper
 
 
 def get_headers():
@@ -13,9 +12,10 @@ def get_headers():
     }
 
 
-def start_stream(stream_id: str):
+def start_stream(size: str,stream_id: str):
+    avatar_code = config.AVATAR_CODE_FULL_SIZE if size=='life-size' else config.AVATAR_CODE
     data = {
-        "avatarCode": config.AVATAR_CODE,
+        "avatarCode": avatar_code,
         "voiceId": config.AVATAR_VOICE_ID,
         "voiceProvider": config.AVATAR_VOICE_PROVIDER,
     }
@@ -93,8 +93,21 @@ def render_text(stream_id: str, text: str):
 
 
 async def render_text_async(stream_id: str, text: str, is_ar: bool):
-    render_text(stream_id, clean_text(text, is_ar))
+    render_text(stream_id, helper.clean_text(text, is_ar))
 
+
+def stop_render(stream_id: str):
+    response = requests.delete(
+       f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+        headers=get_headers()
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code, detail="Failed to stop rendering text"
+        )
+    return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Text rendering stopped successfully"
+    ).to_dict()
 
 def close_stream(stream_id: str):
     response = requests.delete(
@@ -107,26 +120,3 @@ def close_stream(stream_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message="Stream closed successfully"
     ).to_dict()
-
-
-def clean_text(text: str, is_ar: bool = False):
-    # Remove any pattern like [doc*], where * represents numbers
-    # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
-    # text = re.sub(r'[^\w\s,.!?\'\"-]', '', text)
-    # text = re.sub(r'<[^>]*>|\[doc\d+\]', '', text)
-    text = re.sub(r"<[^>]*>|\[doc\d+\]|<pre[^>]*>.*?</pre>|doc\d+", "", text)
-    if is_ar:
-        text = replace_numbers_with_words(text)
-    return text
-
-
-def replace_number(match):
-    number = match.group(0)
-    number = number.replace(",", "")
-    return num2words(int(number), lang="ar")
-
-
-def replace_numbers_with_words(phrase):
-    digit_pattern = r"[\u0660-\u0669\u0030-\u0039]+(?:,[\u0660-\u0669\u0030-\u0039]+)*"
-    phrase = re.sub(digit_pattern, replace_number, phrase)
-    return phrase

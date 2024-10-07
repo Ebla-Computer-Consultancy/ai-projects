@@ -58,8 +58,8 @@ def get_speech_token():
     return integration.speechconnector.get_speech_token()
 
 
-def start_stream(stream_id: str):
-    return integration.avatarconnector.start_stream(stream_id)
+def start_stream(size: str,stream_id: str):
+    return integration.avatarconnector.start_stream(size,stream_id)
 
 
 async def send_candidate(stream_id: str, request: Request):
@@ -81,6 +81,8 @@ async def render_text(stream_id: str, request: Request):
     text = data.get("text")
     return integration.avatarconnector.render_text(stream_id, text)
 
+def stop_render(stream_id: str):
+    return integration.avatarconnector.stop_render(stream_id)
 
 def close_stream(stream_id: str):
     return integration.avatarconnector.close_stream(stream_id)
