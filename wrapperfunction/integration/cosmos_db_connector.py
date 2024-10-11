@@ -37,11 +37,11 @@ def get_all_chat_history(user_id):
         return HTTPException(400,e)    
  
     
-def get_chat_history(user_id,conversation_id):
-    try:
-        res=Table_Client.query_entities(f"PartitionKey eq '{user_id}' and conversation_id eq '{conversation_id}'")
-        return list(res)
-    except Exception as e:
-        return HTTPException(400,e)
+# def get_chat_history(user_id,conversation_id):
+#     try:
+#         res=Table_Client.query_entities(f"PartitionKey eq '{user_id}' and conversation_id eq '{conversation_id}'")
+#         return list(res)
+#     except Exception as e:
+#         return HTTPException(400,e)
 
 

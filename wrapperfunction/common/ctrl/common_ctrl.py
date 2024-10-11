@@ -40,3 +40,14 @@ def stop_render(stream_id: str):
 @router.delete("/avatar/close-stream/{stream_id}")
 def close_stream(stream_id: str):
     return commonservice.close_stream(stream_id)
+
+@router.get("/get-chats")
+def get_chats():
+    return commonservice.get_all_chat_history()
+
+@router.post("/add-message")
+async def add_message(request: Request):
+    return await commonservice.add_message(request)
+@router.post("/start-chat")
+async def start_chat(request: Request):
+    return await commonservice.start_chat(request)

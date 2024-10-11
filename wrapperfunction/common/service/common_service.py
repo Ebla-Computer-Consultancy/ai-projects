@@ -98,7 +98,7 @@ def add_to_chat_history(user_id: str, content: str, conversation_id: str, Role: 
     return integration.chatconnector.add_to_chat_history(user_id, content, conversation_id, Role)
 
 
-def get_chat_history(user_id: str, conversation_id: str):
-    return integration.chatconnector.get_chat_history(user_id, conversation_id)
+# def get_chat_history(user_id: str, conversation_id: str):
+#     return integration.chatconnector.get_chat_history(user_id, conversation_id)
 
 
