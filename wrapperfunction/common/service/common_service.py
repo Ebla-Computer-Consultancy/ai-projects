@@ -86,3 +86,19 @@ def stop_render(stream_id: str):
 
 def close_stream(stream_id: str):
     return integration.avatarconnector.close_stream(stream_id)
+
+
+def start_chat(user_id: str):
+    return integration.chatconnector.start_chat(user_id)
+
+def get_all_chat_history(user_id: str):
+    return integration.chatconnector.get_all_chat_history(user_id)
+
+def add_to_chat_history(user_id: str, content: str, conversation_id: str, Role: str):
+    return integration.chatconnector.add_to_chat_history(user_id, content, conversation_id, Role)
+
+
+def get_chat_history(user_id: str, conversation_id: str):
+    return integration.chatconnector.get_chat_history(user_id, conversation_id)
+
+
