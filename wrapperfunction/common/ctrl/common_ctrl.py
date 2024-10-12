@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, UploadFile
+from pydantic import BaseModel
 import wrapperfunction.common.service.common_service as commonservice
 
 router = APIRouter()
@@ -41,13 +42,18 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return commonservice.close_stream(stream_id)
 
-@router.get("/get-chats")
-def get_chats():
-    return commonservice.get_all_chat_history()
+@router.get("/get-chats/{user_id}")
+def get_chats(user_id: str):
+    return commonservice.get_all_chat_history(user_id)
 
-@router.post("/add-message")
-async def add_message(request: Request):
-    return await commonservice.add_message(request)
-@router.post("/start-chat")
-async def start_chat(request: Request):
-    return await commonservice.start_chat(request)
+class message(BaseModel):
+    user_id: str
+    content: str
+    conversation_id: str
+    Role: str
+@router.post("/add-message/{message}")
+async def add_message(message: message):
+    return await commonservice.add_to_chat_history(message.user_id, message.content, message.conversation_id, message.Role)
+@router.post("/start-chat/{user_id}")
+async def start_chat(user_id: str):
+    return await commonservice.start_chat(user_id)
