@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Request, UploadFile
-from pydantic import BaseModel
 import wrapperfunction.common.service.common_service as commonservice
+from wrapperfunction.common.model.message_model import message
 
 router = APIRouter()
-
 
 @router.post("/speech/transcribe")
 async def transcribe(file: UploadFile):
@@ -42,18 +41,19 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return commonservice.close_stream(stream_id)
 
-@router.get("/get-chats/{user_id}")
+@router.get("/get-all-chats/{user_id}")
 def get_chats(user_id: str):
     return commonservice.get_all_chat_history(user_id)
 
-class message(BaseModel):
-    user_id: str
-    content: str
-    conversation_id: str
-    Role: str
-@router.post("/add-message/{message}")
-async def add_message(message: message):
-    return await commonservice.add_to_chat_history(message.user_id, message.content, message.conversation_id, message.Role)
+
+@router.post("/add-message/")
+def add_message(message:message ):
+    return commonservice.add_to_chat_history(message.user_id, message.content, message.conversation_id, message.Role)
 @router.post("/start-chat/{user_id}")
-async def start_chat(user_id: str):
-    return await commonservice.start_chat(user_id)
+def start_chat(user_id: str):
+    return commonservice.start_chat(user_id)
+
+
+@router.get("/get-chat/{conv_id}")
+def get_chats(user_id: str,conv_id: str):
+    return commonservice.get_chat_history(user_id,conv_id)

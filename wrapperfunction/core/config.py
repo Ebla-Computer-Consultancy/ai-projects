@@ -34,6 +34,8 @@ RERA_SUBFOLDER_NAME = os.getenv('SUBFOLDER_NAME')
 RERA_DOCS_SUBFOLDER_NAME = os.getenv('DOCS_SUBFOLDER_NAME')
 
 SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
+CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
+TABLE_NAME=os.getenv("COSMOS_TABLE_NAME")
 
 def load_ar_replacement_data():
     file_path = os.path.join(os.path.dirname(__file__), f'dict_AR/{SEARCH_INDEX}.json')
