@@ -1,30 +1,32 @@
-
-import os 
+import os
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.formrecognizer import DocumentAnalysisClient
 import wrapperfunction.core.config as config
 
 DI_ENDPOINT = config.DOCUMENT_INTELLIGENCE_ENDPOINT
 DI_API_KEY = config.DOCUMENT_INTELLIGENCE_API_KEY
-document_analysis_client = DocumentAnalysisClient(endpoint=DI_ENDPOINT, credential=AzureKeyCredential(DI_API_KEY))
+document_analysis_client = DocumentAnalysisClient(
+    endpoint=DI_ENDPOINT, credential=AzureKeyCredential(DI_API_KEY)
+)
 
-def read_scaned_pdf(contents):
+
+def read_scanned_pdf(contents):
     print("----------1---------")
     # print(contents)
     # client = DocumentIntelligenceClient(DI_endpoint, AzureKeyCredential(DI_api_key))
-    
-    
+
     print("----------2---------")
     path = "C:/Users/alaa/Desktop/EBLA/pdfs/قانون-رقم-٢٩-بشأن-مراقبة-المباني.pdf"
     # path = contents
     # poller = document_analysis_client.begin_analyze_document(
     #         "prebuilt-read", document=contents)
     with open(path, "rb") as f:
-         print(f)
-         poller = document_analysis_client.begin_analyze_document(
-            "prebuilt-read", document=f)
+        print(f)
+        poller = document_analysis_client.begin_analyze_document(
+            "prebuilt-read", document=f
+        )
     print("----------3---------")
-    result =  poller.result()
+    result = poller.result()
     print("----------4---------")
     extracted_text = ""
     for page in result.pages:
@@ -34,6 +36,7 @@ def read_scaned_pdf(contents):
     print("----------5---------")
     print(extracted_text)
     return {"text": extracted_text}
+
 
 """
 document_analysis_client = DocumentAnalysisClient(
@@ -50,7 +53,6 @@ for page in result.pages:
     for line in page.lines:
         print(line.content)
 """
-# read_scaned_pdf(contents="alaa")
 
 """
 from azure.storage.blob import BlobServiceClient
