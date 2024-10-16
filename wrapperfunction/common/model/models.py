@@ -5,3 +5,7 @@ class message(BaseModel):
     content: str
     conversation_id: str
     Role:Role
+
+class user(BaseModel):
+    email: str
+    password: str    

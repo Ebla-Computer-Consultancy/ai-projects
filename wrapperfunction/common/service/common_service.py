@@ -87,7 +87,8 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return integration.avatarconnector.close_stream(stream_id)
 
-
+def add_user(email: str, password: str):
+    return integration.chatconnector.create_user(email, password)
 def start_chat(user_id: str):
     return integration.chatconnector.start_new_chat(user_id)
 
