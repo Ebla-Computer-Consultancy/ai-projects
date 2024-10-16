@@ -1,13 +1,11 @@
+from io import BytesIO
 from fastapi import HTTPException
 from wrapperfunction.integration.skills_connector import read_scanned_pdf
-import io
 
 
-def extract_text(file_contents):
+def extract_text(pdf_bytes: BytesIO):
     try:
-        print("================================================================")
-        pdf_stream = io.BytesIO(file_contents)
-        read_scanned_pdf(pdf_stream)
+        return read_scanned_pdf(pdf_bytes)
 
     except Exception as e:
         raise HTTPException(
