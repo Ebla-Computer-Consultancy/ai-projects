@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, UploadFile
 import wrapperfunction.common.service.common_service as commonservice
+from wrapperfunction.common.model.models import message,user
 
 router = APIRouter()
-
 
 @router.post("/speech/transcribe")
 async def transcribe(file: UploadFile):
@@ -40,3 +40,23 @@ def stop_render(stream_id: str):
 @router.delete("/avatar/close-stream/{stream_id}")
 def close_stream(stream_id: str):
     return commonservice.close_stream(stream_id)
+
+@router.post("/add-user/")
+def add_user(user: user):
+    return commonservice.add_user(user.email, user.password)
+
+@router.get("/get-all-chats/")
+def get_chats(user_id: str):
+    return commonservice.get_all_chat_history(user_id)
+
+@router.post("/add-message/")
+def add_message(message:message ):
+    return commonservice.add_to_chat_history(message.user_id, message.content, message.conversation_id, message.Role)
+@router.post("/start-chat/")
+def start_chat(user_id: str):
+    return commonservice.start_chat(user_id)
+
+
+@router.get("/get-chat/")
+def get_chats(user_id: str,conv_id: str):
+    return commonservice.get_chat_history(user_id,conv_id)
