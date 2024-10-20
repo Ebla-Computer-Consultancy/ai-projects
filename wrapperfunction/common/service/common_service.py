@@ -2,18 +2,17 @@ from io import BytesIO
 import os
 import tempfile
 import wrapperfunction.integration as integration
-from fastapi import Request, UploadFile, HTTPException
+from fastapi import File, Form, Request, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
 
-async def transcribe(file: UploadFile):
-    splittedFileName = file.filename.lower().split(".")
-    fileExtension = splittedFileName[len(splittedFileName) - 1]
+async def transcribe(file: bytes = File(...), filename: str = Form(...)):
+    _, file_extension = os.path.splitext(filename)
 
-    if fileExtension != "wav":
+    if file_extension != ".wav":
         raise HTTPException(
-            400, f"file type { fileExtension } not allowed \n use wav audio files"
+            400, f"file type { file_extension } not allowed \n use wav audio files"
         )
     processed_audio_bytes = await fast_file(file)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio_file:
@@ -22,15 +21,13 @@ async def transcribe(file: UploadFile):
     transcription_result = integration.speechconnector.transcribe_audio_file(
         tmp_filename
     )
-    await file.close()
     os.unlink(tmp_filename)
 
     return transcription_result
 
 
-async def fast_file(file: UploadFile):
-    contents = await file.read()
-    audio = AudioSegment.from_file(BytesIO(contents), format="wav")
+async def fast_file(file: bytes):
+    audio = AudioSegment.from_file(BytesIO(file), format="wav")
 
     # Remove silence
     chunks = split_on_silence(
@@ -51,7 +48,7 @@ async def fast_file(file: UploadFile):
         # Return the processed audio as a streaming response
         return processed_audio_stream.getvalue()
     else:
-        return contents
+        return file
 
 
 def get_speech_token():

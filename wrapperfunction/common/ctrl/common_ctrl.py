@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Request, UploadFile
+from fastapi import APIRouter, File, Form, Request
 import wrapperfunction.common.service.common_service as commonservice
 
 router = APIRouter()
 
 
 @router.post("/speech/transcribe")
-async def transcribe(file: UploadFile):
-    return await commonservice.transcribe(file)
+async def transcribe(file: bytes = File(...), filename: str = Form(...)):
+    return await commonservice.transcribe(file,filename)
 
 
 @router.get("/speech/token")
