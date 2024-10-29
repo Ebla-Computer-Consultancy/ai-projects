@@ -40,6 +40,7 @@ async def chat(chat_payload: ChatPayload):
     try:
         chat_history_arr = chat_payload.messages
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
+        user_id = chat_payload.user_id or str(uuid.uuid4())
 
         if any(x.role == "system" for x in chat_history_arr):
             raise HTTPException(
@@ -76,10 +77,10 @@ async def chat(chat_payload: ChatPayload):
             )
 
         if not chat_payload.conversation_id:
-            integration.chatconnector.start_new_chat(chat_payload.user_id, conversation_id,results["message"]["content"],Roles.User.value)
-            integration.chatconnector.add_to_chat_history(chat_payload.user_id, results["message"]["content"], conversation_id, Roles.User.value)
+            integration.chatconnector.start_new_chat(user_id, conversation_id,results["message"]["content"],Roles.User.value)
+            
         else:
-            integration.chatconnector.add_to_chat_history(chat_payload.user_id, results["message"]["content"], conversation_id, Roles.User.value)
+            integration.chatconnector.add_to_chat_history(user_id, results["message"]["content"], conversation_id, Roles.User.value)
 
         return {"conversation_id": conversation_id, "results": results}
 
