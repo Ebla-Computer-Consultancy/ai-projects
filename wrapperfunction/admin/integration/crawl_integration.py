@@ -2,14 +2,12 @@ import uuid
 import os
 import json
 from scrapy.crawler import CrawlerProcess
-from azure.storage.blob import BlobServiceClient, BlobBlock, BlobPrefix
-from wrapperfunction.admin.utls.spiders.crawling_spider import CrawlingSpider
-from wrapperfunction.admin.utls.helper import process_text_name
+from azure.storage.blob import BlobServiceClient, BlobBlock
+from wrapperfunction.core.utls.spiders.crawling_spider import CrawlingSpider
+from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
-from azure.core.credentials import AzureKeyCredential
-# from azure.ai.formrecognizer import DocumentAnalysisClient
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME

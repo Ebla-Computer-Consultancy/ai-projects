@@ -1,11 +1,10 @@
 from io import BytesIO
 import os
 import tempfile
-import wrapperfunction.integration as integration
-from fastapi import File, Form, Request, HTTPException
+import wrapperfunction.speech.integration.speech_connector as speechconnector
+from fastapi import File, Form, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-
 
 async def transcribe(file: bytes = File(...), filename: str = Form(...)):
     _, file_extension = os.path.splitext(filename)
@@ -18,7 +17,7 @@ async def transcribe(file: bytes = File(...), filename: str = Form(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio_file:
         tmp_audio_file.write(processed_audio_bytes)
         tmp_filename = tmp_audio_file.name
-    transcription_result = integration.speechconnector.transcribe_audio_file(
+    transcription_result = speechconnector.transcribe_audio_file(
         tmp_filename
     )
     os.unlink(tmp_filename)
@@ -52,34 +51,4 @@ async def fast_file(file: bytes):
 
 
 def get_speech_token():
-    return integration.speechconnector.get_speech_token()
-
-
-def start_stream(size: str,stream_id: str):
-    return integration.avatarconnector.start_stream(size,stream_id)
-
-
-async def send_candidate(stream_id: str, request: Request):
-    data = await request.json()
-    candidate_ = data.get("candidate")
-    jsonData = {"candidate": candidate_}
-    return integration.avatarconnector.send_candidate(stream_id, jsonData)
-
-
-async def send_answer(stream_id: str, request: Request):
-    data = await request.json()
-    answer = data.get("answer")
-    jsonData = {"answer": answer}
-    return integration.avatarconnector.send_answer(stream_id, jsonData)
-
-
-async def render_text(stream_id: str, request: Request):
-    data = await request.json()
-    text = data.get("text")
-    return integration.avatarconnector.render_text(stream_id, text)
-
-def stop_render(stream_id: str):
-    return integration.avatarconnector.stop_render(stream_id)
-
-def close_stream(stream_id: str):
-    return integration.avatarconnector.close_stream(stream_id)
+    return speechconnector.get_speech_token()

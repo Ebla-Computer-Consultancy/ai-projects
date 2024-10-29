@@ -1,39 +1,11 @@
 import asyncio
 import json
-from wrapperfunction.website.model.chat_payload import ChatPayload
-from wrapperfunction.website.model.chat_message import ChatMessage
-from wrapperfunction.website.model.chat_message import Roles
+from wrapperfunction.chatbot.model.chat_payload import ChatPayload
+from wrapperfunction.chatbot.model.chat_message import Roles
 from wrapperfunction.core import config
-import wrapperfunction.integration as integration
-from wrapperfunction.website.model.search_criterial import searchCriteria
+import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
+import wrapperfunction.avatar.service.avatar_service as avatarservice
 from fastapi import status, HTTPException
-
-
-def search(rs: searchCriteria):
-    try:
-        # Get the search terms from the request form
-        search_text = rs.query
-        # If a facet is selected, use it in a filter
-        filter_expression = None
-        if rs.facet:
-            filter_expression = "metadata_author eq '{0}'".format(rs.facet)
-        sort_expression = "search.score()"
-
-        # submit the query and get the results
-        results = integration.aisearchconnector.search_query(
-            config.SEARCH_INDEX,
-            search_text,
-            filter_expression,
-            sort_expression,
-            rs.page_size,
-            rs.page_number,
-        )
-        # render the results
-        return results
-
-    except Exception as error:
-        return json.dumps({"error": True, "message": str(error)})
-
 
 async def chat(chat_payload: ChatPayload):
     try:
@@ -74,14 +46,14 @@ async def chat(chat_payload: ChatPayload):
             chat_history.append(item.model_dump())
 
         # Get response from OpenAI ChatGPT
-        results = integration.openaiconnector.chat_completion_mydata(
+        results = openaiconnector.chat_completion_mydata(
             config.SEARCH_INDEX, chat_history, system_message
         )
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
             asyncio.create_task(
-                integration.avatarconnector.render_text_async(
+                avatarservice.render_text_async(
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
             )

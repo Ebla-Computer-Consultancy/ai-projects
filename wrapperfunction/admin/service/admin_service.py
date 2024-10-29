@@ -1,8 +1,7 @@
-from wrapperfunction.integration.crawl_integration import run_crawler, process_and_upload, upload_files_to_blob,delete_blobs_base_on_metadata, delete_base_on_subfolder, edit_blob_by_new_jsonfile,transcript_pdfs
-from fastapi import HTTPException , UploadFile, File, Form
+from wrapperfunction.admin.integration.crawl_integration import run_crawler, process_and_upload, upload_files_to_blob,delete_blobs_base_on_metadata, delete_base_on_subfolder, edit_blob_by_new_jsonfile,transcript_pdfs
+from fastapi import HTTPException , File, Form
 from fastapi.responses import JSONResponse
 import json
-import codecs
 
 def crawl(request):
     link = request.query_params.get('link')

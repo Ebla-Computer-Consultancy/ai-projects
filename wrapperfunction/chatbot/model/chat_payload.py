@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from wrapperfunction.website.model.chat_message import ChatMessage
+from wrapperfunction.chatbot.model.chat_message import ChatMessage
 
 
 class ChatPayload(BaseModel):
