@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from wrapperfunction.common.utils.helper import Role
+from wrapperfunction.common.model.role import Role
 class message(BaseModel):
     user_id: str
     content: str
