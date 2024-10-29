@@ -7,7 +7,7 @@ import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.service.avatar_service as avatarservice
 from fastapi import status, HTTPException
 
-async def chat(chat_payload: ChatPayload):
+async def chat(bot_name: str,chat_payload: ChatPayload):
     try:
         chat_history_arr = chat_payload.messages
         if bool(len([x for x in chat_history_arr if x.role == "system"])):
@@ -19,22 +19,6 @@ async def chat(chat_payload: ChatPayload):
         if chat_payload.stream_id:
             if is_ar:
                 system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
-            # system_message=f"IMPORTANT: I want you to answer the questions in Arabic with diacritics (tashkeel) in every response., like this:'السَّلَامُ عَلَيْكُمْ'. Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
-            # chat_history= [{
-            # "role": Roles.User.value,
-            # "content":"من انت؟"
-            # },
-            # {
-            # "role": Roles.Assistant.value,
-            # "content":"أنا مساعد ذكي مصمم خصيصًا للمساعدة"
-            # },{
-            # "role": Roles.User.value,
-            # "content":"أضف تشكيل اللغة العربية إلى الإجابة دائما."
-            # },{
-            # "role": Roles.Assistant.value,
-            # "content":"أنا مُساعِد ذكي مُصَمَّم خِصِّيصًا للمُساعَدةِ"
-            # }
-            # ]
             else:
                 system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
         else:
@@ -44,10 +28,10 @@ async def chat(chat_payload: ChatPayload):
         chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
         for item in chat_history_arr:
             chat_history.append(item.model_dump())
-
+        chatbot_settings = config.load_chatbot_settings(bot_name)
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion_mydata(
-            config.SEARCH_INDEX, chat_history, system_message
+            chatbot_settings, chat_history, system_message
         )
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])

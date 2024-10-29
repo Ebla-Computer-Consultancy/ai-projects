@@ -2,6 +2,8 @@ import json
 from wrapperfunction.core import config
 from openai import AzureOpenAI
 
+from wrapperfunction.core.model.entity_setting import ChatbotSetting
+
 client = AzureOpenAI(
     azure_endpoint=config.OPENAI_ENDPOINT,
     api_key=config.OPENAI_API_KEY,
@@ -17,12 +19,12 @@ def generate_embeddings(text):
     )
 
 
-def chat_completion_mydata(search_index, chat_history, system_message):
+def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system_message):
     completion = client.chat.completions.create(
         model=config.OPENAI_CHAT_MODEL,
         messages=chat_history,
         max_tokens=800,
-        temperature=0.7,
+        temperature=chatbot_setting.custom_settings.temperature,
         top_p=0.95,
         frequency_penalty=0,
         presence_penalty=0,
@@ -34,8 +36,8 @@ def chat_completion_mydata(search_index, chat_history, system_message):
                     "type": "azure_search",
                     "parameters": {
                         "endpoint": config.SEARCH_ENDPOINT,
-                        "index_name": search_index,
-                        "semantic_configuration": search_index+"-semantic-configuration",
+                        "index_name": chatbot_setting.index_name,
+                        "semantic_configuration": chatbot_setting.index_name+"-semantic-configuration",
                         "query_type": "vector_semantic_hybrid",
                         # "query_type": "vector",
                         "fields_mapping": {

@@ -5,6 +5,6 @@ from typing import List
 
 router = APIRouter()
 
-@router.post("/chat")
-async def chat(message_payload: ChatPayload):
-    return await chatbotservice.chat(message_payload)
+@router.post("/chat/{bot_name}")
+async def chat(bot_name: str,message_payload: ChatPayload):
+    return await chatbotservice.chat(bot_name,message_payload)
