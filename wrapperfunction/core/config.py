@@ -2,13 +2,14 @@ import json
 import os
 from dotenv import load_dotenv
 
+from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Define constants or functions to access environment variables
 SEARCH_ENDPOINT = os.getenv("SEARCH_SERVICE_ENDPOINT")
 SEARCH_KEY = os.getenv("SEARCH_SERVICE_QUERY_KEY")
-SEARCH_INDEX = os.getenv("SEARCH_INDEX_NAME")
 OPENAI_ENDPOINT = os.getenv("OPENAI_ENDPOINT")
 OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -34,14 +35,23 @@ RERA_SUBFOLDER_NAME = os.getenv('SUBFOLDER_NAME')
 RERA_DOCS_SUBFOLDER_NAME = os.getenv('DOCS_SUBFOLDER_NAME')
 
 SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
-
-def load_ar_replacement_data():
-    file_path = os.path.join(os.path.dirname(__file__), f'dict_AR/{SEARCH_INDEX}.json')
+ENTITY_NAME = os.getenv("ENTITY_NAME")
+def load_entity_settings():
+    file_path = os.path.join(os.path.dirname(__file__), f'settings/{ENTITY_NAME}.json')
     if os.path.exists(file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             return json.load(file)
     else:
         return {}
     
-
-AR_DICT = load_ar_replacement_data()
+ENTITY_SETTINGS = load_entity_settings()
+AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
+def load_chatbot_settings(bot_name: str):
+    for chatbot_obj in ENTITY_SETTINGS.get('chatbots',[]):
+        if chatbot_obj['name'] == bot_name:
+            custom_settings_data = chatbot_obj.get("custom_settings", {})
+            temperature = custom_settings_data.get("temperature",None) 
+            custom_settings = CustomSettings(temperature=temperature)
+            chatbot = ChatbotSetting(name=chatbot_obj["name"], index_name=chatbot_obj["index_name"], custom_settings=custom_settings)
+            return chatbot
+    return  ChatbotSetting(name=ENTITY_NAME, index_name=ENTITY_NAME, custom_settings=None)

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 import wrapperfunction.admin.service.admin_service as adminservice
-from fastapi import HTTPException , UploadFile, File, Form
+from fastapi import HTTPException , File, Form
 # import wrapperfunction.admin.model.crawl_model as CrawlRequest
-import json
 
 router = APIRouter()
 

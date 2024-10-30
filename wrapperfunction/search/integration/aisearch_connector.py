@@ -1,5 +1,4 @@
 import json
-from wrapperfunction import integration
 import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
