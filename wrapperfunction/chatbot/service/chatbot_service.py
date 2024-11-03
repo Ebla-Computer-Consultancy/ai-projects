@@ -1,11 +1,16 @@
 import asyncio
 import json
-from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.chatbot.model.chat_message import Roles
+from wrapperfunction.chatbot.model.chat_payload import ChatPayload 
+from wrapperfunction.chatbot.model.chat_message import  Roles
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
+import wrapperfunction.chat_history.integration.cosmos_db_connector as cosmosdbconnector
+from wrapperfunction.chat_history.model.message_entity import MessageEntity
+from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
 from fastapi import status, HTTPException
+import uuid 
+
 
 
 async def chat(bot_name: str, chat_payload: ChatPayload):
@@ -13,14 +18,29 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         chat_history_with_system_message = prepare_chat_history_with_system_message(
             chat_payload, bot_name
         )
+
+  
+
         chatbot_settings = config.load_chatbot_settings(bot_name)
+
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion_mydata(
             chatbot_settings,
             chat_history_with_system_message["chat_history"],
             chat_history_with_system_message["system_message"],
         )
-        if chat_payload.stream_id is not None:
+        user_message_entity = MessageEntity(
+            conversation_id=conversation_id,
+            content=chat_history_arr[-1].content,  
+            role=Roles.User.value,
+        )
+        assistant_message_entity = MessageEntity(
+            conversation_id=conversation_id,
+            content=results["message"]["content"],  
+            role=Roles.Assistant.value
+        )
+
+        if chat_payload.stream_id:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
             asyncio.create_task(
@@ -28,9 +48,25 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
             )
-        return results
+
+
+        conv_entity=ConversationEntity(user_id, conversation_id,bot_name)
+        if not chat_payload.conversation_id:
+           asyncio.create_task(
+                cosmosdbconnector.add_to_chat_history(
+                user_message_entity,assistant_message_entity,conv_entity
+                ),
+            )
+        else:
+           asyncio.create_task(
+                cosmosdbconnector.add_to_chat_history(user_message_entity,assistant_message_entity),
+            )
+
+        return {"conversation_id": conversation_id, "results": results}
+
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
+
 
 
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
@@ -71,6 +107,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
         chat_history.append(item.model_dump())
 
     return {"system_message": system_message, "chat_history": chat_history}
+
 
 
 def is_arabic(text):

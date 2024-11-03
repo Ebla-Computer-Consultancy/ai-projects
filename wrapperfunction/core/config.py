@@ -1,9 +1,8 @@
 import json
 import os
 from dotenv import load_dotenv
-
-from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
-
+from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings, CosmosDBTableSetting,CosmosCustomSettings
+from typing import Dict, Any
 # Load environment variables from .env file
 load_dotenv()
 
@@ -38,8 +37,9 @@ DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
 
 ENTITY_NAME = os.getenv("ENTITY_NAME")
-
-
+CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
+MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
+CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CVONVERSATION_TABLE")
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -68,6 +68,7 @@ def load_chatbot_settings(bot_name: str):
                 custom_settings=custom_settings,
             )
             return chatbot
+
     return ChatbotSetting(
         name=ENTITY_NAME,
         index_name=ENTITY_NAME,
@@ -75,3 +76,4 @@ def load_chatbot_settings(bot_name: str):
         examples=[],
         custom_settings=None,
     )
+
