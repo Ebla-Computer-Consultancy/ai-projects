@@ -1,7 +1,6 @@
 import json
 from wrapperfunction.core import config
 from openai import AzureOpenAI
-
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
 
 client = AzureOpenAI(
@@ -83,4 +82,5 @@ def chat_completion(system_message, user_message):
     )
     compl_data = json.loads(completion.choices[0].json())
     compl_data["usage"] = json.loads(completion.usage.json())
+    
     return compl_data
