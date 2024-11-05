@@ -12,7 +12,7 @@ def analyze_file(
 ) -> AnalyzeResult:
     document_intelligence_client = DocumentIntelligenceClient(
         endpoint=config.DOCUMENT_INTELLIGENCE_ENDPOINT,
-        credential=AzureKeyCredential(config.DOCUMENT_INTELLIGENCE_KEY),
+        credential=AzureKeyCredential(config.DOCUMENT_INTELLIGENCE_API_KEY),
     )
     poller = document_intelligence_client.begin_analyze_document(
         model_id,
