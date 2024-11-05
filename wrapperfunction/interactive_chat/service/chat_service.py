@@ -1,7 +1,7 @@
 import json
 from fastapi import HTTPException
 from wrapperfunction.interactive_chat.integration.openai_connector import assistant_chat_completion, chat_completion
-from wrapperfunction.interactive_chat.model.interactive_chat_model import ActionResponse, GetForm, Status, ToolCall
+from wrapperfunction.interactive_chat.model.chat_model import ActionResponse, GetForm, Status, ToolCall
 from wrapperfunction.interactive_chat.service import functions
 
 user_system_message = """

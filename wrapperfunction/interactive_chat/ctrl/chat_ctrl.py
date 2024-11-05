@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from wrapperfunction.interactive_chat.model.interactive_chat_model import GetForm, Prompt, Status, SubmitForm
+from wrapperfunction.interactive_chat.model.chat_model import GetForm, Prompt, Status, SubmitForm
 from wrapperfunction.interactive_chat.service import chat_service
 
 router = APIRouter()
