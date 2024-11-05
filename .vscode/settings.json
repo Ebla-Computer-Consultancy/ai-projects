@@ -7,8 +7,13 @@
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.projectLanguageModel": 2,
     "cSpell.words": [
+        "chatbotservice",
+        "chatservice",
         "cognitiveservices",
         "commonservice",
+        "documentintelligence",
+        "documentintelligenceconnector",
+        "documentintelligenceservice",
         "languageconfig",
         "pydub",
         "readall",
