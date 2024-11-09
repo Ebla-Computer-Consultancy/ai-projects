@@ -38,6 +38,8 @@ ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
 MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
 CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CVONVERSATION_TABLE")
+AZURE_TEXT_ANALYTICS_ENDPOINT=os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
+AZURE_TEXT_ANALYTICS_KEY=os.getenv("AZURE_TEXT_ANALYTICS_KEY")
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f'settings/{ENTITY_NAME}.json')
     if os.path.exists(file_path):
@@ -59,14 +61,4 @@ def load_chatbot_settings(bot_name: str):
     return  ChatbotSetting(name=ENTITY_NAME, index_name=ENTITY_NAME, custom_settings=None)
 
 
-def load_cosmos_table_settings(table_name: str):
-    for table_obj in ENTITY_SETTINGS.get("tables", {}).values():
-        if table_obj["name"] == table_name:
-            custom_settings_data = table_obj.get("custom_settings", {})
-            consistency_level = custom_settings_data.get("consistency_level", "Session")
-            throughput = custom_settings_data.get("throughput", 400)
-            custom_settings = CosmosCustomSettings(consistency_level=consistency_level, throughput=throughput)
-            cosmos_table = CosmosDBTableSetting(name=table_obj["name"], custom_settings=custom_settings)
-            return cosmos_table
 
-    return CosmosDBTableSetting(name=table_name,custom_settings=CosmosCustomSettings())

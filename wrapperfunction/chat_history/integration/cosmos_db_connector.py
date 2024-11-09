@@ -1,44 +1,80 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 from wrapperfunction.core import config
-from azure.data.tables import TableServiceClient
+from azure.data.tables import TableServiceClient, UpdateMode
+from azure.core.credentials import AzureKeyCredential
 from fastapi import HTTPException
-from wrapperfunction.chat_history.model.message_entity import MessageEntity
-from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
-from wrapperfunction.core.model.entity_setting import CosmosDBTableSetting
+from azure.ai.textanalytics import TextAnalyticsClient
+import os
 
-Table_service_Client = TableServiceClient.from_connection_string(conn_str=config.CONNECTION_STRING)
-conversation_table = config.load_cosmos_table_settings(config.CONVERSATION_TABLE_NAME)
-message_table = config.load_cosmos_table_settings(config.MESSAGE_TABLE_NAME)
-message_table_client= Table_service_Client.get_table_client(table_name=message_table.name)
+table_service_client = TableServiceClient.from_connection_string(conn_str=config.CONNECTION_STRING)
+endpoint = config.AZURE_TEXT_ANALYTICS_ENDPOINT
+api_key = config.AZURE_TEXT_ANALYTICS_KEY
+text_analytics_client = TextAnalyticsClient(endpoint=endpoint, credential=AzureKeyCredential(api_key))
 
+class GenericTableClient:
+    def __init__(self, table_name: str):
+        self.table_client = table_service_client.get_table_client(table_name=table_name)
 
-    
-async def add_to_chat_history(user_mess_entity:MessageEntity,assistant_mess_entity:MessageEntity,conv_entity:Optional[ConversationEntity] = None): 
-    try: 
-        message_table_client.create_entity(user_mess_entity.to_dict())
-        message_table_client.create_entity(assistant_mess_entity.to_dict())
-        if conv_entity:
-            conversation_table_client= Table_service_Client.get_table_client(table_name=conversation_table.name)
-            conversation_table_client.create_entity(conv_entity.to_dict())
+    async def add_entity(self, entity: Dict[str, Any]) -> None:
+        try:
+            self.table_client.create_entity(entity)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
+    def get_entities(self, filter_expression: Optional[str] = None) -> list:
+        try:
+            if filter_expression:
+                entities = self.table_client.query_entities(filter_expression)
+            else:
+                entities = self.table_client.list_entities()
+            return list(entities)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
-    except Exception as e:
-        return HTTPException(400,e)
-def get_all_conversations(user_id):
+    def update_entity(self, entity: Dict[str, Any]) -> None:
+        try:
+            self.table_client.update_entity(entity, mode=UpdateMode.MERGE)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+async def add_to_history(table_name: str, entity: Dict[str, Any]):
+    generic_table_client = GenericTableClient(table_name)
+    await generic_table_client.add_entity(entity)
+
+def get_entities(table_name: str, filter_expression: Optional[str] = None):
+    generic_table_client = GenericTableClient(table_name)
+    return generic_table_client.get_entities(filter_expression)
+
+def analyze_and_update_semantics(conversation_id: str):
     try:
+        message_client = GenericTableClient(config.MESSAGE_TABLE_NAME)
+        messages = message_client.get_entities(f"conversation_id eq '{conversation_id}'")   
+        message_texts = [msg["content"] for msg in messages if "content" in msg] 
+        if not message_texts:
+            raise HTTPException(status_code=400, detail="No valid messages found for semantic analysis.")
+        sentiment_response = text_analytics_client.analyze_sentiment(message_texts)[0]
+        semantic_data = sentiment_response.sentiment
+        conversation_client = GenericTableClient(config.CONVERSATION_TABLE_NAME)
+        conversations = conversation_client.get_entities(f"conversation_id eq '{conversation_id}'")
+        if conversations:
+            conversation = conversations[0]  
+            conversation["sentiment"] = semantic_data  
+            conversation_client.update_entity(conversation) 
         
-        res=Table_service_Client.get_table_client(table_name=conversation_table.name).query_entities(f"user_id eq '{user_id}'")
-        return list(res)
+        return semantic_data
+
     except Exception as e:
-        return HTTPException(400,e)    
- 
-    
-def get_chat_history(conversation_id):
-    try:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def update_feedback(conversation_id: str, feedback: int):
+    try:     
+        conversation_client = GenericTableClient(config.CONVERSATION_TABLE_NAME)
+        conversations = conversation_client.get_entities(f"conversation_id eq '{conversation_id}'")
+        if not conversations:
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+        conversation = conversations[0]
+        conversation["feedback"] = feedback
+        conversation_client.update_entity(conversation)
         
-        res=Table_service_Client.get_table_client(table_name=message_table.name).query_entities(f" conversation_id eq '{conversation_id}'")
-        return list(res)
     except Exception as e:
-        return HTTPException(400,e)
-
-
+        raise HTTPException(status_code=400, detail=str(e))

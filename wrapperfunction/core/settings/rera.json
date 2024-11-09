@@ -9,22 +9,6 @@
         }
     ],
 
-"tables": {
-        "messages": {
-            "name": "messages",
-            "custom_settings": {
-                "consistency_level": "Session",
-                "throughput": 400
-            }
-        },
-        "conversation": {
-            "name": "conversation",
-            "custom_settings": {
-                "consistency_level": "Strong",
-                "throughput": 1000
-            }
-        }
-    },
 
     "dict_AR": {
         "مشيرب": "مِشِيرِبْ",
