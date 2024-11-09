@@ -40,6 +40,8 @@ ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
 MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
 CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CVONVERSATION_TABLE")
+AZURE_TEXT_ANALYTICS_ENDPOINT=os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
+AZURE_TEXT_ANALYTICS_KEY=os.getenv("AZURE_TEXT_ANALYTICS_KEY")
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -76,4 +78,3 @@ def load_chatbot_settings(bot_name: str):
         examples=[],
         custom_settings=None,
     )
-

@@ -4,8 +4,9 @@ from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.model.chat_message import  Roles
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
+
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
-import wrapperfunction.chat_history.integration.cosmos_db_connector as cosmosdbconnector
+import wrapperfunction.chat_history.service.chat_history_service as cosmos_db_service
 from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
 from fastapi import status, HTTPException
@@ -19,6 +20,31 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chat_payload, bot_name
         )
 
+
+
+        if any(x.role == "system" for x in chat_history_arr):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "system messages are not allowed"
+            )
+
+
+        chat_history = []
+        is_ar = is_arabic(chat_history_arr[-1].content)
+        if chat_payload.stream_id:
+            if is_ar:
+                system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+            else:
+                system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
+        else:
+            system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
+
+        system_message+=" If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
+
+        chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
+        for item in chat_history_arr:
+            chat_history.append(item.model_dump())
+        
+
   
 
         chatbot_settings = config.load_chatbot_settings(bot_name)
@@ -29,17 +55,9 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chat_history_with_system_message["chat_history"],
             chat_history_with_system_message["system_message"],
         )
-        user_message_entity = MessageEntity(
-            conversation_id=conversation_id,
-            content=chat_history_arr[-1].content,  
-            role=Roles.User.value,
-        )
-        assistant_message_entity = MessageEntity(
-            conversation_id=conversation_id,
-            content=results["message"]["content"],  
-            role=Roles.Assistant.value
-        )
-
+        user_message_entity = MessageEntity(conversation_id=conversation_id,content=chat_history_arr[-1].content,role=Roles.User.value,)
+        assistant_message_entity = MessageEntity(conversation_id=conversation_id,content=results["message"]["content"], role=Roles.Assistant.value)
+        conv_entity=ConversationEntity(user_id,conversation_id,bot_name)
         if chat_payload.stream_id:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
@@ -47,19 +65,16 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
                 avatarconnector.render_text_async(
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
-            )
-
-
-        conv_entity=ConversationEntity(user_id, conversation_id,bot_name)
+            )        
         if not chat_payload.conversation_id:
            asyncio.create_task(
-                cosmosdbconnector.add_to_chat_history(
+              cosmos_db_service.add_history(
                 user_message_entity,assistant_message_entity,conv_entity
                 ),
             )
         else:
-           asyncio.create_task(
-                cosmosdbconnector.add_to_chat_history(user_message_entity,assistant_message_entity),
+         asyncio.create_task(
+              cosmos_db_service.add_history(user_message_entity,assistant_message_entity),
             )
 
         return {"conversation_id": conversation_id, "results": results}
