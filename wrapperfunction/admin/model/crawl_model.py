@@ -6,3 +6,10 @@ from pydantic import BaseModel
     
 class IndexerRequest(BaseModel):
     name: str
+
+class MediaRequest(BaseModel):
+    search_text: str 
+
+class MediaCrawlRequest(BaseModel):
+    topic: str
+    url: str 
