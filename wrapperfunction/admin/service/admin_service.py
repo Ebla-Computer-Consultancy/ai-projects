@@ -1,7 +1,11 @@
-from wrapperfunction.admin.integration.crawl_integration import run_crawler, process_and_upload, upload_files_to_blob,delete_blobs_base_on_metadata, delete_base_on_subfolder, edit_blob_by_new_jsonfile,transcript_pdfs
+
 from fastapi import HTTPException , File, Form
 from fastapi.responses import JSONResponse
 import json
+
+from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
+from wrapperfunction.chatbot.integration.openai_connector import chat_completion
+from wrapperfunction.search.integration.aisearch_connector import search_query
 
 def crawl(request):
     link = request.query_params.get('link')
@@ -62,3 +66,34 @@ async def add_pdfs():
         return JSONResponse(content={"message": f"done"}, status_code=200)
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
+    
+async def media_search(search_text: str):
+    try:
+        res = search_query(search_text=search_text, search_index="rera-media-test")
+        top_3 = res["rs"]
+        top_3_chunks = [answer["chunk"] for answer in top_3]
+        
+        chat_res=chat_completion(
+            system_message="you are an assistant and expert in writing reports that write long reports from a given results",
+            user_message=f"write a long report from this results in about 2 pages(reach the max).. search_results:{top_3_chunks},search_text:{search_text}",
+            max_tokens=4000
+            )
+        
+        # file = open(f"report.docx", "a", encoding="utf-8")        
+        # file.write(chat_res["message"]["content"])
+        # file.close()
+        return JSONResponse(content={"message":chat_res["message"]["content"],"search_results":top_3_chunks}, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def media_crawl(topic: str, url: str):
+    try:
+        #1 get data
+        
+        #2 save to blob storage
+        
+        #3 run the indexer
+        return JSONResponse(content={"msg": "crawling"}, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
