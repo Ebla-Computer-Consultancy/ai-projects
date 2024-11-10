@@ -68,15 +68,15 @@ def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system
     return compl_data
 
 
-def chat_completion(system_message, user_message):
+def chat_completion(system_message, user_message, max_tokens=1500, temperature=0.7, top_p = 0.95):
     message_text = [{"role": "system", "content": system_message}]
     message_text.append({"role": "user", "content": user_message})
     completion = client.chat.completions.create(
         model=config.OPENAI_CHAT_MODEL,
         messages=message_text,
-        temperature=0.7,
-        max_tokens=1500,
-        top_p=0.95,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        top_p=top_p,
         frequency_penalty=0,
         presence_penalty=0,
         stop=None,
