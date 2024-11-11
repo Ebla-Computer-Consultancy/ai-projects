@@ -1,4 +1,5 @@
 from io import BytesIO
+import os
 from azure.storage.blob import BlobServiceClient
 from fastapi import HTTPException, UploadFile
 
@@ -51,3 +52,23 @@ def delete_blob_snapshots(connection_string: str, container_name: str, blob_name
         container=container_name, blob=blob_name
     )
     blob_client.delete_blob(delete_snapshots="include")
+
+def upload_file_to_azure(file_path, container_name, blob_name, connection_string):
+    with open(file_path, "rb") as data:
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+        blob_client.upload_blob(data)
+        print(f"Uploaded {file_path} to {blob_name}")
+           
+def push_To_Container(folder, connection_string, container_name):
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            # Create the full local file path
+            local_file_path = os.path.join(root, file)
+            
+            # Create the relative path for the blob
+            relative_path = os.path.relpath(local_file_path, folder)
+            blob_name = relative_path.replace("\\", "/")  # Use forward slashes for blob storage
+
+            # Upload the file
+            upload_file_to_azure(local_file_path, container_name, blob_name, connection_string)

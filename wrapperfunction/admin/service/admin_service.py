@@ -1,10 +1,15 @@
 
+import os
 from fastapi import HTTPException , File, Form
 from fastapi.responses import JSONResponse
 import json
+import requests
 
-from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
-from wrapperfunction.chatbot.integration.openai_connector import chat_completion
+from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, getAllNewsLinks, process_and_upload, run_crawler, saveTopicsMedia, transcript_pdfs
+from wrapperfunction.admin.integration.storage_connector import push_To_Container
+from wrapperfunction.chatbot.integration.openai_connector import chat_completion, chat_completion_mydata
+from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
+from wrapperfunction.core.model.entity_setting import ChatbotSetting
 from wrapperfunction.search.integration.aisearch_connector import search_query
 
 def crawl(request):
@@ -69,31 +74,62 @@ async def add_pdfs():
     
 async def media_search(search_text: str):
     try:
-        res = search_query(search_text=search_text, search_index="rera-media-test")
-        top_3 = res["rs"]
-        top_3_chunks = [answer["chunk"] for answer in top_3]
+        user_message=f"write a long report in about 2 pages(reach the max)..about:{search_text}",
         
-        chat_res=chat_completion(
-            system_message="you are an assistant and expert in writing reports that write long reports from a given results",
-            user_message=f"write a long report from this results in about 2 pages(reach the max).. search_results:{top_3_chunks},search_text:{search_text}",
-            max_tokens=4000
+        system_message="you are an assistant and expert in writing reports that write long reports from a given results"
+        chat_history = [{"role": "system", "content": str(system_message)}]
+        chat_history.append({"role": "user", "content": str(user_message)})
+        chat_res=chat_completion_mydata(
+            system_message=system_message,
+            chatbot_setting=ChatbotSetting(index_name="rera-media",name=OPENAI_CHAT_MODEL),
+            chat_history=chat_history
             )
         
-        # file = open(f"report.docx", "a", encoding="utf-8")        
-        # file.write(chat_res["message"]["content"])
-        # file.close()
-        return JSONResponse(content={"message":chat_res["message"]["content"],"search_results":top_3_chunks}, status_code=200)
+        file = open(f"report.pdf", "a", encoding="utf-8")        
+        file.write(chat_res["message"]["content"])
+        file.close()
+        return JSONResponse(
+            content={
+            "message":chat_res["message"]["content"],
+            "search_results":chat_res,
+            },
+            status_code=200)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def media_crawl(topic: str, url: str):
+async def media_crawl(topics: list, urls: list):
     try:
         #1 get data
-        
+        links = getAllNewsLinks(urls)
+        saveTopicsMedia(links=links, topics=topics)
         #2 save to blob storage
-        
-        #3 run the indexer
-        return JSONResponse(content={"msg": "crawling"}, status_code=200)
+        push_To_Container("rera_media_data",RERA_STORAGE_CONNECTION,"rera-media")
+        #3 reset indexer
+        res = await resetIndexer(name="rera-media-indexer")
+        #4 run indexer
+        res = await runIndexer(name="rera-media-indexer")
+        return JSONResponse(content={"message": "web crawl done succefuly"}, status_code=200)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+async def resetIndexer(name: str):
+    try:
+        url = f"https://reraaisearch01.search.windows.net/indexers/{name}/reset?api-version=2024-07-01"
+        headers = {
+            "Content-Type": "application/json",
+            "api-key": SEARCH_KEY
+        }
+        requests.post(url=url,headers=headers)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def runIndexer(name: str):
+    try:
+        url = f"https://reraaisearch01.search.windows.net/indexers/{name}/run?api-version=2024-07-01"
+        headers = {
+            "Content-Type": "application/json",
+            "api-key": SEARCH_KEY
+        }
+        requests.post(url=url,headers=headers)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
