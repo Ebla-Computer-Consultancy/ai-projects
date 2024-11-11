@@ -221,7 +221,7 @@ def getAllNewsLinks(urls: str):
             html_content = response.content
 
             soup = BeautifulSoup(html_content, "html.parser")
-            news_links = [link["href"] for link in soup.find_all("a",class_="mkdf-btn mkdf-btn-medium mkdf-btn-simple mkdf-blog-list-button")] #
+            news_links.extend([link["href"] for link in soup.find_all("a",class_="mkdf-btn mkdf-btn-medium mkdf-btn-simple mkdf-blog-list-button")])  #
         return news_links
     except Exception as e:
         return f"ERROR getting links: {str(e)}"
@@ -237,7 +237,7 @@ def saveTopicsMedia(links: list, topics: list):
 
             # Find all div elements with the class "mkdf-post-text-main"
             news_divs = soup.find_all("div", class_="mkdf-post-text-main")
-            imgs_links = [img["src"] for img in soup.find_all("img", class_="attachment-full size-full wp-post-image")]
+            imgs_links = [img["src"] for img in soup.find_all("img") if img.get("class") and any("image" in class_name for class_name in img.get("class"))]
 
             print(f"\nIMGS {len(imgs_links)}: {imgs_links}\n\n")
 
@@ -257,7 +257,7 @@ def saveTopicsMedia(links: list, topics: list):
 
             if relevant_texts and file_name:
                 # Create folder structure
-                folder_name = f"results_data/{file_name}_{idx + 1}"
+                folder_name = f"rera_media_data/{file_name}_{idx + 1}"
                 os.makedirs(folder_name, exist_ok=True)
                 img_folder_name = f"{folder_name}/images"
                 os.makedirs(img_folder_name, exist_ok=True)
