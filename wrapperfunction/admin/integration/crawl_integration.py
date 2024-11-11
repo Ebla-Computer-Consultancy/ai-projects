@@ -1,3 +1,4 @@
+from urllib import request
 import uuid
 import os
 import json
@@ -11,7 +12,6 @@ from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from bs4 import BeautifulSoup
 import requests
-from urllib.parse import urljoin, urlparse
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
