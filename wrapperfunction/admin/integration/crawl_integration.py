@@ -235,25 +235,34 @@ def saveTopicsMedia(links: list, topics: list):
 
             soup = BeautifulSoup(html_content, "html.parser")
 
-            # Find all div elements with the class "mkdf-post-text-main"
-            news_divs = soup.find_all("div", class_="mkdf-post-text-main")
-            imgs_links = [img["src"] for img in soup.find_all("img") if img.get("class") and any("image" in class_name for class_name in img.get("class"))]
+            # Initialize sets to store unique texts and image links
+            relevant_texts = set()
+            unique_imgs_links = set()
 
-            print(f"\nIMGS {len(imgs_links)}: {imgs_links}\n\n")
-
-            # Check for matching topics in div.h2.text or div.p.text
-            relevant_texts = []
             file_name = None
-            for div in news_divs:
+
+            # Find div elements containing topics
+            for div in soup.find_all("div"):
                 h2_text = div.find("h2")
                 p_text = div.find("p")
+
+                # Check for topics in h2 tags
+                if h2_text and any(topic in h2_text.get_text(strip=True) for topic in topics):
+                    if not file_name:  
+                        file_name = h2_text.get_text(strip=True).replace(" ", "_")[:50]
+                    relevant_texts.add(h2_text.get_text(strip=True))
                 
-                if h2_text and any(topic in h2_text.text for topic in topics):
-                    file_name = h2_text.text.strip().replace(" ", "_")[:50]
-                    relevant_texts.append(h2_text.text)
-                
-                if p_text and any(topic in p_text.text for topic in topics):
-                    relevant_texts.append(p_text.text)
+                # Check for topics in p tags
+                if p_text and any(topic in p_text.get_text(strip=True) for topic in topics):
+                    relevant_texts.add(p_text.get_text(strip=True))
+
+            # Retrieve unique image links where the class contains "image"
+            for img in soup.find_all("img"):
+                if img.get("class") and any("image" in class_name for class_name in img.get("class")):
+                    unique_imgs_links.add(img["src"])
+
+            print(f"\nRelevant Texts: {list(relevant_texts)}\n")
+            print(f"\nUnique Images: {list(unique_imgs_links)}\n")
 
             if relevant_texts and file_name:
                 # Create folder structure
@@ -264,15 +273,15 @@ def saveTopicsMedia(links: list, topics: list):
                 parag_folder_name = f"{folder_name}/paragraphs"
                 os.makedirs(parag_folder_name, exist_ok=True)
 
-                # Save images
-                for img_idx, img_link in enumerate(imgs_links):
+                # Save unique images
+                for img_idx, img_link in enumerate(unique_imgs_links):
                     img_response = requests.get(img_link)
-                    img_filename = f"{img_folder_name}/{file_name}.png"
+                    img_filename = f"{img_folder_name}/{file_name}_{img_idx + 1}.png"
                     with open(img_filename, "wb") as img_file:
                         img_file.write(img_response.content)
 
-                # Save paragraphs
-                with open(f"{parag_folder_name}/{file_name}.docx", "a", encoding="utf-8") as file:
+                # Save unique paragraphs
+                with open(f"{parag_folder_name}/{file_name}.docx", "w", encoding="utf-8") as file:
                     for paragraph in relevant_texts:
                         file.write(paragraph + "\n")
 
