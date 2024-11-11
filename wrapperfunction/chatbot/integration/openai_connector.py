@@ -19,11 +19,11 @@ def generate_embeddings(text):
     )
 
 
-def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system_message):
+def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system_message,max_tokens=1500):
     completion = client.chat.completions.create(
         model=config.OPENAI_CHAT_MODEL,
         messages=chat_history,
-        max_tokens=800,
+        max_tokens=max_tokens,
         temperature=chatbot_setting.custom_settings.temperature,
         top_p=0.95,
         frequency_penalty=0,
