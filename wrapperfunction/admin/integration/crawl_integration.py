@@ -1,3 +1,4 @@
+from urllib import request
 import uuid
 import os
 import json
@@ -8,6 +9,8 @@ from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
+from bs4 import BeautifulSoup
+import requests
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
@@ -209,3 +212,69 @@ def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORA
     for blob in blob_list:
         if blob.name.endswith(".pdf"):
             process_pdf(blob.name)
+
+def getAllNewsLinks(urls: str):
+    try:
+        news_links = []
+        for url in urls:
+            response = requests.get(url)
+            html_content = response.content
+
+            soup = BeautifulSoup(html_content, "html.parser")
+            news_links = [link["href"] for link in soup.find_all("a",class_="mkdf-btn mkdf-btn-medium mkdf-btn-simple mkdf-blog-list-button")] #
+        return news_links
+    except Exception as e:
+        return f"ERROR getting links: {str(e)}"
+    
+def saveTopicsMedia(links: list, topics: list):
+    try:
+        for idx, link in enumerate(links):
+            print(f"\nLINK {idx + 1}: {link}\n\n")
+            response = requests.get(link)
+            html_content = response.content
+
+            soup = BeautifulSoup(html_content, "html.parser")
+
+            # Find all div elements with the class "mkdf-post-text-main"
+            news_divs = soup.find_all("div", class_="mkdf-post-text-main")
+            imgs_links = [img["src"] for img in soup.find_all("img", class_="attachment-full size-full wp-post-image")]
+
+            print(f"\nIMGS {len(imgs_links)}: {imgs_links}\n\n")
+
+            # Check for matching topics in div.h2.text or div.p.text
+            relevant_texts = []
+            file_name = None
+            for div in news_divs:
+                h2_text = div.find("h2")
+                p_text = div.find("p")
+                
+                if h2_text and any(topic in h2_text.text for topic in topics):
+                    file_name = h2_text.text.strip().replace(" ", "_")[:50]
+                    relevant_texts.append(h2_text.text)
+                
+                if p_text and any(topic in p_text.text for topic in topics):
+                    relevant_texts.append(p_text.text)
+
+            if relevant_texts and file_name:
+                # Create folder structure
+                folder_name = f"results_data/{file_name}_{idx + 1}"
+                os.makedirs(folder_name, exist_ok=True)
+                img_folder_name = f"{folder_name}/images"
+                os.makedirs(img_folder_name, exist_ok=True)
+                parag_folder_name = f"{folder_name}/paragraphs"
+                os.makedirs(parag_folder_name, exist_ok=True)
+
+                # Save images
+                for img_idx, img_link in enumerate(imgs_links):
+                    img_response = requests.get(img_link)
+                    img_filename = f"{img_folder_name}/{file_name}.png"
+                    with open(img_filename, "wb") as img_file:
+                        img_file.write(img_response.content)
+
+                # Save paragraphs
+                with open(f"{parag_folder_name}/{file_name}.docx", "a", encoding="utf-8") as file:
+                    for paragraph in relevant_texts:
+                        file.write(paragraph + "\n")
+
+    except Exception as e:
+        print(f"ERROR Saving Results: {str(e)}")
