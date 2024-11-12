@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 import json
 import requests
 
-from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, getAllNewsLinks, process_and_upload, run_crawler, saveTopicsMedia, transcript_pdfs
+
+from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, getAllNewsLinks, process_and_upload, run_crawler, saveTopicsMedia, transcript_pdfs
 from wrapperfunction.admin.integration.storage_connector import push_To_Container
 from wrapperfunction.chatbot.integration.openai_connector import chat_completion, chat_completion_mydata
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
@@ -36,7 +37,6 @@ async def delete_blob(request):
         return JSONResponse(content={"message": f"Blob with metadata {metadata_key}={metadata_value} deleted successfully"}, status_code=200)
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
-
 
 async def delete_subfolder(request):
     container_name = request.query_params.get('container_name')
@@ -72,46 +72,6 @@ async def add_pdfs():
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
     
-async def media_search(search_text: str):
-    try:
-        user_message=f"write a long report in about 2 pages(reach the max)..about:{search_text}",
-        
-        system_message="you are an assistant and expert in writing reports that write long reports from a given results"
-        chat_history = [{"role": "system", "content": str(system_message)}]
-        chat_history.append({"role": "user", "content": str(user_message)})
-        chat_res=chat_completion_mydata(
-            system_message=system_message,
-            chatbot_setting=ChatbotSetting(index_name="rera-media",name=OPENAI_CHAT_MODEL),
-            chat_history=chat_history
-            )
-        
-        file = open(f"report.pdf", "a", encoding="utf-8")        
-        file.write(chat_res["message"]["content"])
-        file.close()
-        return JSONResponse(
-            content={
-            "report-text":chat_res["message"]["content"],
-            "search_results":chat_res,
-            },
-            status_code=200)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-async def media_crawl(topics: list, urls: list):
-    try:
-        #1 get data
-        links = getAllNewsLinks(urls)
-        saveTopicsMedia(links=links, topics=topics)
-        #2 save to blob storage
-        push_To_Container("rera_media_data",RERA_STORAGE_CONNECTION,"rera-media")
-        #3 reset indexer
-        res = await resetIndexer(name="rera-media-indexer")
-        #4 run indexer
-        res = await runIndexer(name="rera-media-indexer")
-        return JSONResponse(content={"message": "web crawl done succefuly"}, status_code=200)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 async def resetIndexer(name: str):
     try:
         url = f"https://reraaisearch01.search.windows.net/indexers/{name}/reset?api-version=2024-07-01"
