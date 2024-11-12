@@ -14,5 +14,3 @@ class MediaCrawlRequest(BaseModel):
     topics: List[str]
     urls: List[str] 
     
-class IndexerRequest(BaseModel):
-    name: str

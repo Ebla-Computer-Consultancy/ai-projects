@@ -10,9 +10,7 @@ from wrapperfunction.admin.ctrl import admin_ctrl
 from wrapperfunction.search.ctrl import search_ctrl
 from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctrl
 from wrapperfunction.chat_history.ctrl import chat_history_ctrl
-
-
-
+from wrapperfunction.media_monitoring.ctrl import media_ctrl
 
 app = FastAPI()
 app.add_middleware(

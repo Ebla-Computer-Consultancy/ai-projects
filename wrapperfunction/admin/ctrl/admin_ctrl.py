@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi import HTTPException , File, Form
 from wrapperfunction.admin.model.crawl_model import MediaCrawlRequest, MediaRequest, IndexerRequest
 from wrapperfunction.admin.service import admin_service
-from wrapperfunction.search.integration.aisearch_connector import search_query
 
 # import wrapperfunction.admin.model.crawl_model as CrawlRequest
 
