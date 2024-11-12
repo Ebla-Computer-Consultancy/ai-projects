@@ -63,12 +63,9 @@ def upload_file_to_azure(file_path, container_name, blob_name, connection_string
 def push_To_Container(folder, connection_string, container_name):
     for root, dirs, files in os.walk(folder):
         for file in files:
-            # Create the full local file path
             local_file_path = os.path.join(root, file)
-            
-            # Create the relative path for the blob
+                
             relative_path = os.path.relpath(local_file_path, folder)
-            blob_name = relative_path.replace("\\", "/")  # Use forward slashes for blob storage
+            blob_name = relative_path.replace("\\", "/") 
 
-            # Upload the file
             upload_file_to_azure(local_file_path, container_name, blob_name, connection_string)
