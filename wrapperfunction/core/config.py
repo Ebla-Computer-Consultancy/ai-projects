@@ -1,7 +1,7 @@
 import json
 import os
 from dotenv import load_dotenv
-from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings, CosmosDBTableSetting,CosmosCustomSettings
+from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from typing import Dict, Any
 # Load environment variables from .env file
 load_dotenv()
@@ -27,12 +27,10 @@ AVATAR_CODE= os.getenv('AVATAR_CODE')
 AVATAR_CODE_FULL_SIZE = os.getenv('AVATAR_CODE_FULL_SIZE')
 AVATAR_VOICE_ID= os.getenv('AVATAR_VOICE_ID')
 AVATAR_VOICE_PROVIDER= os.getenv('AVATAR_VOICE_PROVIDER')
-
 RERA_STORAGE_ACCOUNT_NAME = os.getenv('STORAGE_ACCOUNT_NAME')
 RERA_CONTAINER_NAME = os.getenv('CONTAINER_NAME')
 RERA_SUBFOLDER_NAME = os.getenv('SUBFOLDER_NAME')
 RERA_DOCS_SUBFOLDER_NAME = os.getenv('DOCS_SUBFOLDER_NAME')
-
 SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")

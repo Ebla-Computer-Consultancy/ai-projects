@@ -16,15 +16,6 @@ def get_chats(conv_id: str):
 def get_chats():
     return historyservice.get_all_conversations()
 
-@router.post("/semantic_analysis/")
-def apply_analysis(conv_id: str):
-    return historyservice.apply_analysis(conv_id)
-
-@router.post("/add_feedback/")
-def add_feedback(conv_id: str, feedback: int):
-    return historyservice.add_feedback(conv_id, feedback)
-
-
 
 
 
