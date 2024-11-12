@@ -90,7 +90,7 @@ async def media_search(search_text: str):
         file.close()
         return JSONResponse(
             content={
-            "message":chat_res["message"]["content"],
+            "report-text":chat_res["message"]["content"],
             "search_results":chat_res,
             },
             status_code=200)
