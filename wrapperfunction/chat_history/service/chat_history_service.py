@@ -12,7 +12,14 @@ def get_conversations(user_id):
         res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"user_id eq '{user_id}'")     
         return res
     except Exception as e:
-        return HTTPException(400,e)    
+        return HTTPException(400,e)
+
+def get_conversation_data(conversation_id):
+    try:
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f" conversation_id eq '{conversation_id}'")     
+        return res[0]
+    except Exception as e:
+        return HTTPException(400,e)           
     
 def get_chat_history(conversation_id):
     try:
@@ -24,8 +31,8 @@ def get_chat_history(conversation_id):
 
 def get_all_conversations():
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,"SELECT * FROM c") 
-        return list(res)
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME) 
+        return res
     except Exception as e:
         return HTTPException(400,e) 
     
@@ -38,15 +45,11 @@ async def add_history(message_entity:MessageEntity,assistant_entity:MessageEntit
     except Exception as e:
         return HTTPException(400,e)    
     
-def apply_analysis(conversation_id):
+def update_conversation(conversation_id: str, updated_data: dict):
     try:
-        db_connector.analyze_and_update_semantics(conversation_id)    
+        conversation = get_conversation_data(conversation_id)
+        if conversation: 
+            conversation.update(updated_data) 
+            db_connector.update_entity(config.CONVERSATION_TABLE_NAME,conversation) 
     except Exception as e:
-        return HTTPException(400,e)  
-def add_feedback(conversation_id,feedback:int):
-    try:
-        db_connector.update_feedback(conversation_id,feedback)
-    except Exception as e:
-        return HTTPException(400,e)  
-
-    
+        raise HTTPException(status_code=400, detail=str(e))
