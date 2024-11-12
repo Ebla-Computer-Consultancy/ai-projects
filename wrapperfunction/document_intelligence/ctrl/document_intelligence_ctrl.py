@@ -6,4 +6,6 @@ router = APIRouter()
 
 @router.post("/document-intelligence")
 def document_intelligence(model_id: str = "prebuilt-layout", file: UploadFile = File()):
-    return documentintelligenceservice.analyze_file(model_id, file)
+    return documentintelligenceservice.analyze_file(
+        model_id, "document_intelligence_chatbot", file
+    )

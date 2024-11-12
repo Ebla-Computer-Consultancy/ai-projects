@@ -15,6 +15,7 @@
         "documentintelligenceconnector",
         "documentintelligenceservice",
         "languageconfig",
+        "openaiconnector",
         "pydub",
         "readall",
         "rera",

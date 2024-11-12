@@ -11,7 +11,7 @@ from fastapi import status, HTTPException
 async def chat(bot_name: str, chat_payload: ChatPayload):
     try:
         chat_history_with_system_message = prepare_chat_history_with_system_message(
-            chat_payload
+            chat_payload, bot_name
         )
         chatbot_settings = config.load_chatbot_settings(bot_name)
         # Get response from OpenAI ChatGPT
@@ -36,7 +36,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
     try:
         chat_history_with_system_message = prepare_chat_history_with_system_message(
-            chat_payload
+            chat_payload, bot_name
         )
         chatbot_settings = config.load_chatbot_settings(bot_name)
         # Get response from OpenAI ChatGPT
@@ -49,7 +49,7 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
 
 
-def prepare_chat_history_with_system_message(chat_payload):
+def prepare_chat_history_with_system_message(chat_payload, bot_name):
     chat_history_arr = chat_payload.messages
     if bool(len([x for x in chat_history_arr if x.role == "system"])):
         raise HTTPException(
@@ -59,11 +59,11 @@ def prepare_chat_history_with_system_message(chat_payload):
     is_ar = is_arabic(chat_history_arr[-1].content)
     if chat_payload.stream_id:
         if is_ar:
-            system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
+            system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.load_chatbot_settings(bot_name).system_message}"
         else:
-            system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
+            system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
     else:
-        system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
+        system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language."
 
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})

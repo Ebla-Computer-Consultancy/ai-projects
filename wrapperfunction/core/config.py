@@ -37,7 +37,6 @@ RERA_DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
 DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
 
-SYSTEM_MESSAGE = os.getenv("SYSTEM_MESSAGE")
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 
 
@@ -60,12 +59,19 @@ def load_chatbot_settings(bot_name: str):
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
             custom_settings = CustomSettings(temperature=temperature)
+            custom_settings = CustomSettings(temperature=temperature)
             chatbot = ChatbotSetting(
                 name=chatbot_obj["name"],
                 index_name=chatbot_obj["index_name"],
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj["examples"],
                 custom_settings=custom_settings,
             )
             return chatbot
     return ChatbotSetting(
-        name=ENTITY_NAME, index_name=ENTITY_NAME, custom_settings=None
+        name=ENTITY_NAME,
+        index_name=ENTITY_NAME,
+        system_message="",
+        examples=[],
+        custom_settings=None,
     )
