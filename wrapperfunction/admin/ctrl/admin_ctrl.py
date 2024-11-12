@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request
 # import wrapperfunction.admin.service.admin_service as adminservice
 from fastapi import HTTPException , File, Form
-from wrapperfunction.admin.model.crawl_model import IndexerRequest, MediaCrawlRequest, MediaRequest
+from wrapperfunction.admin.model.crawl_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
-from wrapperfunction.search.integration.aisearch_connector import search_query
 
 # import wrapperfunction.admin.model.crawl_model as CrawlRequest
 
@@ -13,19 +12,6 @@ router = APIRouter()
 async def crawl(request: Request):
     try:
         return await admin_service.crawl(request)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/media/search")
-async def media_search(request:MediaRequest):
-    try:
-        return await admin_service.media_search(request.search_text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-@router.post("/media/crawl")   
-async def media_crawl(request:MediaCrawlRequest):
-    try:
-        return await admin_service.media_crawl(request.topics,request.urls)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

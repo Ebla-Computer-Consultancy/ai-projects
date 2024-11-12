@@ -11,6 +11,9 @@ from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from bs4 import BeautifulSoup
 import requests
+from fpdf import FPDF
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
@@ -281,9 +284,35 @@ def saveTopicsMedia(links: list, topics: list):
                         img_file.write(img_response.content)
 
                 # Save unique paragraphs
-                with open(f"{parag_folder_name}/{file_name}.docx", "w", encoding="utf-8") as file:
+                with open(f"{parag_folder_name}/{file_name}.pdf", "w", encoding="utf-8") as file:
                     for paragraph in relevant_texts:
                         file.write(paragraph + "\n")
 
     except Exception as e:
         print(f"ERROR Saving Results: {str(e)}")
+
+def create_pdf_file(text,file_path):
+    # Create a directory for the reports if it doesn't exist
+        os.makedirs("rera_reports", exist_ok=True)
+
+        # Reshape the Arabic text for correct character connection
+        reshaped_text = arabic_reshaper.reshape(text)
+        bidi_text = get_display(reshaped_text)  
+
+        # Initialize FPDF instance
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+
+        # # Use an Arabic font 
+        font_path = r"wrapperfunction\\core\\utls\\arabic-font\Adobe Arabic Regular.ttf"
+        print(f'fornt-path: {font_path}')
+        pdf.add_font("Arabic-Font", "", font_path, uni=True)
+        pdf.set_font("Arabic-Font", size=16)
+
+        # Add Arabic text to PDF
+        pdf.multi_cell(0, 10, bidi_text, align='R') 
+
+        # Save the PDF file
+        output_path = file_path
+        pdf.output(output_path)
