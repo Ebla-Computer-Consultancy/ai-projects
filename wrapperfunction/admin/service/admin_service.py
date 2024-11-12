@@ -5,11 +5,8 @@ import requests
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
-from wrapperfunction.chatbot.integration.openai_connector import chat_completion
 from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-from wrapperfunction.search.integration.aisearch_connector import search_query
-
 
 def crawl(request):
     link = request.query_params.get('link')
@@ -84,13 +81,18 @@ async def resetIndexer(name: str):
                              ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 async def runIndexer(name: str):
     try:
-        url = f"https://reraaisearch01.search.windows.net/indexers/{name}/run?api-version=2024-07-01"
+        url = f"{SEARCH_ENDPOINT}/indexers/{name}/run?api-version={OPENAI_API_VERSION}"
         headers = {
             "Content-Type": "application/json",
             "api-key": SEARCH_KEY
         }
         requests.post(url=url,headers=headers)
+        return ServiceReturn(
+                            status=StatusCode.SUCCESS,
+                            message=f"{name} Indexer Is Running Successfuly", 
+                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
