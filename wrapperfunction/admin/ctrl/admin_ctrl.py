@@ -1,11 +1,9 @@
 
-from typing import List
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from wrapperfunction.admin.model.indexer_model import IndexerRequest,IndexInfo
 import wrapperfunction.admin.service.admin_service as admin_service
 import wrapperfunction.admin.service.blob_service as blob_service
 from fastapi import HTTPException
-
 
 router = APIRouter()
 
@@ -57,9 +55,10 @@ async def reset_index(index_name: str):
 @router.post("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
-        return admin_service.delete_indexes(index_name, key, value)
+        return admin_service.delete_indexes(index_name,key,value)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 
 @router.post("/run_index/{index_name}")
 async def run_index(index_name: str):
