@@ -19,3 +19,7 @@ azure-ai-documentintelligence
 azure-ai-textanalytics
 azure-data-tables
 pandas
+fpdf
+arabic_reshaper
+bs4
+bidi
