@@ -7,11 +7,9 @@ import requests
 
 
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, getAllNewsLinks, process_and_upload, run_crawler, saveTopicsMedia, transcript_pdfs
-from wrapperfunction.admin.integration.storage_connector import push_To_Container
 from wrapperfunction.chatbot.integration.openai_connector import chat_completion, chat_completion_mydata
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
-from wrapperfunction.search.integration.aisearch_connector import search_query
 
 def crawl(request):
     link = request.query_params.get('link')

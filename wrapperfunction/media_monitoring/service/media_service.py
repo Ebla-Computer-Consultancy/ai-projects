@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from wrapperfunction.admin.ctrl.admin_ctrl import resetIndexer, runIndexer
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
-from wrapperfunction.admin.integration.storage_connector import push_To_Container
+from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion_mydata
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
@@ -41,14 +41,20 @@ async def media_search(search_text: str):
 async def media_crawl(topics: list, urls: list):
     try:
         #1 get data
-        links = getAllNewsLinks(urls)
-        saveTopicsMedia(links=links, topics=topics)
+        links = getAllNewsLinks(urls=urls,media_config_path="wrapperfunction\core\settings\media.json")
         #2 save to blob storage
-        push_To_Container("rera_media_data",RERA_STORAGE_CONNECTION,"rera-media")
+        saveTopicsMedia(
+            news_links=links,
+            config_file_path="wrapperfunction\core\settings\media.json", 
+            topics=topics,container_name="rera-media",
+            connection_string=RERA_STORAGE_CONNECTION
+            )
         #3 reset indexer
-        res = await resetIndexer(name="rera-media-indexer")
-        #4 run indexer
-        res = await runIndexer(name="rera-media-indexer")
+        res = await admin_service.resetIndexer(name="rera-media-indexer")
+        # # #4 run indexer
+        res2 = await admin_service.runIndexer(name="rera-media-indexer")
         return JSONResponse(content={"message": "web crawl done succefuly"}, status_code=200)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
