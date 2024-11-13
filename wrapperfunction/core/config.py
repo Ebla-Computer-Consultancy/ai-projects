@@ -2,6 +2,7 @@ import json
 import os
 from dotenv import load_dotenv
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -29,7 +30,6 @@ RERA_SUBFOLDER_NAME = os.getenv("SUBFOLDER_NAME")
 RERA_DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
 DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
-SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
 MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
@@ -41,6 +41,7 @@ AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -69,11 +70,11 @@ def load_chatbot_settings(bot_name: str):
                                              max_history_length=max_history_length,
                                             )
             chatbot = ChatbotSetting(
-                name = chatbot_obj["name"],
-                index_name = chatbot_obj.get("index_name", None),
-                system_message = chatbot_obj["system_message"],
-                examples = chatbot_obj.get("examples", []),
-                custom_settings = custom_settings,
+                name=chatbot_obj["name"],
+                index_name=chatbot_obj.get("index_name", None),
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj.get("examples", []),
+                custom_settings=custom_settings,
             )
             return chatbot
 
