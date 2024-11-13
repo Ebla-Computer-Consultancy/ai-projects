@@ -1,4 +1,5 @@
 import json
+from typing_extensions import override
 from wrapperfunction.core import config
 from openai import AzureOpenAI
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
@@ -18,7 +19,9 @@ def generate_embeddings(text):
     )
 
 
-def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system_message):
+def chat_completion_mydata(
+    chatbot_setting: ChatbotSetting, chat_history, system_message
+):
     completion = client.chat.completions.create(
         model=config.OPENAI_CHAT_MODEL,
         messages=chat_history,
@@ -36,7 +39,8 @@ def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system
                     "parameters": {
                         "endpoint": config.SEARCH_ENDPOINT,
                         "index_name": chatbot_setting.index_name,
-                        "semantic_configuration": chatbot_setting.index_name+"-semantic-configuration",
+                        "semantic_configuration": chatbot_setting.index_name
+                        + "-semantic-configuration",
                         "query_type": "vector_semantic_hybrid",
                         # "query_type": "vector",
                         "fields_mapping": {
@@ -62,25 +66,22 @@ def chat_completion_mydata(chatbot_setting: ChatbotSetting, chat_history, system
             ]
         },
     )
-    compl_data = json.loads(completion.choices[0].json())
-    compl_data["usage"] = json.loads(completion.usage.json())
-    return compl_data
+    completion_data = json.loads(completion.choices[0].json())
+    completion_data["usage"] = json.loads(completion.usage.json())
+    return completion_data
 
 
-def chat_completion(system_message, user_message):
-    message_text = [{"role": "system", "content": system_message}]
-    message_text.append({"role": "user", "content": user_message})
+def chat_completion(chatbot_setting: ChatbotSetting, chat_history):
     completion = client.chat.completions.create(
         model=config.OPENAI_CHAT_MODEL,
-        messages=message_text,
-        temperature=0.7,
+        messages=chat_history,
+        temperature=chatbot_setting.custom_settings.temperature,
         max_tokens=1500,
         top_p=0.95,
         frequency_penalty=0,
         presence_penalty=0,
         stop=None,
     )
-    compl_data = json.loads(completion.choices[0].json())
-    compl_data["usage"] = json.loads(completion.usage.json())
-    
-    return compl_data
+    completion_data = json.loads(completion.choices[0].json())
+    completion_data["usage"] = json.loads(completion.usage.json())
+    return completion_data
