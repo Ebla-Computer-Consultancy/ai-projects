@@ -64,5 +64,16 @@ def upload_json_to_azure(content, container_name, blob_name, connection_string):
 
     # Upload the content directly to Azure Blob
     blob_client.upload_blob(BytesIO(content_bytes), overwrite=True)
-    print(f"\nUploaded text content to {blob_name}\n")
+    print(f"\nUploaded content to {blob_name}\n")
+    
+def upload_pdf_to_azure(content, container_name, blob_name, connection_string):
+    print(f"\nUploading PDF to Azure...\n")
+    
+    # Create Blob Service Client and upload directly from the in-memory buffer
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+
+    # Upload the in-memory PDF
+    blob_client.upload_blob(BytesIO(content), overwrite=True)
+    print(f"\nUploaded PDF content to {blob_name} in container {container_name}.\n")
            
