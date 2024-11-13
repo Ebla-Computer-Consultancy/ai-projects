@@ -15,3 +15,7 @@ azure-storage-blob
 pydub
 scrapy
 num2words
+fpdf
+arabic_reshaper
+bs4
+bidi
