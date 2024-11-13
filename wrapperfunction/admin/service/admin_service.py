@@ -8,18 +8,13 @@ from fastapi import HTTPException
 from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data, get_index_info,reset_indexed_data,run_indexer
 from fastapi.responses import JSONResponse
 
-
-
 def delete_indexes(index_name: str, key: str, value):
     try:
         delete_indexed_data(index_name, key, value)
-        return JSONResponse(
-            content={"message": f"index '{index_name} deleted successfully."},
-            status_code=200,
-        )
+        return JSONResponse(content={"message": f"index '{index_name} deleted successfully."}, status_code=200)
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
-    
+
 async def resetIndexer(name: str):
     try:
         url = f"{SEARCH_ENDPOINT}/indexers/{name}/reset?api-version={OPENAI_API_VERSION}"
@@ -63,7 +58,7 @@ def run_index(index_name: str):
         return JSONResponse(content={"message": f"index '{index_name} reloaded successfully."}, status_code=200)
     except:
         raise HTTPException(status_code=404, detail="index not found")
-    
+
 def index_info(index_name: str):
     try:
         return get_index_info(index_name)
