@@ -17,4 +17,5 @@ scrapy
 num2words
 azure-ai-documentintelligence
 azure-ai-textanalytics
+azure-data-tables
 
