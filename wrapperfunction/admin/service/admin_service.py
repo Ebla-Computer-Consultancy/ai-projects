@@ -1,24 +1,14 @@
 import json
+from urllib.parse import unquote
 import requests
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data
 from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
-from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
+from wrapperfunction.core.config import OPENAI_API_VERSION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
-
-def crawling(
-    urls: list[str],
-    headers: dict = None,
-    cookies: dict = None,
-    deepCrawling: bool = False,
-):
-    run_crawler(urls, headers, cookies, deepCrawling)
-    return "urls crawled successfully"
-
-
-async def delete_blob(metadata_key, metadata_value):
+async def delete_blob(metadata_key,metadata_value):
     if not metadata_key or not metadata_value:
         raise HTTPException(status_code=400, detail="Missing required parameters")
     try:
@@ -54,26 +44,20 @@ async def delete_subfolder(request):
     except:
         raise HTTPException(status_code=404, detail="Subfolder not found")
 
-
-def edit_blob(new_content_file, metadata_key, metadata_value):
+def edit_blob(new_content_file,metadata_key,metadata_value):
     try:
         new_content = json.load(new_content_file.file)  #
         new_content_file.file.seek(0)
         print(new_content_file.file.read())
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to read new content file: {str(e)}"
-        )
-    edit_blob_by_new_jsonfile(metadata_key, metadata_value, new_content)
+        raise HTTPException(status_code=500, detail=f"Failed to read new content file: {str(e)}")
+    edit_blob_by_new_jsonfile(metadata_key,metadata_value,new_content)
+    
 
-
-def delete_indexes(index_name: str, key: str, value):
+def delete_indexes(index_name: str, key:str, value):
     try:
         delete_indexed_data(index_name, key, value)
-        return JSONResponse(
-            content={"message": f"index '{index_name} deleted successfully."},
-            status_code=200,
-        )
+        return JSONResponse(content={"message": f"index '{index_name} deleted successfully."}, status_code=200)
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
     
