@@ -55,7 +55,7 @@ async def delete_subfolder(request):
         raise HTTPException(status_code=404, detail="Subfolder not found")
 
 
-def edit_blob(new_content_file, metadata_key, metadata_value):
+def edit_blob(new_content_file,metadata_key,metadata_value):
     try:
         new_content = json.load(new_content_file.file)  #
         new_content_file.file.seek(0)

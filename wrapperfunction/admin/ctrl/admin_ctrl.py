@@ -1,32 +1,10 @@
 
-from fastapi import HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
 
 router = APIRouter()
-
-
-# new crawling request
-@router.post("/crawl")
-async def crawl(
-    urls: List[str],
-    headers: dict = None,
-    cookies: dict = None,
-    deepCrawling: bool = False,
-):
-    try:
-        return admin_service.crawl(link)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/scrape")
-async def scrape(file: UploadFile, container_name: str):
-    try:
-        return admin_service.scrape(file, container_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/delete_subfolder")
@@ -60,16 +38,6 @@ async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# @router.post("/edit_blob/")
-# async def edit_blob(metadata_key: str, metadata_value: str,
-#                     new_content_file: UploadFile = File()):
-#     try:
-#         # Read the content of the file
-#         return admin_service.edit_blob(new_content_file,metadata_key,metadata_value)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-@router.post("/add_pdfs/")
 async def add_pdfs(request: Request):
     try:
         return await admin_service.add_pdfs()
