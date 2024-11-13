@@ -2,6 +2,7 @@ from io import BytesIO
 from turtle import pd
 import uuid
 import os
+import re
 import json
 from fastapi import HTTPException
 from scrapy.crawler import CrawlerProcess
@@ -132,6 +133,7 @@ def delete_blob(
         subfolder_name, container_name, connection_string
     )
     for blob in blobs:
+        print("alaaa")
         blob_client = container_client.get_blob_client(blob)
         blob_metadata = blob_client.get_blob_properties().metadata
         if metadata_key == None:
