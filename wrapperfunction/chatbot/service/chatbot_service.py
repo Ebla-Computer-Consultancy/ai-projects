@@ -4,7 +4,7 @@ from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.model.chat_message import Roles
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
-import wrapperfunction.avatar.service.avatar_service as avatarservice
+import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
 from fastapi import status, HTTPException
 
 
@@ -22,9 +22,9 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         )
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
-            # await integration.avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'])
+            # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
             asyncio.create_task(
-                avatarservice.render_text_async(
+                avatarconnector.render_text_async(
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
             )
