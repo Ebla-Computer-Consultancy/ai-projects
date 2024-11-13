@@ -1,10 +1,22 @@
 import json
-from wrapperfunction.admin.integration.storage_connector import upload_file_to_azure
-
+from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urljoin, urlparse
+
+AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
+BLOB_CONTAINER_NAME = config.RERA_CONTAINER_NAME
+SUBFOLDER_NAME = config.RERA_SUBFOLDER_NAME
+
+def filter_json2file(item, folder_path, return_flag= True):
+    individual_filename = process_text_name(item["url"])
+    individual_filename = f'item_{individual_filename}.json'
+    individual_filepath = f'{folder_path}/{individual_filename}'
+    with open(individual_filepath, 'w', encoding="utf-8") as file:
+        json.dump(item, file, ensure_ascii=False)
+    if return_flag:
+        return individual_filepath, individual_filename
 
 def get_all_Links_in_urls(urls: list):
     try:
