@@ -5,23 +5,37 @@ import json
 import os
 import requests
 
-
 def process_text_name(txt):
     # Remove URL components
-    individual_filename = (
-        txt.replace("https://", "")
-        .replace("http://", "")
-        .replace("www.", "")
-        .replace(".com", "")
-    )
-
+    individual_filename = txt.replace("https://", '').replace("http://", '').replace("www.", '').replace(".com", '')
+    
     # Replace special characters with underscores
-    individual_filename = re.sub(r"[?+.=\_\\\/|%]", "-", individual_filename)
-    individual_filename = re.sub(r"__", "-", individual_filename)
+    individual_filename = re.sub(r'[?+.=\_\\\/|%]', '-', individual_filename)
+    individual_filename = re.sub(r'__', '-', individual_filename)
     # Truncate if the filename is too long
     if len(individual_filename) >= 40:
-        individual_filename = individual_filename[:25] + individual_filename[-30:]
+        individual_filename = individual_filename[:25] + individual_filename[-30:]    
     return individual_filename
+
+def download_pdfs(input_file, output_folder):
+    # Load the input JSON
+    with open(input_file, 'r', encoding='utf8') as file:
+        data = json.load(file)
+    
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
+    
+    for item in data:
+        if 'pdf_url' in item:
+            pdf_url = item['pdf_url']
+            title = item.get('title', pdf_url.split('/')[-1])  # Use title if available, otherwise filename from URL
+            
+            # Download the PDF
+            response = requests.get(pdf_url)
+            pdf_path = os.path.join(output_folder, title)
+            
+            with open(pdf_path, 'wb') as pdf_file:
+                pdf_file.write(response.content)
 
 
 def download_pdfs(input_file, output_folder):
