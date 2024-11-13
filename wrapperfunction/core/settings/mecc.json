@@ -1,0 +1,59 @@
+{
+  "chatbots": [
+    {
+      "name": "document_intelligence_chatbot",
+      "system_message": "you are an intelligent assistant called Chemisto, keen on extracting chemical elements, trade details, manufacturer information, case details, product status, storage information, prevention methods, control methods, classification details, hs-code details and un-no details. and return the result as json formate.",
+      "custom_settings": {
+        "temperature": 0.1
+      },
+      "examples": [
+        {
+          "role": "user",
+          "content": "{'content':'Supelco® ®\\nwww.sigmaaldrich.com\\nSAFETY DATA SHEET according to Regulation (EC) No. 1907/2006\\nVersion 6.9 Revision Date 26.11.2023 Print Date 18.07.2024\\nGENERIC EU MSDS - NO COUNTRY SPECIFIC DATA - NO OEL DATA\\nSECTION 1: Identification of the substance/mixture and of the company/undertaking\\n1.1 Product identifiers\\nProduct name\\n: Dissolved Oxygen\\nProduct Number\\n: QC1549\\nBrand\\n: Sigma-Aldrich\\nREACH No.\\n: This product is a mixture. REACH Registration Number see section 3.\\n1.2 Relevant identified uses of the substance or mixture and uses advised against\\nIdentified uses : Laboratory chemicals, Manufacture of substances\\nUses advised against : For R&D use only. Not for pharmaceutical, household or other uses.\\n1.3 Details of the supplier of the safety data sheet\\nCompany\\n: Sigma-Aldrich Chemie GmbH Eschenstrasse 5 D-82024 TAUFKIRCHEN\\nTelephone\\n: +49 (0)89 6513-1130\\nFax\\n: +49 (0)89 6513-1161\\nE-mail address\\n: technischerservice@merckgroup.com\\n1.4 Emergency telephone\\nEmergency Phone # : 0800 181 7059 (CHEMTREC Deutschland) +49 (0)696 43508409 (CHEMTREC weltweit)\\nSECTION 2: Hazards identification\\n2.1 Classification of the substance or mixture\\nClassification according to Regulation (EC) No 1272/2008 Serious eye damage (Category 1), H318\\nFor the full text of the H-Statements mentioned in this Section, see Section 16.\\n2.2 Label elements\\nLabelling according Regulation (EC) No 1272/2008\\nSigma-Aldrich- QC1549\\nThe life science business of Merck operates as MilliporeSigma in the US and Canada\\nPage 1 of 12\\nPictogram\\nSignal Word\\nHazard Statements H318\\nDanger\\nCauses serious eye damage.\\nPrecautionary Statements P280 P305 + P351 + P338\\nWear eye protection/ face protection. IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\\nSupplemental Hazard Statements\\nnone\\n2.3 Other hazards\\nThis substance/mixture contains no components considered to be either persistent, bioaccumulative and toxic (PBT), or very persistent and very bioaccumulative (vPvB) at levels of 0.1% or higher.\\nEcological information:\\nThe substance/mixture does not contain components considered to have endocrine disrupting properties according to REACH Article 57(f) or Commission Delegated regulation (EU) 2017/2100 or Commission Regulation (EU) 2018/605 at levels of 0.1% or higher.\\nToxicological information:\\nThe substance/mixture does not contain components considered to have endocrine disrupting properties according to REACH Article 57(f) or Commission Delegated regulation (EU) 2017/2100 or Commission Regulation (EU) 2018/605 at levels of 0.1% or higher.\\nSECTION 3: Composition/information on ingredients\\n3.2 Mixtures\\nComponent\\nClassification\\nConcentration\\nHydrogen Peroxide\\nCAS-No.\\n7722-84-1\\nOx. Liq. 1; Acute Tox. 4;\\n>= 10 - < 20\\nEC-No.\\n231-765-0\\nSkin Corr. 1A; Eye Dam.\\n%\\nIndex-No.\\n008-003-00-9\\n1; STOT SE 3; Aquatic\\nRegistration\\n01-2119485845-22-\\nChronic 3; H271, H302,\\nnumber\\nxxXX\\nH332, H314, H318, H335, H412 Concentration limits: >= 70 %: Ox. Liq. 1, H271; 50 - < 70 %: Ox. Liq. 2, H272; >= 70 %: Skin Corr. 1A, H314; 50 - < 70 %: Skin Corr. 1B, H314; 35 - < 50 %: Skin\\nSigma-Aldrich- QC1549\\nThe life science business of Merck operates as MilliporeSigma in the US and Canada\\nPage 2 of 12','tables':[{'cells':[{'content':'Product name'},{'content':': Dissolved Oxygen'},{'content':'Product Number'},{'content':': QC1549'},{'content':'Brand'},{'content':': Sigma-Aldrich'},{'content':'REACH No.'},{'content':': This product is a mixture. REACH Registration Number see section 3.'}]},{'cells':[{'content':'Company'},{'content':': Sigma-Aldrich Chemie GmbH Eschenstrasse 5 D-82024 TAUFKIRCHEN'},{'content':'Telephone'},{'content':': +49 (0)89 6513-1130'},{'content':'Fax'},{'content':': +49 (0)89 6513-1161'},{'content':'E-mail address'},{'content':': technischerservice@merckgroup.com'}]},{'cells':[{'kind':'columnHeader','columnSpan':2,'content':'Component'},{'kind':'columnHeader','content':'Classification'},{'kind':'columnHeader','content':'Concentration'},{'columnSpan':4,'content':'Hydrogen Peroxide'},{'content':'CAS-No.'},{'content':'7722-84-1'},{'content':'Ox. Liq. 1; Acute Tox. 4;'},{'content':'>= 10 - < 20'},{'content':'EC-No.'},{'content':'231-765-0'},{'content':'Skin Corr. 1A; Eye Dam.'},{'content':'%'},{'content':'Index-No.'},{'content':'008-003-00-9'},{'content':'1; STOT SE 3; Aquatic'},{'content':''},{'content':'Registration'},{'content':'01-2119485845-22-'},{'content':'Chronic 3; H271, H302,'},{'content':''},{'content':'number'},{'rowSpan':2,'content':'xxXX'},{'rowSpan':2,'content':'H332, H314, H318, H335, H412 Concentration limits: >= 70 %: Ox. Liq. 1, H271; 50 - < 70 %: Ox. Liq. 2, H272; >= 70 %: Skin Corr. 1A, H314; 50 - < 70 %: Skin Corr. 1B, H314; 35 - < 50 %: Skin'},{'rowSpan':2,'content':''},{'content':''}]}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{'manufacturer':{'producer':'','supplier':'','company-name':'','manufacturer-supplier':'','manufacturers-name-and-Address':''},'trade-name':{'product-name':'','commercial-name':'','brand-name':'','product-identifier':'','proprietary-name':'','common-name':''},'chemical-name':{'substance-name':'','scientific-name':'','iupac-name':'','proper-Chemical-name':'','systematic-name':''},'cas-no':{'cas-registry-number':'','chemical-abstracts-service-number':'','cas-number':'','cas-identification-number':'','cas-rn':''},'state':{'physical-state':'','form':'','appearance':'','condition-Solid-Liquid-Gas':'','state-of-matter':''},'storage-condition':{'storage-requirements':'','storage-guidelines':'','storage-instructions':'','storage-information':'','storage-recommendations':''},'prevention-method':{'preventative-measures':'','safety-precautions':'','preventive-actions':'','hazard-prevention':'','precautionary-measures':''},'control-method':{'control-measures':'','exposure-controls':'','protection-measures':'','control-procedures':'','engineering-controls':''},'classification':{'hazard-classification':'','risk-classification':'','hazard-category':'','hazard-class':'','ghs-classification-globally-harmonized-system':''},'hs-code':{'harmonized-system-code':'','harmonized-tariff-code':'','hts-code':'','customs-code':'','tariff-code':''},'un-no':{'un-number':'','un-identification-number':'','united-nations-number':'','un-id':'','un-hazard-number':''}}"
+        }
+      ]
+    }
+  ],
+  "dict_AR": {
+    "مشيرب": "مِشِيرِبْ",
+    "فريج عبد العزيز": "فِريجْ عبد العزيزْ",
+    "الدوحة الجديدة": "الدَّوْحَة الجَدِيدَهْ",
+    "الغنيم": "الغَانم",
+    "العتيق": "العَتِيقْ",
+    "الرفاع": "الرِّفَاع",
+    "الهتمي العتيق": "الهِتْميّ العَتِيقْ",
+    "السلطة": "أسْلَطَة",
+    "اسلطة": "أسْلَطَة",
+    "فريج بن محمود": "فِريجْ بِنْ مَحْمُود",
+    "روضة الخيل": "رَوْضَةْ الخَيْل",
+    "فريج بن درهم": "فِريجْ بْن دِرْهَمْ",
+    "المنصورة": "المَنْصُورَهْ",
+    "نجمة": "نَجْمَة",
+    "أم غويلينة": "أُم غُوَيْلِينَه",
+    "أم غويلينية": "أُم غُوَيْلِينَه",
+    "الخليفات": "لخْلِيفَاتْ",
+    "السد": "السَّد",
+    "وفريج النصر": "فِريجْ النصرْ",
+    "المرقاب الجديد": "المِرْقَاب الجَدِيد",
+    "منطقة المطار": "مِنْطَقَةْ المَطَار",
+    "القصار": "القَصَّارْ",
+    "الدفنة": "الدَّفْنَهْ",
+    "عنيزة": "عِنِيْزهْ",
+    "الخليج الغربي": "الخَلِيج الغَربِيْ",
+    "لقطيقة": "لِقْطِيفِيةْ",
+    "لقطيفة": "لِقْطِيفِيةْ",
+    "لقطيفية": "لِقْطِيفِيةْ",
+    "اللؤلؤة": "اللُّؤْلُؤَهْ",
+    "لوسيل": "لُوسِيل",
+    "خرايج": "خَرَايِجْ",
+    "جبل ثعلب": "جَبَل ثِعِيلَبْ",
+    "جبل ثعالب": "جَبَل ثِعِيلَبْ",
+    "منتجع الخور": "مُنْتَجَع الخُورْ",
+    "تملك": "تَمَلُّك",
+    "الغرافة": "الغَرَّافة"
+  }
+}
