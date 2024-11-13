@@ -2,8 +2,10 @@ from urllib import request
 import uuid
 import os
 import json
+from io import BytesIO
 from scrapy.crawler import CrawlerProcess
 from azure.storage.blob import BlobServiceClient, BlobBlock
+from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
 from wrapperfunction.core.utls.spiders.crawling_spider import CrawlingSpider
 from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
@@ -14,6 +16,7 @@ import requests
 from fpdf import FPDF
 import arabic_reshaper
 from bidi.algorithm import get_display
+from urllib.parse import urljoin, urlparse, quote
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
@@ -216,80 +219,58 @@ def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORA
         if blob.name.endswith(".pdf"):
             process_pdf(blob.name)
 
-def getAllNewsLinks(urls: str):
+def getAllNewsLinks(urls: list, media_config_path: str):
     try:
-        news_links = []
+        # Load the JSON configuration from the specified file
+        with open(media_config_path, 'r') as file:
+            media_config = json.load(file)
+
+        # Extract the list of web URLs and target classes
+        web_urls = media_config.get("web_urls", [])
+        target_classes = media_config.get("a_class", [])
+        
+        # Initialize a list to store the links
+        news_links_list = []
+
+        # Iterate over the provided URLs
         for url in urls:
+            # If the URL is not in the list of web URLs in the config, skip it
+            if url not in web_urls:
+                print(f"URL {url} is not in the configured web URLs. Skipping.")
+                continue
+
+            # Fetch and parse the HTML content of the URL
             response = requests.get(url)
             html_content = response.content
-
             soup = BeautifulSoup(html_content, "html.parser")
-            news_links.extend([link["href"] for link in soup.find_all("a",class_="mkdf-btn mkdf-btn-medium mkdf-btn-simple mkdf-blog-list-button")])  #
-        return news_links
+
+            # Initialize a list to store links for the current URL
+            links = []
+
+            # Search for <div> elements with the specified classes
+            for div_class in target_classes:
+                divs = soup.find_all("div", class_=div_class)
+
+                # Within each <div>, find all <a> tags and retrieve their href attributes
+                for div in divs:
+                    for link in div.find_all("a", href=True):
+                        href = link["href"]
+                        if "#" not in href:
+                            # If href is relative, convert it to an absolute URL
+                            absolute_href = urljoin(url, href) if not href.startswith(url) else href
+                            if absolute_href not in links:
+                                links.append(absolute_href)                       
+
+            # Add the URL and its links to the final JSON structure
+            news_links_list.append({
+                "url": url,
+                "links": links
+            })
+
+        return news_links_list
+
     except Exception as e:
         return f"ERROR getting links: {str(e)}"
-    
-def saveTopicsMedia(links: list, topics: list):
-    try:
-        for idx, link in enumerate(links):
-            print(f"\nLINK {idx + 1}: {link}\n\n")
-            response = requests.get(link)
-            html_content = response.content
-
-            soup = BeautifulSoup(html_content, "html.parser")
-
-            # Initialize sets to store unique texts and image links
-            relevant_texts = set()
-            unique_imgs_links = set()
-
-            file_name = None
-
-            # Find div elements containing topics
-            for div in soup.find_all("div"):
-                h2_text = div.find("h2")
-                p_text = div.find("p")
-
-                # Check for topics in h2 tags
-                if h2_text and any(topic in h2_text.get_text(strip=True) for topic in topics):
-                    if not file_name:  
-                        file_name = h2_text.get_text(strip=True).replace(" ", "_")[:50]
-                    relevant_texts.add(h2_text.get_text(strip=True))
-                
-                # Check for topics in p tags
-                if p_text and any(topic in p_text.get_text(strip=True) for topic in topics):
-                    relevant_texts.add(p_text.get_text(strip=True))
-
-            # Retrieve unique image links where the class contains "image"
-            for img in soup.find_all("img"):
-                if img.get("class") and any("image" in class_name for class_name in img.get("class")):
-                    unique_imgs_links.add(img["src"])
-
-            print(f"\nRelevant Texts: {list(relevant_texts)}\n")
-            print(f"\nUnique Images: {list(unique_imgs_links)}\n")
-
-            if relevant_texts and file_name:
-                # Create folder structure
-                folder_name = f"rera_media_data/{file_name}_{idx + 1}"
-                os.makedirs(folder_name, exist_ok=True)
-                img_folder_name = f"{folder_name}/images"
-                os.makedirs(img_folder_name, exist_ok=True)
-                parag_folder_name = f"{folder_name}/paragraphs"
-                os.makedirs(parag_folder_name, exist_ok=True)
-
-                # Save unique images
-                for img_idx, img_link in enumerate(unique_imgs_links):
-                    img_response = requests.get(img_link)
-                    img_filename = f"{img_folder_name}/{file_name}_{img_idx + 1}.png"
-                    with open(img_filename, "wb") as img_file:
-                        img_file.write(img_response.content)
-
-                # Save unique paragraphs
-                with open(f"{parag_folder_name}/{file_name}.pdf", "w", encoding="utf-8") as file:
-                    for paragraph in relevant_texts:
-                        file.write(paragraph + "\n")
-
-    except Exception as e:
-        print(f"ERROR Saving Results: {str(e)}")
 
 def create_pdf_file(text,file_path):
     # Create a directory for the reports if it doesn't exist
@@ -316,3 +297,97 @@ def create_pdf_file(text,file_path):
         # Save the PDF file
         output_path = file_path
         pdf.output(output_path)
+
+def saveTopicsMedia(news_links: list, topics: list, config_file_path: str, container_name: str, connection_string: str):
+    try:
+        # Load JSON configuration from the given file
+        with open(config_file_path, 'r') as config_file:
+            config = json.load(config_file)
+
+        # Extract target classes for p and img
+        target_p_classes = config.get("p_class", [])
+        target_img_classes = config.get("img_class", [])
+
+        for entry in news_links:
+            url = entry["url"]
+            links = entry["links"]
+
+            for link in links:
+                print(f"\nProcessing Link from {url}: {link}\n\n")
+                response = requests.get(link)
+                html_content = response.content
+
+                soup = BeautifulSoup(html_content, "html.parser")
+
+                # Initialize sets to store unique texts and filtered image links
+                relevant_texts = set()
+                filtered_imgs_links = set()
+
+                # Find div elements with specified p_class and extract unique paragraphs
+                for p_class in target_p_classes:
+                    for div in soup.find_all("div", class_=p_class):
+                        for p_tag in div.find_all("p"):
+                            paragraph_text = p_tag.get_text(strip=True)
+                            if any(topic in paragraph_text for topic in topics):
+                                relevant_texts.add(paragraph_text)
+
+                # Find div elements with specified img_class and extract unique image URLs
+                for img_class in target_img_classes:
+                    for div in soup.find_all("div", class_=img_class):
+                        for img_tag in div.find_all("img"):
+                            img_url = img_tag.get("src")
+                            print(f"url:{img_url}\n")
+                            if img_url:
+                                if "logo" not in img_url and is_valid_url(img_url, url):
+                                    if str(img_url).endswith(tuple([".png",".PNG",".JPG",".jpg",".jpeg",".JPEG"])): 
+                                        # Convert to absolute URL if it's relative
+                                        absolute_img_url = img_url if img_url.startswith('https') else urljoin(url, img_url)
+                                        filtered_imgs_links.add(absolute_img_url)
+                                else:
+                                    print(f"NOT Valid IMG_URL:{img_url}")
+                print(f"IMGS:\n{filtered_imgs_links}")
+                if relevant_texts:
+                    # Prepare JSON data to store in Azure Blob
+                    content_data = {
+                        "ref_url": url,
+                        "url": link,
+                        "content": "\n".join(relevant_texts),
+                        "images_urls": list(filtered_imgs_links)
+                    }
+
+                    # Convert JSON data to string for upload
+                    json_content = json.dumps(content_data, ensure_ascii=False)
+                    
+                    # Create the JSON filename
+                    link_filename = f"{link.replace('https://', '').replace('/', '_')}"
+                    folder_name = f"{url.replace('https://', '').replace('/', '_')}"
+                    blob_name = f"{folder_name}/{link_filename}.json"
+                    
+                    # Upload the JSON to Azure Blob Storage
+                    upload_json_to_azure(json_content, container_name, blob_name, connection_string)
+
+    except Exception as e:
+        print(f"ERROR Saving Results: {str(e)}")
+        
+
+def is_valid_url(img_url, base_url):
+    try:
+        # Combine with base URL if img_url is relative
+        absolute_url = urljoin(base_url, img_url)
+        if img_url.startswith(('http', 'https')):
+            absolute_url = img_url
+
+        # Parse and validate URL format
+        parsed_url = urlparse(absolute_url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            return False
+
+        # Send a HEAD request to check if the URL is reachable
+        response = requests.head(absolute_url, allow_redirects=True)
+        if response.status_code == 200:
+            return True
+        return False
+
+    except Exception as e:
+        print(f"Error checking URL {img_url}: {e}")
+        return False
