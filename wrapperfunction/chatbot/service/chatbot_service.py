@@ -60,13 +60,13 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             )        
         if not chat_payload.conversation_id:
            asyncio.create_task(
-              cosmos_db_service.add_history(
+              cosmos_db_service.add_entity(
                 user_message_entity,assistant_message_entity,conv_entity
                 ),
             )
         else:
          asyncio.create_task(
-              cosmos_db_service.add_history(user_message_entity,assistant_message_entity),
+              cosmos_db_service.add_entity(user_message_entity,assistant_message_entity),
             )
 
         return {"conversation_id": conversation_id, "results": results}

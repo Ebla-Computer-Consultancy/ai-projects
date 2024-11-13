@@ -7,7 +7,7 @@ from wrapperfunction.chat_history.model.Generic_Table_Client import GenericTable
 table_service_client = TableServiceClient.from_connection_string(conn_str=config.CONNECTION_STRING)
 
 
-async def add_to_history(table_name: str, entity: Dict[str, Any]):
+async def add_entity(table_name: str, entity: Dict[str, Any]):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     await generic_table_client.add_entity(entity)
 

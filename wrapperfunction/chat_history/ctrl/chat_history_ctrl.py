@@ -9,7 +9,7 @@ def get_chats(user_id: str):
     return historyservice.get_conversations(user_id)
 @router.get("/get-chat/")
 def get_chats(conv_id: str):
-    return historyservice.get_chat_history(conv_id)
+    return historyservice.get_messages(conv_id)
 
 
 @router.get("/get-all-conversations/")
