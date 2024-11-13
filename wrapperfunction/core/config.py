@@ -2,6 +2,7 @@ import json
 import os
 from dotenv import load_dotenv
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -29,13 +30,14 @@ RERA_SUBFOLDER_NAME = os.getenv("SUBFOLDER_NAME")
 RERA_DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
 DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
-SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
-MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
-CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CONVERSATION_TABLE")
-AZURE_TEXT_ANALYTICS_ENDPOINT=os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
-AZURE_TEXT_ANALYTICS_KEY=os.getenv("AZURE_TEXT_ANALYTICS_KEY")
+MESSAGE_TABLE_NAME = os.getenv("COSMOS_MESSAGE_TABLE")
+CONVERSATION_TABLE_NAME = os.getenv("COSMOS_CVONVERSATION_TABLE")
+AZURE_TEXT_ANALYTICS_ENDPOINT = os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
+AZURE_TEXT_ANALYTICS_KEY = os.getenv("AZURE_TEXT_ANALYTICS_KEY")
+
+
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -56,17 +58,16 @@ def load_chatbot_settings(bot_name: str):
             temperature = custom_settings_data.get("temperature", None)
             max_tokens = custom_settings_data.get("max_tokens", 800)
             top_p = custom_settings_data.get("top_p", 0.95)
-            tools = custom_settings_data.get("tools",None)
-            custom_settings = CustomSettings(temperature=temperature,
-                                             top_p=top_p,
-                                             max_tokens=max_tokens,
-                                             tools=tools)
+            tools = custom_settings_data.get("tools", None)
+            custom_settings = CustomSettings(
+                temperature=temperature, top_p=top_p, max_tokens=max_tokens, tools=tools
+            )
             chatbot = ChatbotSetting(
-                name = chatbot_obj["name"],
-                index_name = chatbot_obj.get("index_name", None),
-                system_message = chatbot_obj["system_message"],
-                examples = chatbot_obj.get("examples", []),
-                custom_settings = custom_settings,
+                name=chatbot_obj["name"],
+                index_name=chatbot_obj.get("index_name", None),
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj.get("examples", []),
+                custom_settings=custom_settings,
             )
             return chatbot
 
