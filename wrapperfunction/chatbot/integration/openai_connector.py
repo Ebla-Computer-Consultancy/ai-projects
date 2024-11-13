@@ -1,5 +1,4 @@
 import json
-from typing_extensions import override
 from wrapperfunction.core import config
 from openai import AzureOpenAI
 from wrapperfunction.core.model.entity_setting import ChatbotSetting

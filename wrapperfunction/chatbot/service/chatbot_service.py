@@ -52,7 +52,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
 
         if not chat_payload.conversation_id:
            asyncio.create_task(
-                chat_history_service .add_entity(
+                chat_history_service.add_entity(
                 user_message_entity,assistant_message_entity,conv_entity
                 ),
             )
