@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 
 from wrapperfunction.admin.ctrl.admin_ctrl import resetIndexer, runIndexer
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
+from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
 from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion_mydata
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
@@ -23,10 +24,10 @@ async def media_search(search_text: str):
             chat_history=chat_history
         )
 
-        create_pdf_file(chat_res["message"]["content"],f"rera_reports/{search_text}.pdf")
+        # create_pdf_file(chat_res["message"]["content"],f"rera_reports/{search_text}.pdf")
 
         # Push the file to the Azure container
-        push_To_Container(f"rera_reports", RERA_STORAGE_CONNECTION, "rera-media-reports")
+        upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
 
         return JSONResponse(
             content={
