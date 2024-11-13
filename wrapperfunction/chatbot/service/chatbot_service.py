@@ -7,31 +7,18 @@ import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
 from fastapi import status, HTTPException
 
-async def chat(bot_name: str,chat_payload: ChatPayload):
-    try:
-        chat_history_arr = chat_payload.messages
-        if bool(len([x for x in chat_history_arr if x.role == "system"])):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
-            )
-        chat_history = []
-        is_ar = is_arabic(chat_history_arr[-1].content)
-        if chat_payload.stream_id:
-            if is_ar:
-                system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.SYSTEM_MESSAGE}"
-            else:
-                system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
-        else:
-            system_message = f"{config.SYSTEM_MESSAGE}, I want you to detect the input language and responds in the same language."
 
-        system_message+=" If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
-        chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
-        for item in chat_history_arr:
-            chat_history.append(item.model_dump())
+async def chat(bot_name: str, chat_payload: ChatPayload):
+    try:
+        chat_history_with_system_message = prepare_chat_history_with_system_message(
+            chat_payload, bot_name
+        )
         chatbot_settings = config.load_chatbot_settings(bot_name)
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion_mydata(
-            chatbot_settings, chat_history, system_message
+            chatbot_settings,
+            chat_history_with_system_message["chat_history"],
+            chat_history_with_system_message["system_message"],
         )
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
@@ -44,6 +31,46 @@ async def chat(bot_name: str,chat_payload: ChatPayload):
         return results
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
+
+
+def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
+    try:
+        chat_history_with_system_message = prepare_chat_history_with_system_message(
+            chat_payload, bot_name
+        )
+        chatbot_settings = config.load_chatbot_settings(bot_name)
+        # Get response from OpenAI ChatGPT
+        results = openaiconnector.chat_completion(
+            chatbot_settings,
+            chat_history=chat_history_with_system_message["chat_history"],
+        )
+        return results
+    except Exception as error:
+        return json.dumps({"error": True, "message": str(error)})
+
+
+def prepare_chat_history_with_system_message(chat_payload, bot_name):
+    chat_history_arr = chat_payload.messages
+    if bool(len([x for x in chat_history_arr if x.role == "system"])):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
+        )
+    chat_history = []
+    is_ar = is_arabic(chat_history_arr[-1].content)
+    if chat_payload.stream_id:
+        if is_ar:
+            system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.load_chatbot_settings(bot_name).system_message}"
+        else:
+            system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
+    else:
+        system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language."
+
+    system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
+    chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
+    for item in chat_history_arr:
+        chat_history.append(item.model_dump())
+
+    return {"system_message": system_message, "chat_history": chat_history}
 
 
 def is_arabic(text):

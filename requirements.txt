@@ -15,3 +15,4 @@ azure-storage-blob
 pydub
 scrapy
 num2words
+azure-ai-documentintelligence
