@@ -10,6 +10,7 @@ python-dotenv
 pydantic
 fastapi
 azure-cognitiveservices-speech
+azure-ai-formrecognizer
 python-multipart
 azure-storage-blob
 pydub
