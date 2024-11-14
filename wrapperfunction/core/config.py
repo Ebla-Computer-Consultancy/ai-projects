@@ -60,7 +60,7 @@ def load_chatbot_settings(bot_name: str):
                 name=chatbot_obj["name"],
                 index_name=chatbot_obj["index_name"],
                 system_message=chatbot_obj["system_message"],
-                examples=chatbot_obj["examples"],
+                examples=chatbot_obj.get("examples", []),
                 custom_settings=custom_settings,
             )
             return chatbot
