@@ -21,14 +21,6 @@ async def crawl(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/scrape")
-async def scrape(file: UploadFile, container_name: str):
-    try:
-        return admin_service.scrape(file, container_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.post("/delete_subfolder")
 async def delete_subfolder():
     try:
