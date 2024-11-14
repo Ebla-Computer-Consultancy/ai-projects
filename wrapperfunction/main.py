@@ -7,6 +7,10 @@ from wrapperfunction.avatar.ctrl import avatar_ctrl
 from wrapperfunction.admin.ctrl import admin_ctrl
 from wrapperfunction.search.ctrl import search_ctrl
 from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctrl
+from wrapperfunction.chat_history.ctrl import chat_history_ctrl
+
+
+
 
 app = FastAPI()
 app.add_middleware(
@@ -32,3 +36,5 @@ app.include_router(
     prefix="/api/v1/document-intelligence",
     tags=["document-intelligence"],
 )
+
+app.include_router(chat_history_ctrl.router, prefix="/api/v1/chat_history", tags=["chat_history"])

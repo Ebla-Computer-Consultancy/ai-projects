@@ -6,6 +6,10 @@ from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
 from fastapi import status, HTTPException
+from wrapperfunction.chat_history.model.message_entity import MessageEntity
+from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
+import wrapperfunction.chat_history.service.chat_history_service as chat_history_service 
+import uuid
 
 
 async def chat(bot_name: str, chat_payload: ChatPayload):
@@ -13,6 +17,8 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         chat_history_with_system_message = prepare_chat_history_with_system_message(
             chat_payload, bot_name
         )
+        user_id = chat_payload.user_id or str(uuid.uuid4())
+        conversation_id = chat_payload.conversation_id or str(uuid.uuid4())   
         chatbot_settings = config.load_chatbot_settings(bot_name)
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion_mydata(
@@ -20,15 +26,42 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chat_history_with_system_message["chat_history"],
             chat_history_with_system_message["system_message"],
         )
+        user_message_entity = MessageEntity(
+        conversation_id=conversation_id,
+            content=chat_history_with_system_message["chat_history"][-1]["content"],  
+            role=Roles.User.value,
+        )
+        assistant_message_entity = MessageEntity(
+            conversation_id=conversation_id,
+            content=results["message"]["content"],  
+            role=Roles.Assistant.value
+        )
+        conv_entity=ConversationEntity(user_id, conversation_id,bot_name)
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
+  
             asyncio.create_task(
                 avatarconnector.render_text_async(
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
+                
             )
+
+
+        if not chat_payload.conversation_id:
+           asyncio.create_task(
+                chat_history_service.add_entity(
+                user_message_entity,assistant_message_entity,conv_entity
+                ),
+            )
+        else:
+           asyncio.create_task(
+                chat_history_service.add_entity(user_message_entity,assistant_message_entity),
+            )
+        results["message"]["conversation_id"] = conversation_id
         return results
+
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 
