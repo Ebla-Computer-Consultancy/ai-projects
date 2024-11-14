@@ -1,12 +1,9 @@
-import re
-import uuid
 from scrapy import Request
 from scrapy.exceptions import IgnoreRequest
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
+import re
 from scrapy.http import Request
-
-from wrapperfunction.core import config
 
 
 class CustomDuplicateFilterMiddleware:
@@ -79,23 +76,7 @@ class CrawlingSpider(CrawlSpider):
         "DOWNLOADER_MIDDLEWARES": {
             "scrapy.downloadermiddlewares.offsite.OffsiteMiddleware": None,
         },
-        "FEEDS": {
-            f"azure://{config.RERA_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{config.RERA_CONTAINER_NAME}/{config.RERA_SUBFOLDER_NAME}/{uuid.uuid4()}.json": {
-                "format": "json"
-            }
-        },
     }
-
-    def __init__(self, *args, **kwargs):
-        super(CrawlingSpider, self).__init__(*args, **kwargs)
-
-        self.start_urls = kwargs.pop("start_urls")[0].split(",")
-        sub = "https://"
-        self.allowed_domains = [x.replace(sub, "") for x in self.start_urls]
-        sub = "www."
-        self.allowed_domains = [x.replace(sub, "") for x in self.allowed_domains]
-
-    rules = (Rule(LinkExtractor(), callback="parse_item", follow=True),)
 
     def _build_request(self, rule_index, link):
         return Request(
@@ -108,6 +89,19 @@ class CrawlingSpider(CrawlSpider):
                 link_text=link.text,
             ),
         )
+
+    def __init__(self, *args, **kwargs):
+        super(CrawlingSpider, self).__init__(*args, **kwargs)
+
+        self.start_urls = kwargs.pop("start_urls")[0].split(",")
+        print(self.start_urls)
+        sub = "https://"
+        self.allowed_domains = [x.replace(sub, "") for x in self.start_urls]
+        sub = "www."
+        self.allowed_domains = [x.replace(sub, "") for x in self.allowed_domains]
+        # print("------------------------------------",self.allowed_domains,"------------------------------------")
+
+    rules = (Rule(LinkExtractor(), callback="parse_item", follow=True),)
 
     def parse_item(self, response):
         def remove_html_tags(text):
