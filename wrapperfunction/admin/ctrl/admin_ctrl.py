@@ -7,14 +7,6 @@ from wrapperfunction.admin.service import admin_service
 router = APIRouter()
 
 
-@router.post("/delete_subfolder")
-async def delete_subfolder():
-    try:
-        return await admin_service.delete_blob(request)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.delete("/delete_blob")
 async def delete_blob(metadata_key: str, metadata_value: str):
     try:
