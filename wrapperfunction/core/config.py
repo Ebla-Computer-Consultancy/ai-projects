@@ -2,7 +2,6 @@ import json
 import os
 from dotenv import load_dotenv
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
-from typing import Dict, Any
 # Load environment variables from .env file
 load_dotenv()
 

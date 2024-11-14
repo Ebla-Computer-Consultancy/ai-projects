@@ -19,5 +19,3 @@ class ChatbotSetting:
         self.system_message = system_message
         self.examples = examples
 
-        self.custom_settings = custom_settings if custom_settings is not None else CustomSettings()
-
