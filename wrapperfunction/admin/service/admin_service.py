@@ -7,21 +7,31 @@ from wrapperfunction.admin.integration.crawl_integration import delete_base_on_s
 from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
-def crawl(request):
-    link = request.query_params.get("link")
-    if not link:
-        raise ValueError("Missing link parameter")
 
-    filepath, filename = run_crawler(link) 
-    # filepath = "./export_e7ce4d72-a094-48ef-958c-647e61e59d17.json"
-    # split_json_file(filepath, filepath[:-5]+"-links.json", filepath[:-5]+"-docs.json")
-    # download_pdfs(filepath[:-5]+"-docs.json", "./export/docs/"+filepath[2:-5])
-    # update_json_with_pdf_text(filepath[:-5]+"-docs.json", "./export/docs/"+filepath[2:-5])
-    # process_and_upload(filepath[:-5]+"-links.json","./export/", link)
-    # process_and_upload("updated_"+filepath[2:-5]+"-docs.json","./export/docs/", link,True)
+def crawl(link: str):
+    filepath, filename = run_crawler(link)
+
+    split_json_file(
+        filepath, filepath[:-5] + "-links.json", filepath[:-5] + "-docs.json"
+    )
+    download_pdfs(filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5])
+    update_json_with_pdf_text(
+        filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5]
+    )
+    process_and_upload(filepath[:-5] + "-links.json", "./export/", link)
+    process_and_upload(
+        "updated_" + filepath[2:-5] + "-docs.json", "./export/docs/", link, True
+    )
     return {"message": "Crawling completed successfully"}
 
-async def delete_blob(metadata_key,metadata_value):
+
+def scrape(file: UploadFile, container_name: str):
+    results = scrape_csv(file, container_name)
+    process_and_upload("./" + container_name + ".json", "./export/", "  ")
+    return results
+
+
+async def delete_blob(metadata_key, metadata_value):
     if not metadata_key or not metadata_value:
         raise HTTPException(status_code=400, detail="Missing required parameters")
     try:
@@ -58,20 +68,25 @@ async def delete_subfolder(request):
         raise HTTPException(status_code=404, detail="Subfolder not found")
 
 
-def edit_blob(new_content_file,metadata_key,metadata_value):
+def edit_blob(new_content_file, metadata_key, metadata_value):
     try:
         new_content = json.load(new_content_file.file)  #
         new_content_file.file.seek(0)
         print(new_content_file.file.read())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read new content file: {str(e)}")
-    edit_blob_by_new_jsonfile(metadata_key,metadata_value,new_content)
-    
+        raise HTTPException(
+            status_code=500, detail=f"Failed to read new content file: {str(e)}"
+        )
+    edit_blob_by_new_jsonfile(metadata_key, metadata_value, new_content)
 
-def delete_indexes(index_name: str, key:str, value):
+
+def delete_indexes(index_name: str, key: str, value):
     try:
         delete_indexed_data(index_name, key, value)
-        return JSONResponse(content={"message": f"index '{index_name} deleted successfully."}, status_code=200)
+        return JSONResponse(
+            content={"message": f"index '{index_name} deleted successfully."},
+            status_code=200,
+        )
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
     

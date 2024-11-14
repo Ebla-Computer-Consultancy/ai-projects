@@ -16,10 +16,17 @@
         "documentintelligenceservice",
         "languageconfig",
         "openaiconnector",
+        "aisearchconnector",
+        "cognitiveservices",
+        "commonservice",
+        "eblapagecrawler",
+        "languageconfig",
+        "linkextractors",
         "pydub",
         "readall",
         "rera",
-        "textanalytics",
-        "wrapperfunction"
+        "utls",
+        "wrapperfunction",
+        "wsservice"
     ]
 }
