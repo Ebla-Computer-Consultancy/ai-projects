@@ -50,14 +50,19 @@ def edit_blob(new_content_file,metadata_key,metadata_value):
         new_content_file.file.seek(0)
         print(new_content_file.file.read())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read new content file: {str(e)}")
-    edit_blob_by_new_jsonfile(metadata_key,metadata_value,new_content)
-    
+        raise HTTPException(
+            status_code=500, detail=f"Failed to read new content file: {str(e)}"
+        )
+    edit_blob_by_new_jsonfile(metadata_key, metadata_value, new_content)
 
-def delete_indexes(index_name: str, key:str, value):
+
+def delete_indexes(index_name: str, key: str, value):
     try:
         delete_indexed_data(index_name, key, value)
-        return JSONResponse(content={"message": f"index '{index_name} deleted successfully."}, status_code=200)
+        return JSONResponse(
+            content={"message": f"index '{index_name} deleted successfully."},
+            status_code=200,
+        )
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
     
