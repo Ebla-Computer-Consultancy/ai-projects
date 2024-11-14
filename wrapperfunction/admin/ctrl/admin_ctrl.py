@@ -5,6 +5,7 @@ import wrapperfunction.admin.service.admin_service as admin_service
 import wrapperfunction.admin.service.blob_service as blob_service
 from fastapi import HTTPException
 
+
 router = APIRouter()
 
 @router.post("/add_json_blobs/")
@@ -55,10 +56,9 @@ async def reset_index(index_name: str):
 @router.post("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
-        return admin_service.delete_indexes(index_name,key,value)
+        return admin_service.delete_indexes(index_name, key="chunk_id", value=None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
 
 @router.post("/run_index/{index_name}")
 async def run_index(index_name: str):
