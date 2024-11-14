@@ -1,5 +1,4 @@
 import json
-from typing_extensions import override
 from wrapperfunction.core import config
 from openai import AzureOpenAI
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
@@ -82,6 +81,9 @@ def chat_completion(chatbot_setting: ChatbotSetting, chat_history):
         presence_penalty=0,
         stop=None,
     )
+
     completion_data = json.loads(completion.choices[0].json())
     completion_data["usage"] = json.loads(completion.usage.json())
     return completion_data
+
+
