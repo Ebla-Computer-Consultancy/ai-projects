@@ -11,7 +11,10 @@ from fastapi.responses import JSONResponse
 def delete_indexes(index_name: str, key: str, value):
     try:
         delete_indexed_data(index_name, key, value)
-        return JSONResponse(content={"message": f"index '{index_name} deleted successfully."}, status_code=200)
+        return JSONResponse(
+            content={"message": f"index '{index_name} deleted successfully."},
+            status_code=200,
+        )
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
 
