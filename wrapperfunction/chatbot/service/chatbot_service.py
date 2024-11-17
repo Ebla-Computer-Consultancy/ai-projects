@@ -20,11 +20,12 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         user_id = chat_payload.user_id or str(uuid.uuid4())
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())   
         chatbot_settings = config.load_chatbot_settings(bot_name)
+        chatbot_settings.system_message = chat_history_with_system_message[
+            "system_message"
+        ]
         # Get response from OpenAI ChatGPT
-        results = openaiconnector.chat_completion_mydata(
-            chatbot_settings,
-            chat_history_with_system_message["chat_history"],
-            chat_history_with_system_message["system_message"],
+        results = openaiconnector.chat_completion(
+            chatbot_settings, chat_history_with_system_message["chat_history"]
         )
         user_message_entity = MessageEntity(
         conversation_id=conversation_id,
