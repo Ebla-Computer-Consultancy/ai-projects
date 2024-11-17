@@ -7,7 +7,7 @@ class CustomSettings:
 # Class for individual chatbot information
 class ChatbotSetting:
     def __init__(
-        self, name, index_name, system_message, examples, custom_settings=None
+        self, name, index_name, system_message, examples=[], custom_settings=None
     ):  # Default to None
         self.name = name
         self.index_name = index_name
