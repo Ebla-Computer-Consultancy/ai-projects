@@ -1,17 +1,12 @@
 {
-
   "chatbots": [
     {
       "name": "website",
-      "index_name": "rera",
+      "index_name": "mm",
       "custom_settings": {
         "temperature": 0.5
       },
-      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation.",
-      "commented_system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to Qatari Diar company building permits and regulations.",
-      "commented_system_message_1": "You are an intelligent assistant specifically designed to help users with research and answer questions related to Ministry of Environment & Climate Change."
-
-
+      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation."
     }
   ],
   "dict_AR": {
