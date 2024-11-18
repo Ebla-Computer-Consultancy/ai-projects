@@ -25,7 +25,21 @@ def run_crawler(urls: str, deepCrawling: bool = False):
     process = CrawlerProcess()
     if deepCrawling:
         CrawlingSpider.rules = (
-            Rule(LinkExtractor(), callback="parse_items", follow=True),
+            Rule(
+                LinkExtractor(
+                    deny=(
+                        "instagram.com",
+                        "x.com",
+                        "facebook.com",
+                        "youtube.com",
+                        "play.google.com",
+                        "apps.apple.com",
+                        "careers.phcc.gov.qa",
+                    )
+                ),
+                callback="parse_items",
+                follow=True,
+            ),
         )
     else:
         CrawlingSpider.rules = (Rule(callback="parse_items"),)
