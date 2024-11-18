@@ -54,14 +54,15 @@ def load_chatbot_settings(bot_name: str):
         if chatbot_obj["name"] == bot_name:
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
-            custom_settings = CustomSettings(temperature=temperature)
-            custom_settings = CustomSettings(temperature=temperature)
+            tools = custom_settings_data.get("tools",None)
+            custom_settings = CustomSettings(temperature=temperature) # Duplicated line
+            custom_settings = CustomSettings(temperature=temperature, tools=tools)
             chatbot = ChatbotSetting(
-                name=chatbot_obj["name"],
-                index_name=chatbot_obj.get("index_name", ""),
-                system_message=chatbot_obj["system_message"],
-                examples=chatbot_obj.get("examples", []),
-                custom_settings=custom_settings,
+                name = chatbot_obj["name"],
+                index_name = chatbot_obj.get("index_name", None),
+                system_message = chatbot_obj["system_message"],
+                examples = chatbot_obj.get("examples", []),
+                custom_settings = custom_settings,
             )
             return chatbot
 

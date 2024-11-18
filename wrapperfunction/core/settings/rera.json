@@ -10,8 +10,180 @@
       "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation.",
       "commented_system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to Qatari Diar company building permits and regulations.",
       "commented_system_message_1": "You are an intelligent assistant specifically designed to help users with research and answer questions related to Ministry of Environment & Climate Change."
-
-
+    },
+    {
+      "name": "interactive",
+      "index_name": null,
+      "custom_settings": {
+        "temperature": 0.5,
+        "tool_choice": "auto",
+        "tools":[
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "fill_vacation_form",
+                        "description": "fills the form information to excel sheet.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "type": {
+                                    "type": "string",
+                                    "description": "The type of the form the employee want to fill."
+                                },
+                                "employee_name": {
+                                    "type": "string",
+                                    "description": "The name of the employee whose filling the form."
+                                },
+                                "employee_ID": {
+                                    "type": "string",
+                                    "description": "The ID of the employee whose filling the form."
+                                },
+                                "manager_name": {
+                                    "type": "string",
+                                    "description": "The manager name of the employee whose filling the form."
+                                },
+                                "employee_department": {
+                                    "type": "string",
+                                    "description": "The department name the employee filling the form works in.(AI,PM,HR,SE,IT)"
+                                },
+                                "start_date": {
+                                    "type": "string",
+                                    "description": "The start_date of the request the employee filling the form for."
+                                },
+                                "end_date": {
+                                    "type": "string",
+                                    "description": "The end_date of the request the employee filling the form for."
+                                },
+                                "comments": {
+                                    "type": "string",
+                                    "description": "any comments the employee wants his manager to know about."
+                                }
+                            },
+                            "required": ["type","employee_name","employee_ID","manager_name","employee_department","start_date","end_date","comments"]
+                        }
+                    }
+                },{
+                    "type": "function",
+                    "function": {
+                        "name": "submit_form",
+                        "description": "chack if the form is fill correctly, if yes,submit the form that employee filled once he approve the information, else return to fill the missing information",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "confirm-text": {
+                                    "type": "string",
+                                    "description": "The user confirmation text."
+                                }
+                            },
+                            "required": ["confirm-text"]
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "approve",
+                        "description": "Approves the vacation request for the employee with the given employee name and departemnt.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "employee_name": {
+                                    "type": "string",
+                                    "description": "The name of the employee whose vacation request is to be approved."
+                                },
+                                "employee_department": {
+                                    "type": "string",
+                                    "description": "The department of the employee whose vacation request is to be approved."
+                                }
+                            },
+                            "required": ["employee_name","employee_department"]
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "disapprove",
+                        "description": "Disapproves the vacation request for the employee with the given employee name and departemnt.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "employee_name": {
+                                    "type": "string",
+                                    "description": "The name of the employee whose vacation request is to be disapproved."
+                                },
+                                "employee_department": {
+                                    "type": "string",
+                                    "description": "The department of the employee whose vacation request is to be approved."
+                                }
+                            },
+                            "required": ["employee_name","employee_department"]
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "pending",
+                        "description": "Pending the vacation request for the employee with the given employee name and departemnt.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "employee_name": {
+                                    "type": "string",
+                                    "description": "The name of the employee whose vacation request is to be disapproved."
+                                },
+                                "employee_department": {
+                                    "type": "string",
+                                    "description": "The department of the employee whose vacation request is to be approved."
+                                }
+                            },
+                            "required": ["employee_name","employee_department"]
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "filter_vacation_forms_by",
+                        "description": "Returns all vacation requests for employees in the specified fillter.ex:to return all vaction for a Department of Status ",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "coulomn_name": {
+                                    "type": "string",
+                                    "description": "The name of the cuolomn for which vacation requests should be retrieved. values should be on of the following(Type,Employee Name,ID,Manager Name,Department,Start-date,End-date,Total days,Status)"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "The name of the value for which cuolomn in vacation requests should be retrieved."
+                                }
+                            },
+                            "required": ["coulomn_name","value"]
+                        }
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "get_all_vacation_forms",
+                        "description": "Returns all vacation requests for employees.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "text": {
+                                    "type": "string",
+                                    "description": "The manager prompt to show all the forms."
+                                }
+                            },
+                            "required": ["text"]
+                        }
+                    }
+                }
+                ]
+      },
+      "system_message": "you are an AI assistant that helps users fill out forms. You need to extract information from the user to fill the following form:[type, employee_name, employee_ID, manager_name, employee_department, start_date, end_date]. Be friendly and helpful 🥰. Make sure all required fields are provided and use emojis to make the conversation enjoyable! If any required field is missing, ask the user for it.Remember:- Dates should always be in the format YYYY-MM-DD. If the user provides them differently, reformat them.- If the user provides the date in Arabic, translate it to English and apply the correct format.- Departments should be one of the following: AI, PM, HR, SE, IT. Ask the user if their department isn't clear.- Respond in the language of the user (Arabic or English). 💬",
+      "suggestion_message": "suggestion examples:if he just filled the form, suggest to submit or edit information, if he just fillter or get the forms , suggest to approve,disapprove or revert to pending.if he just approve,disapprove or revert to pending, suggest to send email or to undo.. note:\"Based on these results and the setiuation, suggest the best action, make it as simple as possbile, dont show all suggestions only the best two\"+\"important note: speek arabic if the manager is speeking arabic in the previose messages, do not translate the name keep it as is, show all the results dont hide any thing, the user should see the all detials"
     }
   ],
   "dict_AR": {
