@@ -52,7 +52,6 @@ async def reset_index(index_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.post("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
