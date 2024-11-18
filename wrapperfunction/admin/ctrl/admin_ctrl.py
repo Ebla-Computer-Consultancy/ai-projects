@@ -1,6 +1,5 @@
 
-from typing import List
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
