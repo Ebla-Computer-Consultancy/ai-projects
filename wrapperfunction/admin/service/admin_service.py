@@ -1,43 +1,17 @@
 from wrapperfunction.admin.integration.crawl_integration import (
     run_crawler,
-    process_and_upload,
-    upload_files_to_blob,
     delete_blobs_base_on_metadata,
     delete_base_on_subfolder,
     edit_blob_by_new_jsonfile,
-    split_json_file,
-    update_json_with_pdf_text,
-    scrape_csv,
 )
 from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data
-from wrapperfunction.core.utls.helper import download_pdfs
-from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 import json
 from urllib.parse import unquote
 
 
-def crawl(link: str):
-    filepath, filename = run_crawler(link)
-
-    split_json_file(
-        filepath, filepath[:-5] + "-links.json", filepath[:-5] + "-docs.json"
-    )
-    download_pdfs(filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5])
-    update_json_with_pdf_text(
-        filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5]
-    )
-    process_and_upload(filepath[:-5] + "-links.json", "./export/", link)
-    process_and_upload(
-        "updated_" + filepath[2:-5] + "-docs.json", "./export/docs/", link, True
-    )
-    return {"message": "Crawling completed successfully"}
-
-
-def scrape(file: UploadFile, container_name: str):
-    results = scrape_csv(file, container_name)
-    process_and_upload("./" + container_name + ".json", "./export/", "  ")
-    return results
+def crawling(links: list[str], deepCrawling: bool = False):
+    run_crawler(links, deepCrawling)
 
 
 async def delete_blob(metadata_key, metadata_value):

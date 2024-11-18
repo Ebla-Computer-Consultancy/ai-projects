@@ -1,34 +1,17 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException
 import wrapperfunction.admin.service.admin_service as adminservice
 from fastapi import HTTPException
 
-# import wrapperfunction.admin.model.crawl_model as CrawlRequest
 
 router = APIRouter()
 
 
 # new crawling request
-# @router.get("/crawl")
-# async def crawl(request: Request, urls: List[str], deepCrawling: bool = True):
-#     try:
-#         return {"urls": urls, "deep-crawling": deepCrawling, "request": request}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.post("/crawl")
-async def crawl(link: str):
+async def crawl(urls: List[str], deepCrawling: bool = False):
     try:
-        return adminservice.crawl(link)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/scrape")
-async def scrape(file: UploadFile, container_name: str):
-    try:
-        return adminservice.scrape(file, container_name)
+        return adminservice.crawling(urls, deepCrawling)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -49,7 +32,7 @@ async def delete_blob(metadata_key: str, metadata_value: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/reset_index")
+@router.delete("/reset_index/{index_name}")
 async def reset_index(index_name: str):
     try:
         return adminservice.delete_indexes(index_name, key="chunk_id", value=None)
@@ -57,7 +40,7 @@ async def reset_index(index_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/reset_index")
+@router.delete("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
         return adminservice.delete_indexes(index_name, key, value)
