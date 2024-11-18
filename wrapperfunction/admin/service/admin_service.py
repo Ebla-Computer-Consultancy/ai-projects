@@ -8,27 +8,8 @@ from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, R
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 
-def crawl(link: str):
-    filepath, filename = run_crawler(link)
-
-    split_json_file(
-        filepath, filepath[:-5] + "-links.json", filepath[:-5] + "-docs.json"
-    )
-    download_pdfs(filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5])
-    update_json_with_pdf_text(
-        filepath[:-5] + "-docs.json", "./export/docs/" + filepath[2:-5]
-    )
-    process_and_upload(filepath[:-5] + "-links.json", "./export/", link)
-    process_and_upload(
-        "updated_" + filepath[2:-5] + "-docs.json", "./export/docs/", link, True
-    )
-    return {"message": "Crawling completed successfully"}
-
-
-def scrape(file: UploadFile, container_name: str):
-    results = scrape_csv(file, container_name)
-    process_and_upload("./" + container_name + ".json", "./export/", "  ")
-    return results
+def crawling(links: list[str], deepCrawling: bool = False):
+    run_crawler(links, deepCrawling)
 
 
 async def delete_blob(metadata_key, metadata_value):
