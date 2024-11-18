@@ -133,7 +133,6 @@ def delete_blob(
         subfolder_name, container_name, connection_string
     )
     for blob in blobs:
-        print("alaaa")
         blob_client = container_client.get_blob_client(blob)
         blob_metadata = blob_client.get_blob_properties().metadata
         if metadata_key == None:

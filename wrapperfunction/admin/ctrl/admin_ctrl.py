@@ -1,5 +1,6 @@
 
-from fastapi import HTTPException, Request, UploadFile
+from typing import List
+from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
@@ -9,14 +10,9 @@ router = APIRouter()
 
 # new crawling request
 @router.post("/crawl")
-async def crawl(
-    urls: List[str],
-    headers: dict = None,
-    cookies: dict = None,
-    deepCrawling: bool = False,
-):
+async def crawl(urls: List[str], deepCrawling: bool = False):
     try:
-        return admin_service.crawl(link)
+        return admin_service.crawling(urls, deepCrawling)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
