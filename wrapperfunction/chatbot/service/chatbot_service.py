@@ -28,6 +28,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
 
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
@@ -55,6 +56,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity= tools_message_entity        
                     )
         
+
 
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
