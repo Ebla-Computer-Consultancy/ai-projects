@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Crawler & Report Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .sections {
+            display: flex;
+            justify-content: space-between;
+        }
+        .section-container {
+            width: 48%;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            margin: 30px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .topic-field, .url-field {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            color: #fff;
+            background-color: #860000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 5px;
+        }
+        button:hover {
+            background-color: #d11313;
+        }
+        #reportOutput {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #860000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Crawler & Report Generator</h1>
+
+        <div class="sections">
+            <!-- Crawl Section Container -->
+            <div class="section-container" id="crawlSectionContainer">
+                <div class="section-title">Crawl Web Pages</div>
+                <form id="crawlForm">
+                    <div class="form-group" id="topicsContainer">
+                        <label>Topics:</label>
+                        <div class="topic-field">
+                            <input type="text" name="topics" placeholder="Enter topic">
+                            <button type="button" onclick="addTopicField()">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="urlsContainer">
+                        <label>Web Page URLs:</label>
+                        <div class="url-field">
+                            <input type="text" name="urls" placeholder="Enter URL">
+                            <button type="button" onclick="addUrlField()">+</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="submitCrawl()">Crawl Web Pages</button>
+                </form>
+                <!-- Display the crawlOutput here -->
+                <div id="crawlOutput"></div>
+            </div>
+
+            <!-- Report Generation Section Container -->
+            <div class="section-container" id="reportSectionContainer">
+                <div class="section-title">Generate Report</div>
+                <form id="reportForm">
+                    <div class="form-group">
+                        <label>Search Text for Report:</label>
+                        <input type="text" id="reportSearchText" placeholder="Enter search text for report generation">
+                    </div>
+                    
+                    <button type="button" onclick="submitSearch()">Generate Report</button>
+                </form>
+
+                <!-- Display the generated report here -->
+                <div id="reportOutput"></div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="spinner" id="loadingSpinner"></div>
+    </div>
+
+    <script>
+        function addTopicField() {
+            const topicsContainer = document.getElementById('topicsContainer');
+            const newTopicField = document.createElement('div');
+            newTopicField.className = 'topic-field';
+            newTopicField.innerHTML = `
+                <input type="text" name="topics" placeholder="Enter topic">
+                <button type="button" onclick="removeField(this)">-</button>
+            `;
+            topicsContainer.appendChild(newTopicField);
+        }
+
+        function addUrlField() {
+            const urlsContainer = document.getElementById('urlsContainer');
+            const newUrlField = document.createElement('div');
+            newUrlField.className = 'url-field';
+            newUrlField.innerHTML = `
+                <input type="text" name="urls" placeholder="Enter URL">
+                <button type="button" onclick="removeField(this)">-</button>
+            `;
+            urlsContainer.appendChild(newUrlField);
+        }
+
+        function removeField(button) {
+            button.parentElement.remove();
+        }
+
+        function showSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        async function submitCrawl() {
+            showSpinner();
+            const topics = Array.from(document.getElementsByName('topics')).map(input => input.value);
+            const urls = Array.from(document.getElementsByName('urls')).map(input => input.value);
+
+            const response = await fetch('http://127.0.0.1:8000/api/v1/media/crawl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ topics, urls })
+            });
+
+            const result = await response.json();
+            hideSpinner();
+            document.getElementById('crawlOutput').innerText = response.ok ? 'Crawl successful!' : `Error: ${result.detail}`;
+        }
+
+        async function submitSearch() {
+            showSpinner();
+            const searchText = document.getElementById('reportSearchText').value;
+
+            const response = await fetch('http://127.0.0.1:8000/api/v1/media/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ search_text: searchText })
+            });
+
+            const result = await response.json();
+            hideSpinner();
+            if (response.ok) {
+                document.getElementById('reportOutput').innerHTML = `<h2>Generated Report:</h2><p>${result["report-text"]}</p>`;
+            } else {
+                document.getElementById('reportOutput').innerText = `Error: ${result.detail}`;
+            }
+        }
+    </script>
+</body>
+</html>
