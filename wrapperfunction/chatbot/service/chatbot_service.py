@@ -27,10 +27,12 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
-                                          role=Roles.User.value)
+                                          role=Roles.User.value,context=str(results["message"]["context"])
+                                          )
         #Set assistant or Tool message
         tools_message_entity = None
         assistant_message_entity = None
@@ -41,7 +43,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         else:
             assistant_message_entity = set_message(conversation_id=conversation_id,
                                                    content=results["message"]["content"],
-                                                   role=Roles.Assistant.value)
+                                                   role=Roles.Assistant.value,context=str(results["message"]["context"]))
         
         # Add Messages
         add_messages_to_history(
@@ -53,6 +55,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity= tools_message_entity        
                     )
         
+
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
