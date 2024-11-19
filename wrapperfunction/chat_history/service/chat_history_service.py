@@ -5,6 +5,8 @@ from wrapperfunction.chat_history.model.message_entity import MessageEntity,Mess
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity,ConversationPropertyName
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 import wrapperfunction.text_analysis.integration.textanalytics_connector as text_connector
+from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
+from wrapperfunction.chatbot.model.chat_message import Roles
 
 
 
@@ -29,7 +31,13 @@ def get_messages(conversation_id):
         return list(res)
     except Exception as e:
         return HTTPException(400,e)
-
+    
+def get_user_messages(conversation_id):
+    try:
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" conversation_id eq '{conversation_id} and role eq '{Roles.User.value}'") 
+        return list(res)
+    except Exception as e:
+        return HTTPException(400,e)
 
 def get_all_conversations():
     try:
@@ -57,7 +65,7 @@ def update_conversation(conversation_id: str, updated_data: dict):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-def perform_semantic_analysis():
+def perform_sentiment_analysis():
     try:
 
         conversations = get_all_conversations()
@@ -67,13 +75,17 @@ def perform_semantic_analysis():
         for conversation in conversations:
             if conversation[ConversationPropertyName.SENTIMENT.value] == "": 
                 conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
-                messages = get_messages(conversation_id)
+                messages = get_user_messages(conversation_id)
                 message_texts = [msg[MessagePropertyName.CONTENT.value] for msg in messages if MessagePropertyName.CONTENT.value in msg]
                 if not message_texts:
-                    raise HTTPException(status_code=400, detail="No valid messages found for semantic analysis.")
+                    raise HTTPException(status_code=400, detail="No valid messages found for sentiment analysis.")
                 all_message_texts += " ".join(message_texts) + " "
                 semantic_data = text_connector.analyze_sentiment([all_message_texts])
+                print(semantic_data)
                 update_conversation(conversation_id, {ConversationPropertyName.SENTIMENT.value: semantic_data})
+                return ServiceReturn(
+        status=StatusCode.SUCCESS, message="analysis done successfully"
+    ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -82,5 +94,8 @@ def perform_semantic_analysis():
 def perform_feedback_update(conversation_id: str, feedback: int):
     try:
         update_conversation(conversation_id, {ConversationPropertyName.FEEDBACK.value: feedback})
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="feedback updated successfully"
+    ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))    
