@@ -124,8 +124,10 @@ async def generate_final_resopnse(result, chat_payload: ChatPayload):
     '''
 
     final_response = chat_completion(
-                            chatbot_setting=ChatbotSetting(index_name=None,name=None,system_message=msg,
-                                
+                            chatbot_setting=ChatbotSetting(
+                                index_name=None,
+                                name=None,
+                                system_message=ENTITY_SETTINGS.get("suggestion_message"),
                                 custom_settings=CustomSettings(
                                     max_tokens=4000,
                                     temperature=0.95
