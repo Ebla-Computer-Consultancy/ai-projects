@@ -28,7 +28,9 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
 
+
         context = set_context(results)
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
