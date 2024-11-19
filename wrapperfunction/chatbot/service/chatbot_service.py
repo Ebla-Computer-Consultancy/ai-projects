@@ -30,12 +30,12 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         user_message_entity = MessageEntity(
         conversation_id=conversation_id,
             content=chat_history_with_system_message["chat_history"][-1]["content"],  
-            role=Roles.User.value,
+            role=Roles.User.value,context=str(results["message"]["context"])
         )
         assistant_message_entity = MessageEntity(
             conversation_id=conversation_id,
             content=results["message"]["content"],  
-            role=Roles.Assistant.value
+            role=Roles.Assistant.value,context=str(results["message"]["context"])
         )
         conv_entity=ConversationEntity(user_id, conversation_id,bot_name)
         if chat_payload.stream_id is not None:
