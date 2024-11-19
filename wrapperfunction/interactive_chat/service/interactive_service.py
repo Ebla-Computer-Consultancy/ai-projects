@@ -4,7 +4,7 @@ from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chatbot.integration.openai_connector import chat_completion
 from wrapperfunction.chatbot.model.chat_message import ChatMessage
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.chatbot.service.chatbot_service import add_messages_to_history
+from wrapperfunction.chatbot.service.chatbot_service import add_messages_to_history, set_message
 from wrapperfunction.core.config import ENTITY_SETTINGS
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
@@ -133,12 +133,12 @@ async def generate_final_resopnse(result, chat_payload: ChatPayload):
                                 ),
                             chat_history=[{"role":Roles.User.value,"content":msg}],
                         )
-    user_message_entity = MessageEntity(
+    user_message_entity = set_message(
         role=Roles.User.value,
         content=msg,
         conversation_id=chat_payload.conversation_id)
     
-    assistant_message_entity = MessageEntity(
+    assistant_message_entity = set_message(
         role=Roles.Assistant.value,
         content=final_response["message"]["content"],
         conversation_id=chat_payload.conversation_id)
