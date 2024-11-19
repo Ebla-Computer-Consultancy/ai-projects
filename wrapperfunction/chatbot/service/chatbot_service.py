@@ -28,17 +28,23 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
         #Set user message
-        user_message_entity = set_user_message(conversation_id, chat_history_with_system_message["chat_history"][-1]["content"])
+        user_message_entity = set_message(conversation_id=conversation_id, 
+                                          content=chat_history_with_system_message["chat_history"][-1]["content"],
+                                          role=Roles.User.value)
         #Set assistant or Tool message
         tools_message_entity = None
         assistant_message_entity = None
         if results["message"]["tool_calls"]:
-            tools_message_entity = set_tool_message(conversation_id,results["message"]["tool_calls"])
+            tools_message_entity = set_message(conversation_id=conversation_id,
+                                               role=Roles.Tool.value,
+                                               tool_calls=results["message"]["tool_calls"])
         else:
-            assistant_message_entity = set_assistant_message(conversation_id, results["message"]["content"])
+            assistant_message_entity = set_message(conversation_id=conversation_id,
+                                                   content=results["message"]["content"],
+                                                   role=Roles.Assistant.value)
         
         # Add Messages
-        add_all_messages_to_Entity(
+        add_messages_to_history(
             chat_payload=chat_payload,
             conversation_id=conversation_id,
             user_message_entity=user_message_entity,
@@ -64,26 +70,19 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
     
-def set_user_message(conversation_id,content):
-    # Set user message Entity
-    return MessageEntity(
-        conversation_id=conversation_id,
-            content=content,  
-            role=Roles.User.value,)
-def set_assistant_message(conversation_id,content):
-    # Set user message Entity
-    return MessageEntity(
-        conversation_id=conversation_id,
-            content=content,  
-            role=Roles.Assistant.value,)
-def set_tool_message(conversation_id,tool_calls):
-    # Set user message Entity
+def set_message(conversation_id,role,content=None,tool_calls=None):
+    # Set message Entity
+    if role is not Roles.Tool.value:
+        return MessageEntity(
+            conversation_id=conversation_id,
+                content=content,  
+                role=role,)
     return [MessageEntity(
             conversation_id=conversation_id,
             content=json.dumps(tool_call),  
             role=Roles.Tool.value) for tool_call in tool_calls]
     
-def add_all_messages_to_Entity(
+def add_messages_to_history(
         chat_payload,
         conversation_id,
         user_message_entity,
@@ -161,18 +160,22 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
 
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
+    ##if have tools
     for item in chat_history_arr:
         msg = {"role": item["role"],"content":item["content"]}
-        if item["role"] == "tool":
-            tool = json.loads(item["content"])
-            tool["id"] = chat_payload.conversation_id
-            tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
-            chat_history.append({"role": "assistant",
-                                 "tool_calls":[
-                                     tool
-                                     ]
-                                 })
-            msg["tool_call_id"] = chat_payload.conversation_id
+        if config.load_chatbot_settings(bot_name).custom_settings.tools:
+            if item["role"] == "tool":
+                tool = json.loads(item["content"])
+                tool["id"] = chat_payload.conversation_id
+                tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
+                chat_history.append({"role": "assistant",
+                                    "tool_calls":[
+                                        tool
+                                        ]
+                                    })
+                msg["tool_call_id"] = chat_payload.conversation_id
+        else:
+            continue
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
     return {"system_message": system_message, "chat_history": chat_history}
