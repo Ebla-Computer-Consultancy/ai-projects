@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request
-from fastapi import HTTPException , File, Form
-from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment
-from wrapperfunction.media_monitoring.model.media_model import MediaCrawlRequest, MediaRequest, SentimentSkillRequest
+from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
+from wrapperfunction.media_monitoring.model.media_model import MediaCrawlRequest, MediaRequest, CustomSkillRequest
 from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
@@ -21,8 +20,29 @@ async def media_crawl(request:MediaCrawlRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/sentiment/")   
-async def sentiment(request:SentimentSkillRequest):
+async def sentiment(request:CustomSkillRequest):
     try:
         return await media_service.sentiment_skill(values=request.values)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/detect_language/")   
+async def sentiment(request:CustomSkillRequest):
+    try:
+        return await media_service.detect_language_skill(values=request.values)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/key_phrases/")   
+async def key_phrases(request:CustomSkillRequest):
+    try:
+        return await media_service.extract_key_phrases_skill(values=request.values)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/entity_recognition/")   
+async def entity_recognition(request:CustomSkillRequest):
+    try:
+        return await media_service.entity_recognition_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

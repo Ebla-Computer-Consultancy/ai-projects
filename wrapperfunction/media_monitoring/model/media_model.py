@@ -11,6 +11,6 @@ class MediaCrawlRequest(BaseModel):
 class SkillRecord(BaseModel):
     recordId: str
     data: dict
-class SentimentSkillRequest(BaseModel):
+class CustomSkillRequest(BaseModel):
     values: List[SkillRecord]
       
