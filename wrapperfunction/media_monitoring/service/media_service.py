@@ -4,12 +4,12 @@ from fastapi.responses import JSONResponse
 from wrapperfunction.admin.ctrl.admin_ctrl import resetIndexer, runIndexer
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
 from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
-from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment
+from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment, detect_language, entity_recognition, extract_key_phrases
 from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
-from wrapperfunction.media_monitoring.model.media_model import SentimentSkillRequest, SkillRecord
+from wrapperfunction.media_monitoring.model.media_model import CustomSkillRequest, SkillRecord
 
 
 async def media_search(search_text: str):
@@ -99,6 +99,141 @@ async def sentiment_skill(values: list):
             })
 
     return {"values": results}
+
+async def detect_language_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # Analyze sentiment
+            detected_language = detect_language(messages=[text])
+
+            # Add successful result
+            results.append({
+                "recordId": record_id,
+                "data": {
+                    "language_name": detected_language["name"],
+                    "language_iso6391_name": detected_language["iso6391_name"] 
+                },
+                "errors": None,
+                "warnings": None
+            })
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": str(ve),
+                "warnings": None
+            })
+        except Exception as e:
+            # Catch unexpected errors
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": f"Unexpected error: {str(e)}",
+                "warnings": None
+            })
+    return {"values":results}
     
+async def extract_key_phrases_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            language = record.data["language"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
 
+            # Analyze sentiment
+            key_phrases = extract_key_phrases(messages=[text],language=language)
 
+            # Add successful result
+            results.append({
+                "recordId": record_id,
+                "data": {
+                    "keyphrases": key_phrases
+                },
+                "errors": None,
+                "warnings": None
+            })
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": str(ve),
+                "warnings": None
+            })
+        except Exception as e:
+            # Catch unexpected errors
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": f"Unexpected error: {str(e)}",
+                "warnings": None
+            })
+    return  {"values": results}
+
+async def entity_recognition_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            language = record.data["language"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # Analyze sentiment
+            entities = entity_recognition(messages=[text],language=language)
+
+            # Add successful result
+            results.append({
+                "recordId": record_id,
+                "data": {
+                    "organizations": entities["Organization"],
+                    "dateTime": entities["DateTime"],
+                    "IPAddress": entities["IPAddress"],
+                    "persons": entities["Person"],
+                    "personsType": entities["PersonType"],
+                    "urls": entities["URL"],
+                    "events": entities["Event"],
+                    "emails": entities["Email"],
+                    "locations": entities["Location"],
+                    "phonesNumbers": entities["PhoneNumber"],
+                    "skills": entities["Skill"],
+                    "products": entities["Product"],
+                    "quantities": entities["Quantity"],
+                    "addresses": entities["Address"],
+                    "entities": entities["entities"],
+                },
+                "errors": None,
+                "warnings": None
+            })
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": str(ve),
+                "warnings": None
+            })
+        except Exception as e:
+            # Catch unexpected errors
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": f"Unexpected error: {str(e)}",
+                "warnings": None
+            })
+    return {"values": results}
+    
