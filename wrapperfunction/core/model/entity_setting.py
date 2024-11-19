@@ -1,8 +1,11 @@
 
 class CustomSettings:
-    def __init__(self, temperature=None):  # Set default temperature to 0.5
+    def __init__(self, temperature=None, tools=None, max_tokens=None, top_p=None):
         self.temperature = temperature if temperature is not None else 0.5
-
+        self.tools = tools if tools is not None else None
+        self.max_tokens = max_tokens if max_tokens is not None else 800
+        self.top_p = top_p if top_p is not None else 0.95
+        
 
 # Class for individual chatbot information
 class ChatbotSetting:
