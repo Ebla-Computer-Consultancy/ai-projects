@@ -7,7 +7,6 @@ from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
-from wrapperfunction.media_monitoring.model.media_model import CustomSkillRequest, SkillRecord
 
 
 async def media_search(search_text: str):
