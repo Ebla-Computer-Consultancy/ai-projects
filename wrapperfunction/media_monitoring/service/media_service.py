@@ -1,7 +1,5 @@
-from fastapi import HTTPException , File, Form
+from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-
-from wrapperfunction.admin.ctrl.admin_ctrl import resetIndexer, runIndexer
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
 from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
 from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment, detect_language, entity_recognition, extract_key_phrases
