@@ -73,17 +73,17 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
     
-def set_message(conversation_id,role,content=None,tool_calls=None):
+def set_message(conversation_id,role,content=None,tool_calls=None,context=None):
     # Set message Entity
     if role is not Roles.Tool.value:
         return MessageEntity(
             conversation_id=conversation_id,
                 content=content,  
-                role=role,)
+                role=role,context=context)
     return [MessageEntity(
             conversation_id=conversation_id,
             content=json.dumps(tool_call),  
-            role=Roles.Tool.value) for tool_call in tool_calls]
+            role=Roles.Tool.value,context=context) for tool_call in tool_calls]
     
 def add_messages_to_history(
         chat_payload,
@@ -146,13 +146,8 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
 def prepare_chat_history_with_system_message(chat_payload, bot_name):
     
     chat_history_arr = chat_history_service.get_messages(conversation_id=chat_payload.conversation_id)
-    
-    if bool(len([x for x in chat_history_arr if x["role"] == "system"])):
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
-        )
     chat_history = []
-    is_ar = is_arabic(chat_history_arr[-1]["content"])
+    is_ar = is_arabic(chat_payload.messages[-1].content)
     if chat_payload.stream_id:
         if is_ar:
             system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.load_chatbot_settings(bot_name).system_message}"
