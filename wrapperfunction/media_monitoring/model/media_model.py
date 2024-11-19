@@ -6,4 +6,11 @@ class MediaRequest(BaseModel):
 
 class MediaCrawlRequest(BaseModel):
     topics: List[str]
-    urls: List[str] 
+    urls: List[str]
+
+class SkillRecord(BaseModel):
+    recordId: str
+    data: dict
+class SentimentSkillRequest(BaseModel):
+    values: List[SkillRecord]
+      
