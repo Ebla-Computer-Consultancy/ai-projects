@@ -26,6 +26,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
+
         context = set_context(results)
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
@@ -59,6 +60,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity= tools_message_entity        
                     )
         
+
 
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
