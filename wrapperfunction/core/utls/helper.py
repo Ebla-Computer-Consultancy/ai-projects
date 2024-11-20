@@ -78,38 +78,42 @@ def replace_ar_text(text: str) -> str:
     return text
 
 
-def remove_html_tags(text):
-    tag_pattern = re.compile(r"<.*?>")
-    cleaned_text = tag_pattern.sub("", text)
+def extract_innertext_from_html(text):
+    # (REMOVE <SCRIPT> to </script> and variations)
+    pattern = r"<[ ]*script.*?\/[ ]*script[ ]*>"  # mach any char zero or more times
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
 
-    cleaned_text = re.sub(r"[\n\t]", " ", cleaned_text)
-    cleaned_text = " ".join(cleaned_text.split())
-    return cleaned_text
+    # (REMOVE HTML <STYLE> to </style> and variations)
+    pattern = r"<[ ]*style.*?\/[ ]*style[ ]*>"  # mach any char zero or more times
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    # (REMOVE HTML <META> to </meta> and variations)
+    pattern = r"<[ ]*meta.*?>"  # mach any char zero or more times
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    # (REMOVE HTML COMMENTS <!-- to --> and variations)
+    pattern = r"<[ ]*!--.*?--[ ]*>"  # mach any char zero or more times
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    # (REMOVE HTML DOCTYPE <!DOCTYPE html to > and variations)
+    pattern = r"<[ ]*\![ ]*DOCTYPE.*?>"  # mach any char zero or more times
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    # (REMOVE HTML tags <tag...> and variations)
+    pattern = r"<.*?>"
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    # (REMOVE special characters \n\t\r\a and variations)
+    pattern = r"[\n\t\r\a]"
+    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+    return text
 
 
-def get_title(url, title):
-    title = remove_html_tags(title)
+def get_title(url, title=""):
+    title = extract_innertext_from_html(title)
     if title == "":
         title = url.split("/")[-1]
     return title
-
-
-def filter_social_media_urls(data):
-    social_media_domains = [
-        "instagram.com",
-        "x.com",
-        "facebook.com",
-        "youtube.com",
-        "play.google.com",
-        "apps.apple.com",
-        "careers.phcc.gov.qa",
-    ]
-    filtered_data = [
-        entry
-        for entry in data
-        if not any(domain in entry["url"] for domain in social_media_domains)
-    ]
-    return filtered_data
 
 
 def sanitize_filename(filename):
