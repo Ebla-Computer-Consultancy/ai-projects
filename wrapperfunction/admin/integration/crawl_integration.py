@@ -2,7 +2,6 @@ from io import BytesIO
 from turtle import pd
 import uuid
 import os
-import re
 import json
 from fastapi import HTTPException
 from scrapy.crawler import CrawlerProcess

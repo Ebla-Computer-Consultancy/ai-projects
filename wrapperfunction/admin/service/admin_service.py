@@ -8,8 +8,9 @@ from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, R
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 
-def crawling(links: list[str], deepCrawling: bool = False):
-    run_crawler(links, deepCrawling)
+def crawling(urls: list[str], deepCrawling: bool = False):
+    run_crawler(urls, deepCrawling)
+    return "urls crawled successfully"
 
 
 async def delete_blob(metadata_key, metadata_value):
