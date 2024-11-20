@@ -191,7 +191,7 @@
             const topics = Array.from(document.getElementsByName('topics')).map(input => input.value);
             const urls = Array.from(document.getElementsByName('urls')).map(input => input.value);
 
-            const response = await fetch('http://127.0.0.1:8000/api/v1/media/crawl', {
+            const response = await fetch('http://localhost:7071/api/v1/media/crawl', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -208,7 +208,7 @@
             showSpinner();
             const searchText = document.getElementById('reportSearchText').value;
 
-            const response = await fetch('http://127.0.0.1:8000/api/v1/media/search', {
+            const response = await fetch('http://localhost:7071/api/v1/media/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

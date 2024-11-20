@@ -4,6 +4,7 @@
 
 azure-functions
 azure-core
+azure-functions-worker
 azure-search-documents==11.6.0b1
 openai
 python-dotenv
@@ -22,4 +23,4 @@ pandas
 fpdf
 arabic_reshaper
 bs4
-bidi
+python-bidi

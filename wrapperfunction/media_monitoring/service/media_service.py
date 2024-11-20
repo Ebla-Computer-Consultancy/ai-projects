@@ -26,7 +26,7 @@ async def media_search(search_text: str):
         # create_pdf_file(chat_res["message"]["content"],f"rera_reports/{search_text}.pdf")
 
         # Push the file to the Azure container
-        # upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
+        upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
 
         return ServiceReturn(
             status=StatusCode.CREATED,
