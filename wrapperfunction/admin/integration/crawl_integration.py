@@ -18,7 +18,10 @@ SUBFOLDER_NAME = config.SUBFOLDER_NAME
 
 
 def run_crawler(
-    urls: str, headers: dict = None, cookies: dict = None, deepCrawling: bool = False
+    urls: str,
+    headers: dict = None,
+    cookies: dict = None,
+    deepCrawling: bool = False,
 ):
     process = CrawlerProcess()
     if deepCrawling:
@@ -34,7 +37,12 @@ def run_crawler(
             ),
         )
     else:
-        CrawlingSpider.rules = (Rule(callback="parse_items"),)
+        CrawlingSpider.rules = (
+            Rule(
+                callback="parse_items",
+                follow=True,
+            ),
+        )
     process.crawl(CrawlingSpider, start_urls=urls, cookies=cookies, headers=headers)
     process.start()
 
