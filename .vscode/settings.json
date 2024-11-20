@@ -21,6 +21,7 @@
         "eblapagecrawler",
         "errback",
         "getall",
+        "innertext",
         "languageconfig",
         "linkextractors",
         "openaiconnector",
