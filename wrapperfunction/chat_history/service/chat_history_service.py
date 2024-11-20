@@ -69,7 +69,6 @@ def perform_sentiment_analysis():
     try:
 
         conversations = get_all_conversations()
-        print(len(conversations))
         
         all_message_texts = ""  
         
@@ -86,6 +85,7 @@ def perform_sentiment_analysis():
         return ServiceReturn(
         status=StatusCode.SUCCESS, message="analysis done successfully"
     ).to_dict()
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
