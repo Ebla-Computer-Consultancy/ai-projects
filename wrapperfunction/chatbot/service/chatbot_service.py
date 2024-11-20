@@ -29,10 +29,13 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         )
 
 
+        context = set_context(results)
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
-                                          role=Roles.User.value,context=str(results["message"]["context"])
+                                          role=Roles.User.value,
+                                          context=context
                                           )
         #Set assistant or Tool message
         tools_message_entity = None
@@ -40,11 +43,15 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         if results["message"]["tool_calls"]:
             tools_message_entity = set_message(conversation_id=conversation_id,
                                                role=Roles.Tool.value,
-                                               tool_calls=results["message"]["tool_calls"])
+                                               tool_calls=results["message"]["tool_calls"],
+                                               context=context
+                                               )
         else:
             assistant_message_entity = set_message(conversation_id=conversation_id,
                                                    content=results["message"]["content"],
-                                                   role=Roles.Assistant.value,context=str(results["message"]["context"]))
+                                                   role=Roles.Assistant.value,
+                                                   context=context
+                                                   )
         
         # Add Messages
         add_messages_to_history(
@@ -75,17 +82,26 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
     
+def set_context(results):
+    if results["message"].get("context"):
+        return str(results["message"]["context"])
+    if results["message"]["tool_calls"]:
+        return ""
+    return ""
+
 def set_message(conversation_id,role,content=None,tool_calls=None,context=None):
     # Set message Entity
     if role is not Roles.Tool.value:
         return MessageEntity(
             conversation_id=conversation_id,
                 content=content,  
-                role=role,context=context)
+                role=role,
+                context=context)
     return [MessageEntity(
             conversation_id=conversation_id,
             content=json.dumps(tool_call),  
-            role=Roles.Tool.value,context=context) for tool_call in tool_calls]
+            role=Roles.Tool.value,
+            context=context) for tool_call in tool_calls]
     
 def add_messages_to_history(
         chat_payload,
@@ -103,32 +119,42 @@ def add_messages_to_history(
     
     if not tools_message_entity:
         if not chat_payload.conversation_id:
-            add_message_to_Entity_with_conv(
-                    user_message_entity,assistant_message_entity,conv_entity
+            add_message_to_Entity(
+                    user_message_entity=user_message_entity,
+                    assistant_message_entity=assistant_message_entity,
+                    conv_entity=conv_entity
                     )
         else:
-            add_message_to_Entity(user_message_entity,assistant_message_entity)
+            add_message_to_Entity(
+                user_message_entity=user_message_entity,
+                assistant_message_entity=assistant_message_entity,
+                conv_entity=None)
                 
     else:
         for tool_message in tools_message_entity:
             if not chat_payload.conversation_id:
-                add_message_to_Entity_with_conv(
-                    user_message_entity,tool_message,conv_entity
+                add_message_to_Entity(
+                    user_message_entity=user_message_entity,
+                    assistant_message_entity=tool_message,
+                    conv_entity=conv_entity
                     )
             else:
-                add_message_to_Entity(user_message_entity,tool_message)
-        
-def add_message_to_Entity(user_message_entity,assistant_message_entity):
-    asyncio.create_task(
-                    chat_history_service.add_entity(user_message_entity,assistant_message_entity),
-                )
+                add_message_to_Entity(
+                    user_message_entity=user_message_entity,
+                    assistant_message_entity=tool_message
+                    )       
     
-def add_message_to_Entity_with_conv(user_message_entity,assistant_message_entity,conv_entity):
-    asyncio.create_task(
-                    chat_history_service.add_entity(
-                    user_message_entity,assistant_message_entity,conv_entity
-                    ),
-                )            
+def add_message_to_Entity(user_message_entity,assistant_message_entity,conv_entity = None):
+    if conv_entity is not None:
+        asyncio.create_task(
+                        chat_history_service.add_entity(
+                        user_message_entity,assistant_message_entity,conv_entity
+                        ),
+                    )
+    else:
+        asyncio.create_task(
+                    chat_history_service.add_entity(user_message_entity,assistant_message_entity),
+                )           
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
     try:
         chat_history_with_system_message = prepare_chat_history_with_system_message(
