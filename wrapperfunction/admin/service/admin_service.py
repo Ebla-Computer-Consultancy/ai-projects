@@ -8,8 +8,8 @@ import requests
 
 from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
 
-from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
-from wrapperfunction.core.model.entity_setting import ChatbotSetting
+from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
+from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 def crawl(request):
     link = request.query_params.get('link')
@@ -72,22 +72,30 @@ async def add_pdfs():
     
 async def resetIndexer(name: str):
     try:
-        url = f"https://reraaisearch01.search.windows.net/indexers/{name}/reset?api-version=2024-07-01"
+        url = f"{SEARCH_ENDPOINT}/indexers/{name}/reset?api-version=2024-07-01"
         headers = {
             "Content-Type": "application/json",
             "api-key": SEARCH_KEY
         }
         requests.post(url=url,headers=headers)
+        return ServiceReturn(
+                            status=StatusCode.SUCCESS,
+                            message=f"{name} Indexer Reseted Successfuly", 
+                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 async def runIndexer(name: str):
     try:
-        url = f"https://reraaisearch01.search.windows.net/indexers/{name}/run?api-version=2024-07-01"
+        url = f"{SEARCH_ENDPOINT}/indexers/{name}/run?api-version=2024-07-01"
         headers = {
             "Content-Type": "application/json",
             "api-key": SEARCH_KEY
         }
         requests.post(url=url,headers=headers)
+        return ServiceReturn(
+                            status=StatusCode.SUCCESS,
+                            message=f"{name} Indexer Is Running Successfuly", 
+                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

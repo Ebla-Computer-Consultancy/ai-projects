@@ -7,6 +7,7 @@ from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 
 async def media_search(search_text: str):
@@ -18,22 +19,23 @@ async def media_search(search_text: str):
         chat_history.append({"role": "user", "content": str(user_message)})
 
         chat_res = chat_completion(
-            chatbot_setting=ChatbotSetting(index_name="rera-media", name=OPENAI_CHAT_MODEL,custom_settings=CustomSettings(max_tokens=400)),
+            chatbot_setting=ChatbotSetting(system_message=system_message,index_name="rera-media", name=OPENAI_CHAT_MODEL),
             chat_history=chat_history
         )
 
         # create_pdf_file(chat_res["message"]["content"],f"rera_reports/{search_text}.pdf")
 
         # Push the file to the Azure container
-        upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
+        # upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
 
-        return JSONResponse(
-            content={
+        return ServiceReturn(
+            status=StatusCode.CREATED,
+            message=f"{search_text} Report Generated Successfuly",
+            data={
                 "report-text": chat_res["message"]["content"],
                 "search_results": chat_res,
-            },
-            status_code=200
-        )
+            }
+        ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -49,10 +51,13 @@ async def media_crawl(topics: list, urls: list):
             connection_string=RERA_STORAGE_CONNECTION
             )
         #3 reset indexer
-        res = await admin_service.resetIndexer(name="rera-media-indexer")
+        res = await admin_service.resetIndexer(name="rera-media-test-indexer")
         # # #4 run indexer
-        res2 = await admin_service.runIndexer(name="rera-media-indexer")
-        return JSONResponse(content={"message": "web crawl done succefuly"}, status_code=200)
+        res2 = await admin_service.runIndexer(name="rera-media-test-indexer")
+        return ServiceReturn(
+                            status=StatusCode.SUCCESS,
+                            message=f"URL's:{urls} | Topics:{topics} crawled succefuly", 
+                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
