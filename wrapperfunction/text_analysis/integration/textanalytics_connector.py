@@ -10,7 +10,10 @@ def analyze_sentiment(messages: list):
     try:
         detected_language_response = text_analytics_client.detect_language(messages)
         language_code = detected_language_response[0].primary_language.iso6391_name
-        sentiment_response = text_analytics_client.analyze_sentiment(messages,language=language_code)[0]
+        if language_code=="(Unknown)":
+            sentiment_response = text_analytics_client.analyze_sentiment(messages,language="ar")[0]
+        else:
+            sentiment_response = text_analytics_client.analyze_sentiment(messages,language=language_code)[0]    
 
         return sentiment_response.sentiment  
     except Exception as e:
