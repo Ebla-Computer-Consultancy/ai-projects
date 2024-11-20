@@ -10,7 +10,7 @@ from wrapperfunction.core import config
 from wrapperfunction.core.utls.helper import (
     get_title,
     process_text_name,
-    remove_html_tags,
+    extract_innertext_from_html,
 )
 
 from wrapperfunction.core import config
@@ -45,6 +45,7 @@ class CrawlingSpider(CrawlSpider):
             url=link.url,
             callback=self._callback,
             cookies=self.cookies,
+            headers=self.headers,
             errback=self._errback,
             meta=dict(
                 rule=rule_index,
@@ -78,13 +79,13 @@ class CrawlingSpider(CrawlSpider):
                     "pdf_url": full_url,
                     "title": full_url.split("/")[-1],
                 }
-                data = json.dumps(data)
+                data = json.dumps(data, ensure_ascii=False)
                 append_blob(
                     folder_name=config.SUBFOLDER_NAME,
                     blob_name=blob_name,
                     blob=data,
-                    metadata_1=url[:-1],
-                    metadata_2=url,
+                    metadata_1=full_url[:-1],
+                    metadata_2=full_url,
                     metadata_3="crawled",
                     metadata_4="pdf",
                 )
@@ -98,13 +99,7 @@ class CrawlingSpider(CrawlSpider):
         ar_body = (
             ar_title
             + "\n"
-            + remove_html_tags(
-                "\n".join(
-                    response.xpath(
-                        "//div[not(descendant::nav) and not(descendant::style) and not(descendant::script) and not(ancestor::header) and not(ancestor::footer)]//text()"
-                    ).extract()
-                )
-            )
+            + extract_innertext_from_html("\n".join(response.xpath("//body").extract()))
         )
         data = {"url": url, "title": ar_title, "body": ar_body}
         data = json.dumps(data, ensure_ascii=False)
