@@ -2,7 +2,6 @@ from io import BytesIO
 from turtle import pd
 import uuid
 import os
-import re
 import json
 from fastapi import HTTPException
 from scrapy.crawler import CrawlerProcess
@@ -27,15 +26,9 @@ def run_crawler(urls: str, deepCrawling: bool = False):
         CrawlingSpider.rules = (
             Rule(
                 LinkExtractor(
-                    deny=(
-                        "instagram.com",
-                        "x.com",
-                        "facebook.com",
-                        "youtube.com",
-                        "play.google.com",
-                        "apps.apple.com",
-                        "careers.phcc.gov.qa",
-                    )
+                    allow_domains=[
+                        x.replace("https://", "").split("/")[0] for x in urls
+                    ]
                 ),
                 callback="parse_items",
                 follow=True,
