@@ -10,15 +10,17 @@ class MessagePropertyName(Enum):
     CONTENT = "content"
     CONVERSATION_ID = "conversation_id"
     ROLE = "role"
+    CONTEXT = "context"
 
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str):
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
         self.timestamp = datetime.now().isoformat()
         self.content = content
         self.conversation_id = conversation_id
         self.role = role
+        self.context = context
 
     def to_dict(self):
         return {
@@ -27,7 +29,8 @@ class MessageEntity:
             MessagePropertyName.TIMESTAMP.value: self.timestamp,
             MessagePropertyName.CONTENT.value: self.content,
             MessagePropertyName.CONVERSATION_ID.value: self.conversation_id,
-            MessagePropertyName.ROLE.value: self.role
+            MessagePropertyName.ROLE.value: self.role,
+            MessagePropertyName.CONTEXT.value: self.context
         }
 
 

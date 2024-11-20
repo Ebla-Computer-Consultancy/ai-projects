@@ -22,4 +22,4 @@ bidi
 azure-ai-documentintelligence
 azure-ai-textanalytics
 azure-data-tables
-
+pandas
