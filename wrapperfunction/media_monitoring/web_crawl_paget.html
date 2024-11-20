@@ -219,7 +219,8 @@
             const result = await response.json();
             hideSpinner();
             if (response.ok) {
-                document.getElementById('reportOutput').innerHTML = `<h2>Generated Report:</h2><p>${result["report-text"]}</p>`;
+                // result =result["data"].json()
+                document.getElementById('reportOutput').innerHTML = `<h2>Generated Report:</h2><p>${result.data["report-text"]}</p>`;
             } else {
                 document.getElementById('reportOutput').innerText = `Error: ${result.detail}`;
             }
