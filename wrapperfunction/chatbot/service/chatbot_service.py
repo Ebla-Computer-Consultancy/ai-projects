@@ -9,7 +9,7 @@ from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service 
 import uuid
-from wrapperfunction.document_intelligence.integration.document_intelligence_connector import analyze_file
+
 
 
 async def chat(bot_name: str, chat_payload: ChatPayload):
@@ -211,8 +211,3 @@ def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 
-def upload_documents(file,conversation_id):
-    content=analyze_file(file,model_id='prebuilt-read').content
-    print(content)
-    user_message_entity=MessageEntity(content=content,conversation_id=conversation_id or str(uuid.uuid4()),role=Roles.User.value,context="")
-    add_message_to_Entity(user_message_entity=user_message_entity,assistant_message_entity=None)
