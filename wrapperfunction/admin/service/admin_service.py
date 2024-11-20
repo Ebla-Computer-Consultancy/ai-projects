@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from wrapperfunction.admin.integration.crawl_integration import (
     run_crawler,
     delete_blobs_base_on_metadata,
@@ -10,8 +11,9 @@ import json
 from urllib.parse import unquote
 
 
-def crawling(links: list[str], deepCrawling: bool = False):
-    run_crawler(links, deepCrawling)
+def crawling(urls: list[str], deepCrawling: bool = False):
+    run_crawler(urls, deepCrawling)
+    return "urls crawled successfully"
 
 
 async def delete_blob(metadata_key, metadata_value):
