@@ -69,9 +69,6 @@ def perform_sentiment_analysis():
     try:
 
         conversations = get_all_conversations()
-        
-        all_message_texts = ""  
-        
         for conversation in conversations:
             if conversation[ConversationPropertyName.SENTIMENT.value] == "": 
                 conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
@@ -79,7 +76,7 @@ def perform_sentiment_analysis():
                 message_texts = [msg[MessagePropertyName.CONTENT.value] for msg in messages if MessagePropertyName.CONTENT.value in msg]
                 if not message_texts:
                     raise HTTPException(status_code=400, detail="No valid messages found for sentiment analysis.")
-                all_message_texts += " ".join(message_texts) + " "
+                all_message_texts = " ".join(message_texts) + " "
                 semantic_data = text_connector.analyze_sentiment([all_message_texts])
                 update_conversation(conversation_id, {ConversationPropertyName.SENTIMENT.value: semantic_data})
         return ServiceReturn(
