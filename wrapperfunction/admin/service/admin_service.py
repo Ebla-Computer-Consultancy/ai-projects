@@ -8,8 +8,13 @@ from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, R
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 
-def crawling(urls: list[str], deepCrawling: bool = False):
-    run_crawler(urls, deepCrawling)
+def crawling(
+    urls: list[str],
+    headers: dict = None,
+    cookies: dict = None,
+    deepCrawling: bool = False,
+):
+    run_crawler(urls, headers, cookies, deepCrawling)
     return "urls crawled successfully"
 
 
