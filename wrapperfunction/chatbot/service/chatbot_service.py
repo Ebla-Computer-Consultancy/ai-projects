@@ -81,8 +81,8 @@ def set_context(results):
     if results["message"].get("context"):
         return str(results["message"]["context"])
     if results["message"]["tool_calls"]:
-        return None
-    return None
+        return ""
+    return ""
 
 def set_message(conversation_id,role,content=None,tool_calls=None,context=None):
     # Set message Entity
