@@ -9,9 +9,14 @@ router = APIRouter()
 
 # new crawling request
 @router.post("/crawl")
-async def crawl(urls: List[str], deepCrawling: bool = False):
+async def crawl(
+    urls: List[str],
+    headers: dict = None,
+    cookies: dict = None,
+    deepCrawling: bool = False,
+):
     try:
-        return adminservice.crawling(urls, deepCrawling)
+        return adminservice.crawling(urls, headers, cookies, deepCrawling)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

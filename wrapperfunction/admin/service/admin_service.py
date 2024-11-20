@@ -11,8 +11,13 @@ import json
 from urllib.parse import unquote
 
 
-def crawling(urls: list[str], deepCrawling: bool = False):
-    run_crawler(urls, deepCrawling)
+def crawling(
+    urls: list[str],
+    headers: dict = None,
+    cookies: dict = None,
+    deepCrawling: bool = False,
+):
+    run_crawler(urls, headers, cookies, deepCrawling)
     return "urls crawled successfully"
 
 
