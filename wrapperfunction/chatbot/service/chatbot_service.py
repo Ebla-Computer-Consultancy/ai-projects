@@ -29,6 +29,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
 
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
@@ -56,6 +57,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity= tools_message_entity        
                     )
         
+
 
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
@@ -147,11 +149,6 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
 def prepare_chat_history_with_system_message(chat_payload, bot_name):
     
     chat_history_arr = chat_history_service.get_messages(conversation_id=chat_payload.conversation_id)
-    
-    if bool(len([x for x in chat_history_arr if x["role"] == "system"])):
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, "system messages is not allowed"
-        )
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)
     if chat_payload.stream_id:
