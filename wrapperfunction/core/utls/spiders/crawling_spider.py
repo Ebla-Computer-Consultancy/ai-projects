@@ -7,7 +7,6 @@ from wrapperfunction.core import config
 from wrapperfunction.core.utls.helper import (
     get_title,
     process_text_name,
-    extract_innertext_from_html,
 )
 
 
@@ -73,12 +72,18 @@ class CrawlingSpider(CrawlSpider):
         url = response.url
         blob_name = f"item_{process_text_name(url)}.json"
         ar_title = get_title(
-            url=response.url, title=response.xpath("//head/title/text()").get()
+            url=response.url,
+            title=response.xpath("//head/title/text()").get(),
         )
         ar_body = (
             ar_title
-            + "\n"
-            + extract_innertext_from_html("\n".join(response.xpath("//body").extract()))
+            + " ".join(
+                "\n".join(
+                    response.xpath(
+                        "//body//*[not(self::script) and not(self::style) and not(self::link) and not(self::meta) and not(self::a)]/text()"
+                    ).getall()
+                ).split()
+            ).strip()
         )
         data = {"url": url, "title": ar_title, "body": ar_body}
         data = json.dumps(data, ensure_ascii=False)

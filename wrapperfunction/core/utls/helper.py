@@ -78,39 +78,7 @@ def replace_ar_text(text: str) -> str:
     return text
 
 
-def extract_innertext_from_html(text):
-    # (REMOVE <SCRIPT> to </script> and variations)
-    pattern = r"<[ ]*script.*?\/[ ]*script[ ]*>"  # mach any char zero or more times
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE HTML <STYLE> to </style> and variations)
-    pattern = r"<[ ]*style.*?\/[ ]*style[ ]*>"  # mach any char zero or more times
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE HTML <META> to </meta> and variations)
-    pattern = r"<[ ]*meta.*?>"  # mach any char zero or more times
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE HTML COMMENTS <!-- to --> and variations)
-    pattern = r"<[ ]*!--.*?--[ ]*>"  # mach any char zero or more times
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE HTML DOCTYPE <!DOCTYPE html to > and variations)
-    pattern = r"<[ ]*\![ ]*DOCTYPE.*?>"  # mach any char zero or more times
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE HTML tags <tag...> and variations)
-    pattern = r"<.*?>"
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-
-    # (REMOVE special characters \n\t\r\a and variations)
-    pattern = r"[\n\t\r\a]"
-    text = re.sub(pattern, "", text, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
-    return text
-
-
 def get_title(url, title=""):
-    title = extract_innertext_from_html(title)
     if title == "":
         title = url.split("/")[-1]
     return title
