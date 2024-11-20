@@ -11,6 +11,7 @@ import wrapperfunction.chat_history.service.chat_history_service as chat_history
 import uuid
 
 
+
 async def chat(bot_name: str, chat_payload: ChatPayload):
     try:
         chat_history_with_system_message = prepare_chat_history_with_system_message(
@@ -26,7 +27,10 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
+
+
         context = set_context(results)
+
         #Set user message
         user_message_entity = set_message(conversation_id=conversation_id, 
                                           content=chat_history_with_system_message["chat_history"][-1]["content"],
@@ -59,6 +63,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity= tools_message_entity        
                     )
         
+
 
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
@@ -205,3 +210,4 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
+
