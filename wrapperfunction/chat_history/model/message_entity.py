@@ -13,7 +13,7 @@ class MessagePropertyName(Enum):
     CONTEXT = "context"
 
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles, context: str):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str | None = None):
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
         self.timestamp = datetime.now().isoformat()
