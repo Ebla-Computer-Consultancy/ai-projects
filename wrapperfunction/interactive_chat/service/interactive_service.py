@@ -135,16 +135,20 @@ async def generate_final_resopnse(result, chat_payload: ChatPayload):
                                 ),
                             chat_history=[{"role":Roles.User.value,"content":msg}],
                         )
+    
     user_message_entity = set_message(
         role=Roles.User.value,
         content=msg,
-        conversation_id=chat_payload.conversation_id)
+        conversation_id=chat_payload.conversation_id,
+        context=str(final_response["message"]["context"]) if final_response["message"]["context"] else None
+        )
     
     assistant_message_entity = set_message(
         role=Roles.Assistant.value,
         content=final_response["message"]["content"],
-        conversation_id=chat_payload.conversation_id)
-                  
+        conversation_id=chat_payload.conversation_id,
+        context=str(final_response["message"]["context"]))
+                
     add_messages_to_history(
         chat_payload=chat_payload,
         conversation_id=chat_payload.conversation_id,
@@ -152,4 +156,4 @@ async def generate_final_resopnse(result, chat_payload: ChatPayload):
         assistant_message_entity=assistant_message_entity,
         bot_name="interactive")
     
-    return final_response["message"]["content"]
+    return final_response
