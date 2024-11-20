@@ -9,7 +9,12 @@ router = APIRouter()
 
 # new crawling request
 @router.post("/crawl")
-async def crawl(urls: List[str], deepCrawling: bool = False):
+async def crawl(
+    urls: List[str],
+    headers: dict = None,
+    cookies: dict = None,
+    deepCrawling: bool = False,
+):
     try:
         return admin_service.crawl(link)
     except Exception as e:

@@ -20,7 +20,9 @@ BLOB_CONTAINER_NAME = config.RERA_CONTAINER_NAME
 SUBFOLDER_NAME = config.RERA_SUBFOLDER_NAME
 
 
-def run_crawler(urls: str, deepCrawling: bool = False):
+def run_crawler(
+    urls: str, headers: dict = None, cookies: dict = None, deepCrawling: bool = False
+):
     process = CrawlerProcess()
     if deepCrawling:
         CrawlingSpider.rules = (
@@ -36,11 +38,7 @@ def run_crawler(urls: str, deepCrawling: bool = False):
         )
     else:
         CrawlingSpider.rules = (Rule(callback="parse_items"),)
-    process.crawl(
-        CrawlingSpider,
-        start_urls=urls,
-        # cookies={"LangSwitcher_Setting": "ar-SA"}, // cookies for khrama
-    )
+    process.crawl(CrawlingSpider, start_urls=urls, cookies=cookies, headers=headers)
     process.start()
 
 
