@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 # import wrapperfunction.admin.service.admin_service as adminservice
-from fastapi import HTTPException , File, Form
+from fastapi import HTTPException
 from wrapperfunction.admin.model.crawl_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
