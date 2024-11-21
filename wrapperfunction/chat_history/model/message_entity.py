@@ -21,7 +21,7 @@ class MessageEntity:
         self.content = content
         self.conversation_id = conversation_id
         self.role = role
-        self.context = json.dumps(context,ensure_ascii=False)
+        self.context = context
 
     def to_dict(self):
         return {
