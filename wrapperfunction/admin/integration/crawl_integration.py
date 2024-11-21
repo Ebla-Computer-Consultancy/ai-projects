@@ -27,11 +27,7 @@ def run_crawler(
     if deepCrawling:
         CrawlingSpider.rules = (
             Rule(
-                LinkExtractor(
-                    allow_domains=[
-                        x.replace("https://", "").split("/")[0] for x in urls
-                    ]
-                ),
+                LinkExtractor(),
                 callback="parse_items",
                 follow=True,
             ),
@@ -40,7 +36,7 @@ def run_crawler(
         CrawlingSpider.rules = (
             Rule(
                 callback="parse_items",
-                follow=True,
+                follow=False,
             ),
         )
     process.crawl(CrawlingSpider, start_urls=urls, cookies=cookies, headers=headers)
