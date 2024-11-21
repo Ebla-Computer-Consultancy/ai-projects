@@ -1,39 +1,45 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
-from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
+from wrapperfunction.admin.integration import storage_connector
 from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment, detect_language, entity_recognition, extract_key_phrases
 from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
-from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_KEY
+from wrapperfunction.core import config
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-
+from wrapperfunction.chatbot.service import chatbot_service
+from fastapi.responses import FileResponse
 
 async def media_search(search_text: str):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
         
-        system_message = "you are an assistant and expert in writing structured reports in a good way that write long reports from a given results"
-        chat_history = [{"role": "system", "content": str(system_message)}]
+        chat_settings = config.load_chatbot_settings(bot_name="media")
+        print(chat_settings.index_name)
+        chat_history = [{"role": "system", "content": chat_settings.system_message}]
         chat_history.append({"role": "user", "content": str(user_message)})
 
         chat_res = chat_completion(
-            chatbot_setting=ChatbotSetting(system_message=system_message,index_name="rera-media", name=OPENAI_CHAT_MODEL),
+            chatbot_setting=chat_settings,
             chat_history=chat_history
         )
-
-        # create_pdf_file(chat_res["message"]["content"],f"rera_reports/{search_text}.pdf")
-
+        report_file_name = search_text.replace(" ","_")
+        create_pdf_file(chat_res["message"]["content"],f"{report_file_name}.pdf")
+        storage_connector.upload_pdf_to_azure(file_path = f"{report_file_name}.pdf",
+                                              connection_string= config.RERA_STORAGE_CONNECTION,
+                                              container_name= "rera-media-reports",
+                                              blob_name=f"{report_file_name}.pdf")
+        
+        sas_url = storage_connector.generate_blob_sas_url(connection_string= config.RERA_STORAGE_CONNECTION,
+                                              container_name= "rera-media-reports",
+                                              blob_name=f"{report_file_name}.pdf")
         # Push the file to the Azure container
-        upload_json_to_azure(content=chat_res["message"]["content"],blob_name=f"{search_text}.txt",connection_string= RERA_STORAGE_CONNECTION,container_name= "rera-media-reports")
-
         return ServiceReturn(
             status=StatusCode.CREATED,
             message=f"{search_text} Report Generated Successfuly",
             data={
-                "report-text": chat_res["message"]["content"],
-                "search_results": chat_res,
+                "report_url": sas_url,
             }
         ).to_dict()
     except Exception as e:
@@ -42,13 +48,13 @@ async def media_search(search_text: str):
 async def media_crawl(topics: list, urls: list):
     try:
         #1 get data
-        links = getAllNewsLinks(urls=urls,media_config_path="wrapperfunction\core\settings\media.json")
+        links = getAllNewsLinks(urls=urls)
         #2 save to blob storage
         saveTopicsMedia(
             news_links=links,
-            config_file_path="wrapperfunction\core\settings\media.json", 
-            topics=topics,container_name="rera-media",
-            connection_string=RERA_STORAGE_CONNECTION
+            topics=topics,
+            container_name="rera-media",
+            connection_string=config.RERA_STORAGE_CONNECTION
             )
         #3 reset indexer
         res = await admin_service.resetIndexer(name="rera-media-test-indexer")
@@ -237,5 +243,4 @@ async def entity_recognition_skill(values: list):
                 "errors": f"Unexpected error: {str(e)}",
                 "warnings": None
             })
-    return {"values": results}
-    
+    return {"values": results}   

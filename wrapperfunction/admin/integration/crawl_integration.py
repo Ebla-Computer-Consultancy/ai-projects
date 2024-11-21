@@ -219,15 +219,12 @@ def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORA
         if blob.name.endswith(".pdf"):
             process_pdf(blob.name)
 
-def getAllNewsLinks(urls: list, media_config_path: str):
+def getAllNewsLinks(urls: list):
     try:
-        # Load the JSON configuration from the specified file
-        with open(media_config_path, 'r') as file:
-            media_config = json.load(file)
 
         # Extract the list of web URLs and target classes
-        web_urls = media_config.get("web_urls", [])
-        target_classes = media_config.get("a_class", [])
+        web_urls = config.ENTITY_MEDIA_SETTINGS.get("web_urls", [])
+        target_classes = config.ENTITY_MEDIA_SETTINGS.get("a_class", [])
         
         # Initialize a list to store the links
         news_links_list = []
@@ -298,15 +295,11 @@ def create_pdf_file(text,file_path):
         output_path = file_path
         pdf.output(output_path)
 
-def saveTopicsMedia(news_links: list, topics: list, config_file_path: str, container_name: str, connection_string: str):
+def saveTopicsMedia(news_links: list, topics: list, container_name: str, connection_string: str):
     try:
-        # Load JSON configuration from the given file
-        with open(config_file_path, 'r') as config_file:
-            config = json.load(config_file)
-
         # Extract target classes for p and img
-        target_p_classes = config.get("p_class", [])
-        target_img_classes = config.get("img_class", [])
+        target_p_classes = config.ENTITY_MEDIA_SETTINGS.get("p_class", [])
+        target_img_classes = config.ENTITY_MEDIA_SETTINGS.get("img_class", [])
 
         for entry in news_links:
             url = entry["url"]
