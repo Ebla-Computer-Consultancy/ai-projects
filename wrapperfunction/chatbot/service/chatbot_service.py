@@ -84,6 +84,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
     
 def set_context(results):
 
+
     try:
         context = results["message"].get("context")
         if context:
@@ -99,6 +100,7 @@ def set_context(results):
             return json.dumps(parsed_data,ensure_ascii=False)
         if results["message"].get("tool_calls"):
             return ""
+
 
         return ""
     except Exception as error:
