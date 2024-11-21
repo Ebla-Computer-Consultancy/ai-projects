@@ -25,15 +25,15 @@ async def media_search(search_text: str):
             chat_history=chat_history
         )
         report_file_name = search_text.replace(" ","_")
-        create_pdf_file(chat_res["message"]["content"],f"{report_file_name}.pdf")
-        storage_connector.upload_pdf_to_azure(file_path = f"{report_file_name}.pdf",
+        # create_pdf_file(chat_res["message"]["content"],f"{report_file_name}.pdf")
+        storage_connector.upload_json_to_azure(content=chat_res["message"]["content"],
                                               connection_string= config.RERA_STORAGE_CONNECTION,
                                               container_name= "rera-media-reports",
-                                              blob_name=f"{report_file_name}.pdf")
+                                              blob_name=f"{report_file_name}.txt")
         
         sas_url = storage_connector.generate_blob_sas_url(connection_string= config.RERA_STORAGE_CONNECTION,
                                               container_name= "rera-media-reports",
-                                              blob_name=f"{report_file_name}.pdf")
+                                              blob_name=f"{report_file_name}.txt")
         # Push the file to the Azure container
         return ServiceReturn(
             status=StatusCode.CREATED,

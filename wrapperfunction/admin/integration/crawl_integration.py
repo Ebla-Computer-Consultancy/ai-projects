@@ -331,6 +331,7 @@ def saveTopicsMedia(news_links: list, topics: list, container_name: str, connect
                             img_url = img_tag.get("src")
                             print(f"url:{img_url}\n")
                             if img_url:
+                                #TODO edit logo
                                 if "logo" not in img_url and is_valid_url(img_url, url):
                                     if str(img_url).endswith(tuple([".png",".PNG",".JPG",".jpg",".jpeg",".JPEG"])): 
                                         # Convert to absolute URL if it's relative
