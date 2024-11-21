@@ -12,6 +12,15 @@
       "commented_system_message_1": "You are an intelligent assistant specifically designed to help users with research and answer questions related to Ministry of Environment & Climate Change."
     },
     {
+        "name": "media",
+        "index_name": "rera-media",
+        "custom_settings": {
+          "temperature": 0.5,
+          "max_tokens": 4000
+        },
+        "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that write long reports from a given results"
+    },
+    {
       "name": "interactive",
       "index_name": null,
       "custom_settings": {
