@@ -83,11 +83,27 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
     
 def set_context(results):
-    if results["message"].get("context"):
-        return results["message"]["context"]
-    if results["message"]["tool_calls"]:
+    try:
+        context = results["message"].get("context")
+        if context:
+            if isinstance(context, str):
+                parsed_data = json.loads(context)
+            elif isinstance(context, dict):
+                parsed_data = context
+            else:
+                return json.dumps({"error": True, "message": "Invalid context format"})
+            if isinstance(parsed_data.get("intent"), str):
+                parsed_data["intent"] = json.loads(parsed_data["intent"])
+            
+            return json.dumps(parsed_data,ensure_ascii=False)
+        if results["message"].get("tool_calls"):
+            return ""
         return ""
-    return ""
+
+    except Exception as error:
+        return json.dumps({"error": True, "message": str(error)})
+
+        
 
 def set_message(conversation_id,role,content=None,tool_calls=None,context=None):
     # Set message Entity
