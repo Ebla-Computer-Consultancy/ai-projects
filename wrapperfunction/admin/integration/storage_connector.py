@@ -1,6 +1,5 @@
 import datetime
 from io import BytesIO
-import os
 from azure.storage.blob import BlobServiceClient
 from fastapi import HTTPException, UploadFile
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
