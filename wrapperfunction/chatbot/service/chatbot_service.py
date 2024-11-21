@@ -84,7 +84,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
     
 def set_context(results):
     if results["message"].get("context"):
-        return "context:"+str(results["message"]["context"])
+        return results["message"]["context"]
     if results["message"]["tool_calls"]:
         return ""
     return ""
