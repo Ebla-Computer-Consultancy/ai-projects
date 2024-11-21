@@ -7,6 +7,8 @@ import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connec
 from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 from wrapperfunction.chatbot.model.chat_message import Roles
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
+import json
+
 
 
 
@@ -27,8 +29,9 @@ def get_conversation_data(conversation_id):
     
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" conversation_id eq '{conversation_id}'") 
-        return list(res)
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" conversation_id eq '{conversation_id}'")
+        res=json.dumps(res,ensure_ascii=False) 
+        return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
     
