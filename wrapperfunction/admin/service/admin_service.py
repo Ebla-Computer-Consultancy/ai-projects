@@ -8,7 +8,7 @@ import requests
 
 from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
 
-from wrapperfunction.core.config import OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
+from wrapperfunction.core.config import OPENAI_API_VERSION, OPENAI_CHAT_MODEL, RERA_STORAGE_CONNECTION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 def crawl(request):
@@ -72,7 +72,7 @@ async def add_pdfs():
     
 async def resetIndexer(name: str):
     try:
-        url = f"{SEARCH_ENDPOINT}/indexers/{name}/reset?api-version=2024-07-01"
+        url = f"{SEARCH_ENDPOINT}/indexers/{name}/reset?api-version={OPENAI_API_VERSION}"
         headers = {
             "Content-Type": "application/json",
             "api-key": SEARCH_KEY
@@ -87,7 +87,7 @@ async def resetIndexer(name: str):
 
 async def runIndexer(name: str):
     try:
-        url = f"{SEARCH_ENDPOINT}/indexers/{name}/run?api-version=2024-07-01"
+        url = f"{SEARCH_ENDPOINT}/indexers/{name}/run?api-version={OPENAI_API_VERSION}"
         headers = {
             "Content-Type": "application/json",
             "api-key": SEARCH_KEY
