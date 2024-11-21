@@ -1,11 +1,9 @@
-from urllib import request
 import uuid
 import os
 import json
-from io import BytesIO
 from scrapy.crawler import CrawlerProcess
 from azure.storage.blob import BlobServiceClient, BlobBlock
-from wrapperfunction.admin.integration.storage_connector import upload_json_to_azure
+from wrapperfunction.admin.integration.storage_connector import upload_file_to_azure
 from wrapperfunction.core.utls.spiders.crawling_spider import CrawlingSpider
 from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
@@ -13,10 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from bs4 import BeautifulSoup
 import requests
-from fpdf import FPDF
-import arabic_reshaper
-from bidi.algorithm import get_display
-from urllib.parse import urljoin, urlparse, quote
+from urllib.parse import urljoin, urlparse
 
 AZURE_STORAGE_CONNECTION_STRING = config.RERA_STORAGE_CONNECTION
 CONTAINER_NAME = config.RERA_CONTAINER_NAME
@@ -219,7 +214,7 @@ def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORA
         if blob.name.endswith(".pdf"):
             process_pdf(blob.name)
 
-def getAllNewsLinks(urls: list):
+def get_all_Links_in_urls(urls: list):
     try:
 
         # Extract the list of web URLs and target classes
@@ -269,33 +264,7 @@ def getAllNewsLinks(urls: list):
     except Exception as e:
         return f"ERROR getting links: {str(e)}"
 
-def create_pdf_file(text,file_path):
-    # Create a directory for the reports if it doesn't exist
-        os.makedirs("rera_reports", exist_ok=True)
-
-        # Reshape the Arabic text for correct character connection
-        reshaped_text = arabic_reshaper.reshape(text)
-        bidi_text = get_display(reshaped_text)  
-
-        # Initialize FPDF instance
-        pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-
-        # # Use an Arabic font 
-        font_path = r"wrapperfunction\\core\\utls\\arabic-font\Adobe Arabic Regular.ttf"
-        print(f'fornt-path: {font_path}')
-        pdf.add_font("Arabic-Font", "", font_path, uni=True)
-        pdf.set_font("Arabic-Font", size=16)
-
-        # Add Arabic text to PDF
-        pdf.multi_cell(0, 10, bidi_text, align='R') 
-
-        # Save the PDF file
-        output_path = file_path
-        pdf.output(output_path)
-
-def saveTopicsMedia(news_links: list, topics: list, container_name: str, connection_string: str):
+def save_media_with_topics(news_links: list, topics: list, container_name: str, connection_string: str):
     try:
         # Extract target classes for p and img
         target_p_classes = config.ENTITY_MEDIA_SETTINGS.get("p_class", [])
@@ -358,12 +327,11 @@ def saveTopicsMedia(news_links: list, topics: list, container_name: str, connect
                     blob_name = f"{folder_name}/{link_filename}.json"
                     
                     # Upload the JSON to Azure Blob Storage
-                    upload_json_to_azure(json_content, container_name, blob_name, connection_string)
+                    upload_file_to_azure(json_content, container_name, blob_name, connection_string)
 
     except Exception as e:
         print(f"ERROR Saving Results: {str(e)}")
         
-
 def is_valid_url(img_url, base_url):
     try:
         # Combine with base URL if img_url is relative
