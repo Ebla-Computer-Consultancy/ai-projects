@@ -8,7 +8,7 @@ router = APIRouter()
 @router.post("/search/")
 async def media_search(request:MediaRequest):
     try:
-        return await media_service.media_search(request.search_text)
+        return await media_service.generate_report(request.search_text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
