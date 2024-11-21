@@ -16,7 +16,6 @@ class CrawlingSpider(CrawlSpider):
         "DOWNLOADER_MIDDLEWARES": {
             "scrapy.downloadermiddlewares.offsite.OffsiteMiddleware": None,
         },
-        "DOWNLOAD_DELAY": 2,
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     }
 
@@ -27,8 +26,7 @@ class CrawlingSpider(CrawlSpider):
         self.cookies = kwargs.get("cookies")
         self.headers = kwargs.get("headers")
         self.allowed_domains = [
-            x.replace("https://", "").replace("www.", "").split("/")[0]
-            for x in self.start_urls
+            x.replace("https://", "").split("/")[0] for x in self.start_urls
         ]
 
     def _build_request(self, rule_index, link):
