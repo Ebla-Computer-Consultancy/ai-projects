@@ -1,17 +1,13 @@
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
-from wrapperfunction.admin.integration.crawl_integration import create_pdf_file, getAllNewsLinks, saveTopicsMedia
+from wrapperfunction.admin.integration import crawl_integration
 from wrapperfunction.admin.integration import storage_connector
-from wrapperfunction.admin.integration.textanalytics_connector import analyze_sentiment, detect_language, entity_recognition, extract_key_phrases
+from wrapperfunction.admin.integration import textanalytics_connector
 from wrapperfunction.admin.service import admin_service
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core import config
-from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-from wrapperfunction.chatbot.service import chatbot_service
-from fastapi.responses import FileResponse
 
-async def media_search(search_text: str):
+async def generate_report(search_text: str):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
         
@@ -25,8 +21,8 @@ async def media_search(search_text: str):
             chat_history=chat_history
         )
         report_file_name = search_text.replace(" ","_")
-        # create_pdf_file(chat_res["message"]["content"],f"{report_file_name}.pdf")
-        storage_connector.upload_json_to_azure(content=chat_res["message"]["content"],
+        
+        storage_connector.upload_file_to_azure(content=chat_res["message"]["content"],
                                               connection_string= config.RERA_STORAGE_CONNECTION,
                                               container_name= "rera-media-reports",
                                               blob_name=f"{report_file_name}.txt")
@@ -48,9 +44,9 @@ async def media_search(search_text: str):
 async def media_crawl(topics: list, urls: list):
     try:
         #1 get data
-        links = getAllNewsLinks(urls=urls)
+        links = crawl_integration.get_all_Links_in_urls(urls=urls)
         #2 save to blob storage
-        saveTopicsMedia(
+        crawl_integration.save_media_with_topics(
             news_links=links,
             topics=topics,
             container_name="rera-media",
@@ -58,7 +54,7 @@ async def media_crawl(topics: list, urls: list):
             )
         #3 reset indexer
         res = await admin_service.resetIndexer(name="rera-media-test-indexer")
-        # # #4 run indexer
+        #4 run indexer
         res2 = await admin_service.runIndexer(name="rera-media-test-indexer")
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
@@ -78,7 +74,7 @@ async def sentiment_skill(values: list):
                 raise ValueError("Missing 'text' field in data")
 
             # Analyze sentiment
-            sentiment = analyze_sentiment([text])
+            sentiment = textanalytics_connector.analyze_sentiment([text])
 
             # Add successful result
             results.append({
@@ -119,7 +115,7 @@ async def detect_language_skill(values: list):
                 raise ValueError("Missing 'text' field in data")
 
             # Analyze sentiment
-            detected_language = detect_language(messages=[text])
+            detected_language = textanalytics_connector.detect_language(messages=[text])
 
             # Add successful result
             results.append({
@@ -161,7 +157,7 @@ async def extract_key_phrases_skill(values: list):
                 raise ValueError("Missing 'text' field in data")
 
             # Analyze sentiment
-            key_phrases = extract_key_phrases(messages=[text],language=language)
+            key_phrases = textanalytics_connector.extract_key_phrases(messages=[text],language=language)
 
             # Add successful result
             results.append({
@@ -202,7 +198,7 @@ async def entity_recognition_skill(values: list):
                 raise ValueError("Missing 'text' field in data")
 
             # Analyze sentiment
-            entities = entity_recognition(messages=[text],language=language)
+            entities = textanalytics_connector.entity_recognition(messages=[text],language=language)
 
             # Add successful result
             results.append({
