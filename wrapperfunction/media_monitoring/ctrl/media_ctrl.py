@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi import HTTPException
+from wrapperfunction.admin.integration import imageanalytics_connector
 from wrapperfunction.media_monitoring.model.media_model import MediaCrawlRequest, MediaRequest, CustomSkillRequest
 from wrapperfunction.media_monitoring.service import media_service
 
@@ -44,5 +45,19 @@ async def key_phrases(request:CustomSkillRequest):
 async def entity_recognition(request:CustomSkillRequest):
     try:
         return await media_service.entity_recognition_skill(values=request.values)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/image_analysis/")   
+async def image_analysis(request:CustomSkillRequest):
+    try:
+        return await media_service.image_analysis_skill(values=request.values)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/image_embedding/")   
+async def image_analysis(request:CustomSkillRequest):
+    try:
+        return await media_service.image_embedding_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

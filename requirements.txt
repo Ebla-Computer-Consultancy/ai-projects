@@ -21,3 +21,4 @@ azure-ai-textanalytics
 azure-data-tables
 pandas
 bs4
+azure-ai-vision-imageanalysis
