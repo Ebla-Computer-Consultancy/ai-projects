@@ -286,7 +286,6 @@ async def image_analysis_skill(values: list):
     for record in values:
         record_id = record.recordId  
         try:
-            
             url = record.data["url"]
             if not url:
                 raise ValueError("Missing 'url' field in data")
@@ -297,7 +296,7 @@ async def image_analysis_skill(values: list):
             # Add successful result
             img_read=""
             for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
-               img_read += f"{line["text"]}\n" 
+               img_read += f"{line['text']}\n" 
             results.append({
                 "recordId": record_id,
                 "data": {
