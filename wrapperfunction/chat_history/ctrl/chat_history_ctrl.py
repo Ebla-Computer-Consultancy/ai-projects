@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter
 import wrapperfunction.chat_history.service.chat_history_service as historyservice
 
@@ -22,7 +23,9 @@ def apply_analysis():
 @router.post("/add-feedback/")
 def add_feedback(conv_id: str, feedback: int):
     return historyservice.perform_feedback_update(conv_id, feedback)
-
+@router.get("/get-bot-name/")
+def get_bot_name(conv_id: Optional[str] = None):
+    return historyservice.get_bot_name(conv_id)
 
 
 
