@@ -103,22 +103,13 @@ def get_bot_name(conversation_id: Optional[str] = None):
         if conversation_id:
             conversation = get_conversation_data(conversation_id)
             bot_names.append(conversation[ConversationPropertyName.BOT_NAME.value])
-            return bot_names  
-        directory_path = "wrapperfunction/core/settings"
-        for filename in os.listdir(directory_path):
-            if filename.endswith('.json'):
-                file_path = os.path.join(directory_path, filename)
-                try:
-                    with open(file_path, 'r', encoding='utf-8-sig') as file:
-                        data = json.load(file)
-                        chatbots = data.get('chatbots', [])
-                        if chatbots:
-                            bot_name = chatbots[0].get('name')
-                            if bot_name:
-                                bot_names.append(bot_name)
-                except Exception as e:
-                    print(f"Error reading {filename}: {e}")
-        return bot_names if bot_names else []
+            return bot_names
+        ENTITY_SETTINGS = config.ENTITY_SETTINGS
+        bot_names=[chatbot_obj["name"] for chatbot_obj in ENTITY_SETTINGS.get("chatbots", [])]
+        return bot_names 
+        
+
+        
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
