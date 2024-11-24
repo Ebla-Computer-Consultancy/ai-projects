@@ -99,7 +99,6 @@ def set_context(results):
         if results["message"].get("tool_calls"):
             return ""
         return ""
-
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 
