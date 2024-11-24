@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from wrapperfunction.admin.integration import crawl_integration
+from wrapperfunction.admin.integration import crawl_integration, imageanalytics_connector
 from wrapperfunction.admin.integration import storage_connector
 from wrapperfunction.admin.integration import textanalytics_connector
 from wrapperfunction.admin.service import admin_service
@@ -114,7 +114,7 @@ async def detect_language_skill(values: list):
             if not text:
                 raise ValueError("Missing 'text' field in data")
 
-            # Analyze sentiment
+            # detect_language
             detected_language = textanalytics_connector.detect_language(messages=[text])
 
             # Add successful result
@@ -156,7 +156,7 @@ async def extract_key_phrases_skill(values: list):
             if not text:
                 raise ValueError("Missing 'text' field in data")
 
-            # Analyze sentiment
+            # Analyze key_phrases
             key_phrases = textanalytics_connector.extract_key_phrases(messages=[text],language=language)
 
             # Add successful result
@@ -197,7 +197,7 @@ async def entity_recognition_skill(values: list):
             if not text:
                 raise ValueError("Missing 'text' field in data")
 
-            # Analyze sentiment
+            # Analyze entity_recognition
             entities = textanalytics_connector.entity_recognition(messages=[text],language=language)
 
             # Add successful result
@@ -239,4 +239,91 @@ async def entity_recognition_skill(values: list):
                 "errors": f"Unexpected error: {str(e)}",
                 "warnings": None
             })
-    return {"values": results}   
+    return {"values": results}  
+
+async def image_embedding_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            url = record.data["url"]
+            if not url:
+                raise ValueError("Missing 'url' field in data")
+
+            # Vactorize Image
+            vector = imageanalytics_connector.image_embedding(img_url=url)
+
+            # Add successful result
+            results.append({
+                "recordId": record_id,
+                "data": {
+                    "image_vector": vector["vector"]
+                },
+                "errors": None,
+                "warnings": None
+            })
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": str(ve),
+                "warnings": None
+            })
+        except Exception as e:
+            # Catch unexpected errors
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": f"Unexpected error: {str(e)}",
+                "warnings": None
+            })
+    return{"values": results} 
+
+async def image_analysis_skill(values: list):
+    results = [imageanalytics_connector.analyze_image_from_url(record.data["url"]) for record in values]
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            url = record.data["url"]
+            if not url:
+                raise ValueError("Missing 'url' field in data")
+
+            # Analyze Image
+            analyzed_image = imageanalytics_connector.analyze_image_from_url(img_url=url)
+
+            # Add successful result
+            img_read=""
+            for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
+               img_read += f"{line["text"]}\n" 
+            results.append({
+                "recordId": record_id,
+                "data": {
+                    "image_caption": analyzed_image["captionResult"]["text"],
+                    "image_denseCaptions":[captions["text"] for captions in analyzed_image["denseCaptionsResult"]["values"]],
+                    "image_tags": [tags["name"] for tags in analyzed_image["tagsResult"]["values"]],
+                    "image_read": img_read 
+                },
+                "errors": None,
+                "warnings": None
+            })
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": str(ve),
+                "warnings": None
+            })
+        except Exception as e:
+            # Catch unexpected errors
+            results.append({
+                "recordId": record_id,
+                "data": {},
+                "errors": f"Unexpected error: {str(e)}",
+                "warnings": None
+            })
+    return{"values": analyzed_image}
