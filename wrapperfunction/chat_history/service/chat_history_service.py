@@ -1,3 +1,5 @@
+import json
+import os
 from typing import Optional
 from wrapperfunction.core import config
 from fastapi import HTTPException
@@ -70,7 +72,7 @@ def perform_sentiment_analysis():
 
         conversations = get_all_conversations()
         for conversation in conversations:
-            if conversation[ConversationPropertyName.SENTIMENT.value] == "": 
+            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined": 
                 conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
                 messages = get_user_messages(conversation_id)
                 message_texts = [msg[MessagePropertyName.CONTENT.value] for msg in messages if MessagePropertyName.CONTENT.value in msg]
@@ -95,3 +97,29 @@ def perform_feedback_update(conversation_id: str, feedback: int):
     ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))    
+def get_bot_name(conversation_id: Optional[str] = None):
+    bot_names = []  
+    try:
+        if conversation_id:
+            conversation = get_conversation_data(conversation_id)
+            bot_names.append(conversation[ConversationPropertyName.BOT_NAME.value])
+            return bot_names  
+        directory_path = "wrapperfunction/core/settings"
+        for filename in os.listdir(directory_path):
+            if filename.endswith('.json'):
+                file_path = os.path.join(directory_path, filename)
+                try:
+                    with open(file_path, 'r', encoding='utf-8-sig') as file:
+                        data = json.load(file)
+                        chatbots = data.get('chatbots', [])
+                        if chatbots:
+                            bot_name = chatbots[0].get('name')
+                            if bot_name:
+                                bot_names.append(bot_name)
+                except Exception as e:
+                    print(f"Error reading {filename}: {e}")
+        return bot_names if bot_names else []
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+        
