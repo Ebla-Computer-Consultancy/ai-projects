@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 from uuid import uuid4
 from enum import Enum
 from wrapperfunction.chatbot.model.chat_message import Roles
