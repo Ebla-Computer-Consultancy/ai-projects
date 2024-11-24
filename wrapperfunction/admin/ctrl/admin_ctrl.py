@@ -1,6 +1,8 @@
 
 from typing import List
 from fastapi import APIRouter, HTTPException, Request
+from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
+from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
@@ -10,16 +12,14 @@ router = APIRouter()
 
 # new crawling request
 @router.post("/crawl")
-async def crawl(
-    urls: List[str],
-    headers: dict = None,
-    cookies: dict = None,
-    deepCrawling: bool = False,
+def crawl(
+    urls: List[CrawlRequestUrls],
+    settings: CrawlSettings,
 ):
     try:
-        return adminservice.crawling(urls, headers, cookies, deepCrawling)
+        return admin_service.crawling(urls, settings)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/delete_subfolder")
