@@ -282,7 +282,6 @@ async def image_embedding_skill(values: list):
     return{"values": results} 
 
 async def image_analysis_skill(values: list):
-    results = [imageanalytics_connector.analyze_image_from_url(record.data["url"]) for record in values]
     results = []
     for record in values:
         record_id = record.recordId  
@@ -326,4 +325,4 @@ async def image_analysis_skill(values: list):
                 "errors": f"Unexpected error: {str(e)}",
                 "warnings": None
             })
-    return{"values": analyzed_image}
+    return{"values": results}
