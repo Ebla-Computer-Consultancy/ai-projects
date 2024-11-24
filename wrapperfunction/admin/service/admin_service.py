@@ -4,7 +4,7 @@ import requests
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data
-from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile, process_and_upload, run_crawler, transcript_pdfs
+from wrapperfunction.admin.integration.crawl_integration import delete_base_on_subfolder, delete_blobs_base_on_metadata, edit_blob_by_new_jsonfile
 from wrapperfunction.core.config import OPENAI_API_VERSION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
@@ -77,7 +77,7 @@ async def resetIndexer(name: str):
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
                             message=f"{name} Indexer Reseted Successfuly", 
-                             ).to_dict()
+                            ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -91,7 +91,7 @@ async def runIndexer(name: str):
         requests.post(url=url,headers=headers)
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
-                            message=f"{name} Indexer Is Running Successfuly", 
-                             ).to_dict()
+                            message=f"{name} Indexer Is Running Successfully", 
+                            ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
