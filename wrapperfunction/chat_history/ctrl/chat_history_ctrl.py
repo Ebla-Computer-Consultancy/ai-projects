@@ -14,8 +14,8 @@ def get_chats(conv_id: str):
 
 
 @router.get("/get-all-conversations/")
-def get_chats():
-    return historyservice.get_all_conversations()
+def get_chats(bot_name:Optional[str]=None):
+    return historyservice.get_all_conversations(bot_name)
 
 @router.post("/sentiment-analysis/")
 def apply_analysis():
@@ -24,8 +24,8 @@ def apply_analysis():
 def add_feedback(conv_id: str, feedback: int):
     return historyservice.perform_feedback_update(conv_id, feedback)
 @router.get("/get-bot-name/")
-def get_bot_name(conv_id: Optional[str] = None):
-    return historyservice.get_bot_name(conv_id)
+def get_bot_name():
+    return historyservice.get_bot_name()
 
 
 

@@ -41,9 +41,10 @@ def get_user_messages(conversation_id):
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
-def get_all_conversations():
+def get_all_conversations(bot_name:Optional[str]=None):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME) 
+        filter_condition = f"bot_name eq '{bot_name}'" if bot_name else None
+        res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME, filter_condition)
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e)) 
@@ -69,7 +70,6 @@ def update_conversation(conversation_id: str, updated_data: dict):
     
 def perform_sentiment_analysis():
     try:
-
         conversations = get_all_conversations()
         for conversation in conversations:
             if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined": 
@@ -97,13 +97,9 @@ def perform_feedback_update(conversation_id: str, feedback: int):
     ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))    
-def get_bot_name(conversation_id: Optional[str] = None):
+def get_bot_name():
     bot_names = []  
     try:
-        if conversation_id:
-            conversation = get_conversation_data(conversation_id)
-            bot_names.append(conversation[ConversationPropertyName.BOT_NAME.value])
-            return bot_names
         ENTITY_SETTINGS = config.ENTITY_SETTINGS
         bot_names=[chatbot_obj["name"] for chatbot_obj in ENTITY_SETTINGS.get("chatbots", [])]
         return bot_names 
