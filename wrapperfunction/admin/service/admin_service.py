@@ -28,7 +28,7 @@ async def resetIndexer(name: str):
         requests.post(url=url,headers=headers)
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
-                            message=f"{name} Indexer Reseted Successfuly", 
+                            message=f"{name} Indexer Reset Successfully", 
                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -43,7 +43,7 @@ async def runIndexer(name: str):
         requests.post(url=url,headers=headers)
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
-                            message=f"{name} Indexer Is Running Successfuly", 
+                            message=f"{name} Indexer Is Running Successfully", 
                             ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
