@@ -220,7 +220,7 @@
             hideSpinner();
             if (response.ok) {
                 // result =result["data"].json()
-                document.getElementById('reportOutput').innerHTML = `<h2>Generated Report:</h2><p>${result.data["report-text"]}</p>`;
+                document.getElementById('reportOutput').innerHTML = `<h2>Generated Report:</h2><p>${result.data["report_url"]}</p>`;
             } else {
                 document.getElementById('reportOutput').innerText = `Error: ${result.detail}`;
             }
