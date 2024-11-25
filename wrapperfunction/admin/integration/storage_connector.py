@@ -1,6 +1,9 @@
+import datetime
 from io import BytesIO
 from azure.storage.blob import BlobServiceClient
 from fastapi import HTTPException, UploadFile
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from wrapperfunction.core import config
 
 
 async def upload_to_blob_container(
@@ -51,3 +54,38 @@ def delete_blob_snapshots(connection_string: str, container_name: str, blob_name
         container=container_name, blob=blob_name
     )
     blob_client.delete_blob(delete_snapshots="include")
+
+def upload_file_to_azure(content, container_name, blob_name, connection_string):
+    print(f"\nUploading ... file\n")
+    # Convert the text content to bytes
+    content_bytes = content.encode("utf-8")
+
+    # Create a blob service client
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+
+    # Upload the content directly to Azure Blob
+    blob_client.upload_blob(BytesIO(content_bytes), overwrite=True)
+    print(f"\nUploaded content to {blob_name}\n")
+    
+def generate_blob_sas_url(container_name: str, blob_name: str, connection_string: str, expiration_minutes: int = 60):
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        
+        expiry_time = (datetime.datetime.utcnow() + datetime.timedelta(minutes=expiration_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        sas_token = generate_blob_sas(
+            account_key=config.RERA_STORAGE_ACCOUNT_KEY,
+            account_name=blob_service_client.account_name,
+            container_name=container_name,
+            blob_name=blob_name,
+            permission=BlobSasPermissions(read=True),
+            expiry=expiry_time
+        )
+
+        blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+        return blob_url
+
+    except Exception as e:
+        return(f"Error generating SAS URL: {str(e)}")
+        
