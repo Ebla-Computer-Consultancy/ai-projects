@@ -12,7 +12,6 @@ import wrapperfunction.admin.integration.textanalytics_connector as text_connect
 
 
 
-
 def get_conversations(user_id):
     try:
         res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"user_id eq '{user_id}'")     
