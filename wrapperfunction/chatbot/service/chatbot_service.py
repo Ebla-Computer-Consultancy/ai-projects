@@ -66,7 +66,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
 
         if chat_payload.stream_id is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
-            # await avatarconnector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
+            # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
 
             asyncio.create_task(
                 avatarconnector.render_text_async(
@@ -129,7 +129,7 @@ def add_messages_to_history(
     tools_message_entity=None,
 ):
     user_id = chat_payload.user_id or str(uuid.uuid4())
-    # Set Convertsation Entity
+    # Set Conversation Entity
     title = user_message_entity.content[:20].strip()
     conv_entity = ConversationEntity(user_id, conversation_id, bot_name, title=title)
 
@@ -190,16 +190,19 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
             chatbot_settings,
             chat_history=chat_history_with_system_message["chat_history"],
         )
-        return results
+        return (
+            "".join(results["message"]["content"].replace("\n", "").split()).strip(),
+        )
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 
 
 def prepare_chat_history_with_system_message(chat_payload, bot_name):
-
-    chat_history_arr = chat_history_service.get_messages(
-        conversation_id=chat_payload.conversation_id
-    )
+    chat_history_arr = []
+    if chat_payload.conversation_id:
+        chat_history_arr = chat_history_service.get_messages(
+            conversation_id=chat_payload.conversation_id
+        )
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)
     if chat_payload.stream_id:
@@ -211,6 +214,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
         system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language."
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
+
     chat_history.extend(config.load_chatbot_settings(bot_name).examples)
     ##if have tools
     for item in chat_history_arr:
@@ -224,7 +228,6 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
             tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
             chat_history.append({"role": "assistant", "tool_calls": [tool]})
             msg["tool_call_id"] = chat_payload.conversation_id
-
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
     chat_history = chat_history[:1] + chat_history[-10:]

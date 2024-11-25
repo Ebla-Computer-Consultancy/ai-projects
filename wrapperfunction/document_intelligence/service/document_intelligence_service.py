@@ -19,19 +19,17 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
 
         return chatbotservice.ask_open_ai_chatbot(
             bot_name=bot_name,
-            chat_payload=[
-                {
-                    "role": "user",
-                    "content": "".join(
-                        json.dumps(
+            chat_payload=ChatPayload(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": json.dumps(
                             file_result,
                             ensure_ascii=False,
-                        )
-                        .replace("\t\n", "")
-                        .split()
-                    ).strip(),
-                }
-            ],
+                        ),
+                    }
+                ]
+            ),
         )
 
     except Exception as e:
