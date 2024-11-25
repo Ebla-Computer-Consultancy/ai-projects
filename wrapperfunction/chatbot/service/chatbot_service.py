@@ -105,11 +105,6 @@ def set_context(results):
 
 
 
-        return ""
-
-
-
-
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 
@@ -235,4 +230,3 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
-
