@@ -83,11 +83,32 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
     
 def set_context(results):
-    if results["message"].get("context"):
-        return "context:"+str(results["message"]["context"])
-    if results["message"]["tool_calls"]:
+
+    try:
+        context = results["message"].get("context")
+        if context:
+            if isinstance(context, str):
+                parsed_data = json.loads(context)
+            elif isinstance(context, dict):
+                parsed_data = context
+            else:
+                return json.dumps({"error": True, "message": "Invalid context format"})
+            if isinstance(parsed_data.get("intent"), str):
+                parsed_data["intent"] = json.loads(parsed_data["intent"])
+            
+            return json.dumps(parsed_data,ensure_ascii=False)
+        if results["message"].get("tool_calls"):
+            return ""
+
         return ""
-    return ""
+
+
+
+
+    except Exception as error:
+        return json.dumps({"error": True, "message": str(error)})
+
+        
 
 def set_message(conversation_id,role,content=None,tool_calls=None,context=None):
     # Set message Entity
@@ -115,7 +136,8 @@ def add_messages_to_history(
     user_id = chat_payload.user_id or str(uuid.uuid4())
     
     # Set Convertsation Entity
-    conv_entity=ConversationEntity(user_id, conversation_id,bot_name)
+    title = user_message_entity.content[:20].strip()
+    conv_entity=ConversationEntity(user_id, conversation_id,bot_name,title=title)
     
     if not tools_message_entity:
         if not chat_payload.conversation_id:
@@ -183,31 +205,28 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
             system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
     else:
         system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language."
-
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
-    ##if have tools
+     ##if have tools
     for item in chat_history_arr:
-        msg = {"role": item["role"],"content":item["content"]}
-        if config.load_chatbot_settings(bot_name).custom_settings.tools:
-            if item["role"] == "tool":
-                tool = json.loads(item["content"])
-                tool["id"] = chat_payload.conversation_id
-                tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
-                chat_history.append({"role": "assistant",
-                                    "tool_calls":[
-                                        tool
-                                        ]
-                                    })
-                msg["tool_call_id"] = chat_payload.conversation_id
-        else:
-            continue
+        msg = {"role": item["role"], "content": item["content"]}
+        if config.load_chatbot_settings(bot_name).custom_settings.tools and item["role"] == "tool":
+            tool = json.loads(item["content"])
+            tool["id"] = chat_payload.conversation_id
+            tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
+            chat_history.append({
+                "role": "assistant",
+                "tool_calls": [tool]
+            })
+            msg["tool_call_id"] = chat_payload.conversation_id
+
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
+    chat_history = chat_history[:1] + chat_history[-10:]
+    
     return {"system_message": system_message, "chat_history": chat_history}
 
 
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
-
