@@ -1,7 +1,7 @@
 # Fast Api
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from wrapperfunction.interactive_chat.ctrl import interavtive_ctrl
+from wrapperfunction.interactive_chat.ctrl import interactive_ctrl
 from wrapperfunction.media_monitoring.ctrl import media_ctrl
 from wrapperfunction.speech.ctrl import speech_ctrl
 from wrapperfunction.chatbot.ctrl import chatbot_ctrl
@@ -30,7 +30,7 @@ app.add_middleware(
 
 app.include_router(search_ctrl.router, prefix="/api/v1/search", tags=["search"])
 app.include_router(chatbot_ctrl.router, prefix="/api/v1/chatbot", tags=["chatbot"])
-app.include_router(interavtive_ctrl.router, prefix="/api/v1/interactive", tags=["chatbot"])
+app.include_router(interactive_ctrl.router, prefix="/api/v1/interactive", tags=["chatbot"])
 app.include_router(avatar_ctrl.router, prefix="/api/v1/avatar", tags=["avatar"])
 app.include_router(speech_ctrl.router, prefix="/api/v1/speech", tags=["speech"])
 app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"])
