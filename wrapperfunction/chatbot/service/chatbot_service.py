@@ -2,7 +2,9 @@ import asyncio
 import json
 from typing import Optional
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
+
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
+
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
@@ -241,11 +243,14 @@ async def upload_documents(files, bot_name, conversation_id: Optional[str] = Non
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
             title = content[:20].strip()
+
             user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
             conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title)
             await chat_history_service.add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
         else:
             user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+
+
             await chat_history_service.add_entity(message_entity=user_message_entity)
 
         return ServiceReturn(
