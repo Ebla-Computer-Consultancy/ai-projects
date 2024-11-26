@@ -75,7 +75,7 @@ def generate_blob_sas_url(container_name: str, blob_name: str, connection_string
         expiry_time = (datetime.datetime.utcnow() + datetime.timedelta(minutes=expiration_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         sas_token = generate_blob_sas(
-            account_key=config.RERA_STORAGE_ACCOUNT_KEY,
+            account_key=config.STORAGE_ACCOUNT_KEY,
             account_name=blob_service_client.account_name,
             container_name=container_name,
             blob_name=blob_name,
