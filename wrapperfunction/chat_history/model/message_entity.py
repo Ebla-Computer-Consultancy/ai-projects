@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from uuid import uuid4
 from enum import Enum
-from wrapperfunction.chatbot.model.chat_message import Roles,Message_Type
+from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 class MessagePropertyName(Enum):
     PARTITION_KEY = "PartitionKey"
@@ -12,10 +12,10 @@ class MessagePropertyName(Enum):
     CONVERSATION_ID = "conversation_id"
     ROLE = "role"
     CONTEXT = "context"
-    Message_Type = "message_type"
+    MessageType = "MessageType"
 
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles, context: str, type:Message_Type=Message_Type.Message.value):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str, type:MessageType=MessageType.Message.value):
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
         self.timestamp = datetime.now().isoformat()  
@@ -34,6 +34,6 @@ class MessageEntity:
             MessagePropertyName.CONVERSATION_ID.value: self.conversation_id,
             MessagePropertyName.ROLE.value: self.role,
             MessagePropertyName.CONTEXT.value: self.context,
-            MessagePropertyName.Message_Type.value: self.type            
+            MessagePropertyName.MessageType.value: self.type            
         }
 

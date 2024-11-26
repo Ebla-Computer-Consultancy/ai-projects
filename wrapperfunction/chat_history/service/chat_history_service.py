@@ -8,8 +8,9 @@ from wrapperfunction.chat_history.model.conversation_entity import ConversationE
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 
-from wrapperfunction.chatbot.model.chat_message import Roles
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
+
+from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 
 
@@ -37,7 +38,7 @@ def get_messages(conversation_id):
     
 def get_user_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"conversation_id eq '{conversation_id}' and role eq '{Roles.User.value}' and type eq '{Message_Type.Message.value}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"conversation_id eq '{conversation_id}' and role eq '{Roles.User.value}' and type eq '{MessageType.Message.value}'") 
         return list(res)
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
