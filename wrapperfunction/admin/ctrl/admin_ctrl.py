@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 # import wrapperfunction.admin.service.admin_service as adminservice
 from fastapi import HTTPException , File, Form
-from wrapperfunction.admin.model.crawl_model import MediaCrawlRequest, MediaRequest, IndexerRequest
+from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
 
 # import wrapperfunction.admin.model.crawl_model as CrawlRequest
@@ -47,13 +47,13 @@ async def add_pdfs(request: Request):
 @router.post("/reset-indexer/")
 async def resetIndexer(request: IndexerRequest):
     try:
-        return await admin_service.resetIndexer(request.name)
+        return await admin_service.resetIndexer(request.index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/run-indexer/")
 async def runIndexer(request: IndexerRequest):
     try:
-        return await admin_service.runIndexer(request.name)
+        return await admin_service.runIndexer(request.index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

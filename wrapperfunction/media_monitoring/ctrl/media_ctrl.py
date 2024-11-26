@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from wrapperfunction.media_monitoring.model.media_model import MediaCrawlRequest, MediaRequest, CustomSkillRequest
+from wrapperfunction.core.model.customskill_model import CustomSkillRequest
+from wrapperfunction.media_monitoring.model.media_crawl_model import MediaCrawlRequest
+from wrapperfunction.media_monitoring.model.media_model import MediaRequest
 from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
@@ -26,7 +28,7 @@ async def sentiment(request:CustomSkillRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/detect_language/")   
-async def sentiment(request:CustomSkillRequest):
+async def detect_language(request:CustomSkillRequest):
     try:
         return await media_service.detect_language_skill(values=request.values)
     except Exception as e:
@@ -54,7 +56,7 @@ async def image_analysis(request:CustomSkillRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/image_embedding/")   
-async def image_analysis(request:CustomSkillRequest):
+async def image_embedding(request:CustomSkillRequest):
     try:
         return await media_service.image_embedding_skill(values=request.values)
     except Exception as e:
