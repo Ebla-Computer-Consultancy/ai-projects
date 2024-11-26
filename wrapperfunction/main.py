@@ -2,7 +2,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from wrapperfunction.interactive_chat.ctrl import interactive_ctrl
-from wrapperfunction.media_monitoring.ctrl import media_ctrl
 from wrapperfunction.speech.ctrl import speech_ctrl
 from wrapperfunction.chatbot.ctrl import chatbot_ctrl
 from wrapperfunction.avatar.ctrl import avatar_ctrl
