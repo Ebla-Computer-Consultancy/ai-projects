@@ -12,7 +12,13 @@ Roles = Enum(
         "System": "system",
     },
 )
-
+Message_Type=Enum(
+    "Message_Type",
+    {
+        "Message": "message",
+        "Document": "document",
+    },
+)
 
 
 
