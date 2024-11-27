@@ -26,6 +26,7 @@ class Skill:
                     self.context = context
                     self.inputs = inputs
                     self.outputs = outputs
+
 class SplitSkill(Skill):
     def __init__(self, skilltype, name, description, context, inputs, outputs, defaultLanguageCode: str | None = None, textSplitMode: str | None = None, maximumPageLength :int | None = None, pageOverlapLength :int | None = None, unit: str | None = None):
          super().__init__(skilltype, name, description, context, inputs, outputs)
