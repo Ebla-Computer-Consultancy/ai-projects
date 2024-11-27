@@ -129,10 +129,12 @@ async def add_message(chat_payload:ChatPayload,bot_name:str):
             
             message_entity = MessageEntity(chat_payload.messages[0].content,conv_id,Roles.User.value,"")
             conv_entity=ConversationEntity(user_id,conv_id,bot_name,title)
+
             add_entity(message_entity,None,conv_entity)   
         else:
             message_entity = MessageEntity(chat_payload.messages[0].content,conv_id,Roles.User.value,"")
             add_entity(message_entity)
+
         return ServiceReturn(
         status=StatusCode.SUCCESS, message="message added successfully",data=conv_id)
     except Exception as e:
