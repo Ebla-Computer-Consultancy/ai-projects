@@ -216,10 +216,10 @@ def transcript_pdfs(container_name=CONTAINER_NAME,connection_string =AZURE_STORA
 
 def get_all_Links_in_urls(urls: list):
     try:
-
+        media_settings = config.ENTITY_SETTINGS.get("media_settings",{})
         # Extract the list of web URLs and target classes
-        web_urls = config.ENTITY_MEDIA_SETTINGS.get("web_urls", [])
-        target_classes = config.ENTITY_MEDIA_SETTINGS.get("a_class", [])
+        web_urls = media_settings.get("web_urls", [])
+        target_classes = media_settings.get("a_class", [])
         
         # Initialize a list to store the links
         news_links_list = []
@@ -266,9 +266,10 @@ def get_all_Links_in_urls(urls: list):
 
 def save_media_with_topics(news_links: list, topics: list, container_name: str, connection_string: str):
     try:
+        media_settings = config.ENTITY_SETTINGS.get("media_settings",{})
         # Extract target classes for p and img
-        target_p_classes = config.ENTITY_MEDIA_SETTINGS.get("p_class", [])
-        target_img_classes = config.ENTITY_MEDIA_SETTINGS.get("img_class", [])
+        target_p_classes = media_settings.get("p_class", [])
+        target_img_classes = media_settings.get("img_class", [])
 
         for entry in news_links:
             url = entry["url"]
