@@ -231,5 +231,50 @@
     "منتجع الخور": "مُنْتَجَع الخُورْ",
     "تملك": "تَمَلُّك",
     "الغرافة": "الغَرَّافة"
-  }
+  },
+  "media_settings":{
+    "supported_webpages":
+        [
+            "www.amlakqatar.qa",
+            "www.invest.qa/ar"
+        ],
+    "web_urls":
+        [
+            "https://www.amlakqatar.qa/",
+            "https://www.amlakqatar.qa/Topics/sectionid/8",
+            "https://www.amlakqatar.qa/Topics/sectionid/9",
+            "https://www.amlakqatar.qa/Topics/sectionid/11",
+
+            "https://www.invest.qa/ar/media-centre/news-and-articles",
+            "https://www.invest.qa/ar/media-centre/events",
+            "https://www.invest.qa/ar/media-centre/newsletters",
+            "https://www.invest.qa/ar/resources/laws-and-regulations/tax-regime",
+            "https://www.invest.qa/ar/resources/laws-and-regulations/customs",
+            "https://www.invest.qa/ar/resources/laws-and-regulations/labour-law-practices",
+            "https://www.invest.qa/en/resources/laws-and-regulations/types-of-companies"
+        ],
+    "a_class": 
+        [
+            "news-box",
+            "inner",
+            "btn-wrapper"
+        ],
+    "p_class": 
+        [
+            "col-lg-12 col-md-12 col-sm-12 col-xs-12",
+            "container animatedParent animateOnce",
+            "career-desc news-desc",
+            "container",
+            "card-body"
+        ],
+    "img_class": 
+        [
+            "col-lg-12 col-md-12 col-sm-12 col-xs-12",
+            "container animatedParent animateOnce",
+            "col-md-12 col-lg-7 animated fadeInUpShort go",
+            "container",
+            "item"
+            
+        ]
+}
 }

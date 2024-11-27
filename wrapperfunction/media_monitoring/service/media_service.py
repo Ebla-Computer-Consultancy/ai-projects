@@ -46,6 +46,10 @@ async def generate_report(search_text: str):
 
 async def media_crawl(topics: list, urls: list):
     try:
+        media_settings = config.ENTITY_SETTINGS.get("media_settings",None)
+        if len(media_settings.get("supported_webpages",[])) == 0:
+            raise HTTPException(status_code=500, detail="There is no supported web pages")
+        
         #1 get data
         links = crawl_integration.get_all_Links_in_urls(urls=urls)
         #2 save to blob storage
@@ -55,10 +59,9 @@ async def media_crawl(topics: list, urls: list):
             container_name="rera-media",
             connection_string=config.RERA_STORAGE_CONNECTION
             )
-        #3 reset indexer
-        res = await admin_service.resetIndexer(name="rera-media-test-indexer")
-        #4 run indexer
+        #3 run indexer
         res2 = await admin_service.runIndexer(name="rera-media-test-indexer")
+        
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
                             message=f"URL's:{urls} | Topics:{topics} crawled succefuly", 

@@ -48,16 +48,8 @@ def load_entity_settings():
     else:
         return {}
 
-def load_media_entity_settings():
-    file_path = os.path.join(os.path.dirname(__file__), f"settings/media.json")
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as file:
-            return json.load(file)
-    else:
-        return {}
 ENTITY_SETTINGS = load_entity_settings()
 AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
-ENTITY_MEDIA_SETTINGS = load_media_entity_settings()
 
 
 def load_chatbot_settings(bot_name: str):
