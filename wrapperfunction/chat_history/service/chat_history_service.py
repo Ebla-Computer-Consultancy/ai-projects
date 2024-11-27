@@ -127,12 +127,14 @@ async def add_message(chat_payload: ChatPayload, bot_name: str):
             
 
 
+
             message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
             conv_entity = ConversationEntity(user_id, conv_id, bot_name, title)
             await add_entity(message_entity, None, conv_entity)  # await the asynchronous call
         else:
             message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
             await add_entity(message_entity)  # await the asynchronous call
+
 
 
         return ServiceReturn(
