@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter
 import wrapperfunction.chat_history.service.chat_history_service as historyservice
+from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 
 
 router = APIRouter()
@@ -26,3 +27,7 @@ def add_feedback(conv_id: str, feedback: int):
 @router.get("/bot-names/")
 def get_bot_name():
     return historyservice.get_bot_name()
+
+@router.post("/add-message/")
+async def add_message(chat_payload:ChatPayload,bot_name:str):
+    return await historyservice.add_message(chat_payload,bot_name)
