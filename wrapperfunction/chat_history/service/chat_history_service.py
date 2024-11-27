@@ -66,7 +66,6 @@ async def add_entity(message_entity:MessageEntity,assistant_entity:Optional[Mess
     except Exception as e:
         return HTTPException(400,e)    
 
-
     
 def update_conversation(conversation_id: str, updated_data: dict):
     try:
@@ -118,6 +117,7 @@ def get_bot_name():
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 async def add_message(chat_payload: ChatPayload, bot_name: str):
     try:
         conv_id = chat_payload.conversation_id or str(uuid.uuid4())
@@ -137,4 +137,5 @@ async def add_message(chat_payload: ChatPayload, bot_name: str):
             status=StatusCode.SUCCESS, message="message added successfully", data=conv_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
          
