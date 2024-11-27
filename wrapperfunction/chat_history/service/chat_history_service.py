@@ -17,35 +17,35 @@ from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 def get_conversations(user_id):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"user_id eq '{user_id}'")     
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.name} eq '{user_id}'")     
         return res
     except Exception as e:
         return HTTPException(400,e)
 
 def get_conversation_data(conversation_id):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f" conversation_id eq '{conversation_id}'")     
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f" {ConversationPropertyName.CONVERSATION_ID.value} eq '{conversation_id}'")     
         return res[0]
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))           
     
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" conversation_id eq '{conversation_id}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" {MessagePropertyName.CONVERSATION_ID} eq '{conversation_id}'") 
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
     
 def get_user_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"conversation_id eq '{conversation_id}' and role eq '{Roles.User.value}' and type eq '{MessageType.Message.value}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}' and {MessagePropertyName.ROLE.value} eq '{Roles.User.value}' and {MessagePropertyName.MessageType.value} eq '{MessageType.Message.value}'") 
         return list(res)
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
 def get_all_conversations(bot_name:Optional[str]=None):
     try:
-        filter_condition = f"bot_name eq '{bot_name}'" if bot_name else None
+        filter_condition = f"{ConversationPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
         res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME, filter_condition)
         return res
     except Exception as e:
