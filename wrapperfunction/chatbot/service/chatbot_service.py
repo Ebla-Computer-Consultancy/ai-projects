@@ -102,9 +102,6 @@ def set_context(results):
 
         return ""
 
-
-
-
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
 

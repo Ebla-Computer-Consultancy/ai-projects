@@ -36,6 +36,10 @@ MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
 CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CONVERSATION_TABLE")
 AZURE_TEXT_ANALYTICS_ENDPOINT=os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
 AZURE_TEXT_ANALYTICS_KEY=os.getenv("AZURE_TEXT_ANALYTICS_KEY")
+STORAGE_ACCOUNT_KEY=os.getenv("STORAGE_ACCOUNT_KEY")
+AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
+AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
+OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -44,9 +48,16 @@ def load_entity_settings():
     else:
         return {}
 
-
+def load_media_entity_settings():
+    file_path = os.path.join(os.path.dirname(__file__), f"settings/media.json")
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as file:
+            return json.load(file)
+    else:
+        return {}
 ENTITY_SETTINGS = load_entity_settings()
 AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
+ENTITY_MEDIA_SETTINGS = load_media_entity_settings()
 
 
 def load_chatbot_settings(bot_name: str):

@@ -6,10 +6,9 @@ from fastapi import HTTPException
 from wrapperfunction.chat_history.model.message_entity import MessageEntity,MessagePropertyName
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity,ConversationPropertyName
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
-import wrapperfunction.text_analysis.integration.textanalytics_connector as text_connector
 from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 from wrapperfunction.chatbot.model.chat_message import Roles
-
+import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 
 
 
