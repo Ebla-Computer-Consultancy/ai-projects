@@ -1,6 +1,9 @@
-import json
-import os
+
 from typing import Optional
+import uuid
+from wrapperfunction.chatbot.model.chat_payload import ChatPayload
+import uuid
+from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
 from fastapi import HTTPException
 from wrapperfunction.chat_history.model.message_entity import MessageEntity,MessagePropertyName
@@ -11,7 +14,6 @@ from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
-from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 
 
@@ -22,7 +24,7 @@ def get_conversations(user_id):
         res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.name} eq '{user_id}'")     
         return res
     except Exception as e:
-        return HTTPException(400,e)
+        return HTTPException(status_code=400, detail=str(e))
 
 def get_conversation_data(conversation_id):
     try:
@@ -33,16 +35,16 @@ def get_conversation_data(conversation_id):
     
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" {MessagePropertyName.CONVERSATION_ID} eq '{conversation_id}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
     
 def get_user_messages(conversation_id):
     try:
-
-
         res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}' and {MessagePropertyName.ROLE.value} eq '{Roles.User.value}' and {MessagePropertyName.MessageType.value} eq '{MessageType.Message.value}'") 
+        return list(res)
 
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
@@ -66,7 +68,8 @@ async def add_entity(message_entity:MessageEntity,assistant_entity:Optional[Mess
         
 
     except Exception as e:
-        return HTTPException(400,e)    
+        return HTTPException(status_code=400, detail=str(e))   
+
     
 def update_conversation(conversation_id: str, updated_data: dict):
     try:
@@ -118,4 +121,23 @@ def get_bot_name():
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-        
+
+async def add_message(chat_payload: ChatPayload, bot_name: str):
+    try:
+        conv_id = chat_payload.conversation_id or str(uuid.uuid4())
+        user_id = chat_payload.user_id or str(uuid.uuid4())
+        if not chat_payload.conversation_id:
+            title = chat_payload.messages[0].content[:20].strip()
+            
+            message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
+            conv_entity = ConversationEntity(user_id, conv_id, bot_name, title)
+            await add_entity(message_entity, None, conv_entity)  
+        else:
+            message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
+            await add_entity(message_entity)  
+        return ServiceReturn(
+            status=StatusCode.SUCCESS, message="message added successfully", data=conv_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+         
