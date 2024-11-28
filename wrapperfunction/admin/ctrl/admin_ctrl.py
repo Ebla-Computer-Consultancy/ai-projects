@@ -1,4 +1,3 @@
-
 from typing import List
 from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
