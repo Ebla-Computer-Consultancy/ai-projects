@@ -3,8 +3,6 @@ from turtle import pd
 import json
 from scrapy.crawler import CrawlerProcess
 from wrapperfunction.admin.integration.storage_connector import upload_file_to_azure
-from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
-from azure.storage.blob import BlobServiceClient, BlobBlock
 from wrapperfunction.core.utls.spiders.crawling_spider import (
     CrawlingSpider,
 )
