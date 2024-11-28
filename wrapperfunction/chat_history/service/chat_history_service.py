@@ -45,7 +45,7 @@ def get_user_messages(conversation_id):
     try:
         res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}' and {MessagePropertyName.ROLE.value} eq '{Roles.User.value}' and {MessagePropertyName.MessageType.value} eq '{MessageType.Message.value}'") 
         return list(res)
-        return list(res)
+
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
