@@ -80,6 +80,7 @@ def set_extra_body(chatbot_setting: ChatbotSetting):
                         "url_field": "ref_url",
                         "vector_fields": ["text_vector"],
                     },
+
                     "in_scope": True,
                     "role_information": chatbot_setting.system_message,
                     "filter": None,
