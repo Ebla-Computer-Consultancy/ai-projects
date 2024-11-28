@@ -3,7 +3,7 @@ import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient, SearchIndexerClient
-from wrapperfunction.admin.model.adminmodel import IndexInfo
+from wrapperfunction.admin.model.indexer_model import IndexInfo
 
 def delete_indexed_data(index_name:str, key:str, value=None):
     # Create a search client
