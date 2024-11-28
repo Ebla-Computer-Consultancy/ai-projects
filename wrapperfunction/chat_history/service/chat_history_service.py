@@ -118,23 +118,23 @@ def get_bot_name():
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-async def add_message(chat_payload:ChatPayload,bot_name:str):
+async def add_message(chat_payload: ChatPayload, bot_name: str):
     try:
-        conv_id =chat_payload.conversation_id or str(uuid.uuid4())
+        conv_id = chat_payload.conversation_id or str(uuid.uuid4())
         user_id = chat_payload.user_id or str(uuid.uuid4())
         if not chat_payload.conversation_id:
-            title=chat_payload.messages[0].content[:20].strip()
+            title = chat_payload.messages[0].content[:20].strip()
             
-            message_entity = MessageEntity(chat_payload.messages[0].content,conv_id,Roles.User.value,"")
-            conv_entity=ConversationEntity(user_id,conv_id,bot_name,title)
 
-            add_entity(message_entity,None,conv_entity)   
+            message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
+            conv_entity = ConversationEntity(user_id, conv_id, bot_name, title)
+            await add_entity(message_entity, None, conv_entity)  # await the asynchronous call
         else:
-            message_entity = MessageEntity(chat_payload.messages[0].content,conv_id,Roles.User.value,"")
-            add_entity(message_entity)
+            message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
+            await add_entity(message_entity)  # await the asynchronous call
 
         return ServiceReturn(
-        status=StatusCode.SUCCESS, message="message added successfully",data=conv_id)
+            status=StatusCode.SUCCESS, message="message added successfully", data=conv_id)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))      
+        raise HTTPException(status_code=400, detail=str(e))
          

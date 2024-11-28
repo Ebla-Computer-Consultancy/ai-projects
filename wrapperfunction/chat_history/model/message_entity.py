@@ -40,8 +40,6 @@ class MessageEntity:
             MessagePropertyName.CONVERSATION_ID.value: self.conversation_id,
             MessagePropertyName.ROLE.value: self.role,
             MessagePropertyName.CONTEXT.value: self.context,
-
-
             MessagePropertyName.MessageType.value: self.type            
 
 
