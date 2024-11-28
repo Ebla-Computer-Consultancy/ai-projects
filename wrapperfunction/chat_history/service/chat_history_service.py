@@ -82,7 +82,6 @@ def perform_sentiment_analysis():
             if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined": 
                 conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
                 messages = get_user_messages(conversation_id)
-                print(messages)
                 message_texts = [msg[MessagePropertyName.CONTENT.value] for msg in messages if MessagePropertyName.CONTENT.value in msg]
                 if not message_texts:
                     continue
