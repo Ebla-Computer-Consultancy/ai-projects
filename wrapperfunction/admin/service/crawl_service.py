@@ -1,3 +1,4 @@
+import json
 import re
 import requests
 import validators
@@ -7,6 +8,9 @@ from fastapi import HTTPException
 
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
+from wrapperfunction.admin.service.blob_service import append_blob
+from wrapperfunction.core.config import SUBFOLDER_NAME
+from wrapperfunction.core.utls.helper import process_text_name
 
 global allow_domains
 allow_domains = set()
@@ -20,9 +24,9 @@ def crawl_urls(urls: list[str], settings: CrawlSettings):
             allow_domains.add(
                 url.link.replace("https://", "").replace("http://", "").split("/")[0]
             )
-            response = orchestrator_function(url, settings)
+            orchestrator_function(url, settings)
 
-            return response
+            return "crawled successfully"
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")
 
@@ -32,20 +36,38 @@ def orchestrator_function(
     settings: CrawlSettings,
 ):
     try:
-        data = crawl_site(
-            url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
+        if ".pdf" in url.link:
+            file = requestUrl(url.link)
+            site_data = {
+                "url": url.link,
+                "title": get_page_title(url.link),
+                "content": get_page_content(data, settings),
+            }
+            settings.deep = False
+        else:
+            data = crawl_site(
+                url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
+            )
+            site_data = {
+                "url": url.link,
+                "title": get_page_title(url.link, data),
+                "content": get_page_content(data, settings),
+            }
+
+        json_data = json.dumps(site_data, ensure_ascii=False)
+        blob_name = f"item_{process_text_name(url.link)}.json"
+        append_blob(
+            folder_name=SUBFOLDER_NAME,
+            blob_name=blob_name,
+            blob=json_data,
+            metadata_1=url.link[:-1],
+            metadata_2=url.link,
+            metadata_3="crawled",
+            metadata_4="link",
         )
-        site_data = {
-            "title": get_page_title(url.link, data),
-            "content": get_page_content(data, settings),
-        }
         crawled_sites.add(url.link)
         if settings.deep:
-            site_urls = get_all_urls(data)
-            if len(site_urls):
-                crawl_urls(site_urls, settings)
-
-        return site_data
+            collect_urls(data, url, settings)
 
     except Exception as error:
         raise HTTPException(
@@ -63,7 +85,17 @@ def crawl_site(
     cookies["user-agent"] = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
-    response = requests.get(
+    response = requestUrl(url, headers, payload, cookies)
+    return BeautifulSoup(response.text, "lxml")
+
+
+def requestUrl(
+    url: str,
+    headers: dict,
+    payload: dict,
+    cookies: dict,
+):
+    return requests.get(
         url,
         allow_redirects=False,
         verify=False,
@@ -71,7 +103,6 @@ def crawl_site(
         headers=headers,
         data=payload,
     )
-    return BeautifulSoup(response.text, "lxml")
 
 
 # Extracts the page title.
@@ -80,7 +111,7 @@ def get_page_title(link, data):
         if data and data.title:
             return data.title.string
         else:
-            return link.split("/")[-1]
+            return link.split("/")[-1].split(".")[0]
     except Exception as error:
         raise HTTPException(
             status_code=400,
@@ -89,20 +120,26 @@ def get_page_title(link, data):
 
 
 # Gets all of the URLs from the webpage.
-def get_all_urls(data):
+def collect_urls(data, url, settings):
     try:
-        urls = set()
         url_elements = data.select("a[href]")
         for url_element in url_elements:
-            url = url_element["href"]
-            if "https://" in url or "http://" in url:
+            _url = url_element["href"]
+            if validators.url(_url):
                 if (
-                    url.replace("https://", "").replace("http://", "").split("/")[0]
+                    _url
+                    and _url.replace("https://", "")
+                    .replace("http://", "")
+                    .split("/")[0]
                     in allow_domains
-                    and url not in crawled_sites
+                    and _url not in crawled_sites
                 ):
-                    urls.add(url)
-        return urls
+                    site_link_data = CrawlRequestUrls
+                    site_link_data.link = _url
+                    site_link_data.cookies = url.cookies
+                    site_link_data.headers = url.headers
+                    site_link_data.payload = url.payload
+                    orchestrator_function(site_link_data, settings)
 
     except Exception as error:
         raise HTTPException(
