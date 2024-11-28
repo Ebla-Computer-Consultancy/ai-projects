@@ -12,7 +12,6 @@ from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
-from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 
 
