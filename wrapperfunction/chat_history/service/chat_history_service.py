@@ -24,7 +24,7 @@ from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 def get_conversations(user_id):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.name} eq '{user_id}'")     
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.value} eq '{user_id}'")     
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
