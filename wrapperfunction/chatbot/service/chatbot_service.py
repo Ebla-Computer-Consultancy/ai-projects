@@ -1,7 +1,8 @@
 import asyncio
 import json
+from typing import Optional
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.chatbot.model.chat_message import Roles
+from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
@@ -9,6 +10,9 @@ from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service 
 import uuid
+
+from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
+from wrapperfunction.document_intelligence.integration.document_intelligence_connector import analyze_file
 
 
 
@@ -227,3 +231,30 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
+
+async def upload_documents(files, bot_name, conversation_id: Optional[str] = None):
+    try:
+        content = ""
+        for file in files:
+            extracted_text = analyze_file(file, model_id='prebuilt-read').content
+            content += extracted_text
+        if not conversation_id:
+            conversation_id = str(uuid.uuid4())
+            title = content[:20].strip()
+
+            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+            conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title)
+            await chat_history_service.add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
+        else:
+            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+
+            await chat_history_service.add_entity(message_entity=user_message_entity)
+
+        return ServiceReturn(
+            status=StatusCode.SUCCESS, message="file uploaded successfully", data=conversation_id
+        ).to_dict()
+
+    except Exception as e:
+        return ServiceReturn(
+            status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
+        ).to_dict()
