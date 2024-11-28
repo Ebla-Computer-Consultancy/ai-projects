@@ -33,17 +33,15 @@ def get_conversation_data(conversation_id):
     
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" {MessagePropertyName.CONVERSATION_ID} eq '{conversation_id}'") 
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
     
 def get_user_messages(conversation_id):
     try:
-
-
         res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}' and {MessagePropertyName.ROLE.value} eq '{Roles.User.value}' and {MessagePropertyName.MessageType.value} eq '{MessageType.Message.value}'") 
-
+        return list(res)
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
@@ -84,6 +82,7 @@ def perform_sentiment_analysis():
             if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined": 
                 conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
                 messages = get_user_messages(conversation_id)
+                print(messages)
                 message_texts = [msg[MessagePropertyName.CONTENT.value] for msg in messages if MessagePropertyName.CONTENT.value in msg]
                 if not message_texts:
                     continue
