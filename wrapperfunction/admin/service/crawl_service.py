@@ -1,11 +1,14 @@
 import json
 import re
+from typing import BinaryIO
+from urllib.parse import urljoin
 import requests
-import validators
 
 from bs4 import BeautifulSoup
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
+import validators
 
+from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.service.blob_service import append_blob
@@ -16,14 +19,19 @@ global allow_domains
 allow_domains = set()
 global crawled_sites
 crawled_sites = set()
+base_url = ""
 
 
-def crawl_urls(urls: list[str], settings: CrawlSettings):
+def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     for url in urls:
         if validators.url(url.link):
-            allow_domains.add(
-                url.link.replace("https://", "").replace("http://", "").split("/")[0]
-            )
+            start_with = url.link.split('//')[0]
+            domain_name = url.link.replace("https://", "").replace("http://", "").split("/")[0]
+            
+            global base_url
+            base_url = start_with + '//' + domain_name
+
+            allow_domains.add(domain_name)
             orchestrator_function(url, settings)
 
             return "crawled successfully"
@@ -37,11 +45,12 @@ def orchestrator_function(
 ):
     try:
         if ".pdf" in url.link:
-            file = requestUrl(url.link)
+            request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
+            content = inline_read_scanned_pdf(None, request_pdf_file.content)
             site_data = {
                 "url": url.link,
                 "title": get_page_title(url.link),
-                "content": get_page_content(data, settings),
+                "content": content,
             }
             settings.deep = False
         else:
@@ -106,7 +115,7 @@ def requestUrl(
 
 
 # Extracts the page title.
-def get_page_title(link, data):
+def get_page_title(link, data = None):
     try:
         if data and data.title:
             return data.title.string
@@ -121,21 +130,26 @@ def get_page_title(link, data):
 
 # Gets all of the URLs from the webpage.
 def collect_urls(data, url, settings):
+    urls = set()
     try:
         url_elements = data.select("a[href]")
         for url_element in url_elements:
-            _url = url_element["href"]
-            if validators.url(_url):
+            absolute_url = (
+                url_element["href"]
+                if url_element["href"].startswith(('http', 'https'))
+                else urljoin(base_url, url_element["href"])
+            )
+            if validators.url(absolute_url):
                 if (
-                    _url
-                    and _url.replace("https://", "")
+                    absolute_url and ".pdf" in absolute_url
+                    and absolute_url.replace("https://", "")
                     .replace("http://", "")
                     .split("/")[0]
                     in allow_domains
-                    and _url not in crawled_sites
+                    and absolute_url not in crawled_sites
                 ):
                     site_link_data = CrawlRequestUrls
-                    site_link_data.link = _url
+                    site_link_data.link = absolute_url
                     site_link_data.cookies = url.cookies
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
