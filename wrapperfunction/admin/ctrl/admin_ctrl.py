@@ -1,9 +1,10 @@
-
-from fastapi import APIRouter, HTTPException, Request, UploadFile, File
-from wrapperfunction.admin.model.indexer_model import IndexerRequest,IndexInfo
-import wrapperfunction.admin.service.admin_service as admin_service
-import wrapperfunction.admin.service.blob_service as blob_service
-from fastapi import HTTPException
+from typing import List
+from fastapi import APIRouter, HTTPException, Request, UploadFile
+from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
+from wrapperfunction.admin.model.crawl_settings import CrawlSettings
+from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
+from wrapperfunction.admin.service import admin_service, blob_service
+from wrapperfunction.admin.service.crawl_service import crawl_urls
 
 
 router = APIRouter()
