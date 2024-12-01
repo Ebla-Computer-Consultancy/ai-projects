@@ -19,6 +19,7 @@
         "pydub",
         "readall",
         "rera",
+        "textanalytics",
         "wrapperfunction"
     ]
 }
