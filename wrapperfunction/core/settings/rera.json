@@ -2,6 +2,9 @@
 
   "chatbots": [
     {
+        "name":"qrep"
+    },
+    {
       "name": "website",
       "index_name": "rera",
       "custom_settings": {
