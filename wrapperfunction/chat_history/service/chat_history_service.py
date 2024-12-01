@@ -128,6 +128,14 @@ def perform_feedback_update(conversation_id: str, feedback: int):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+def get_bot_name():
+    bot_names = []  
+    try:
+        ENTITY_SETTINGS = config.ENTITY_SETTINGS
+        bot_names=[chatbot_obj["name"] for chatbot_obj in ENTITY_SETTINGS.get("chatbots", [])]
+        return bot_names 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 async def add_message(chat_payload: ChatPayload, bot_name: str):
     try:
