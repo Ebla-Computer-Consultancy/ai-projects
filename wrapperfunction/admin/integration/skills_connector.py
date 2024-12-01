@@ -1,10 +1,7 @@
-import base64
-from io import BytesIO
 from fastapi import UploadFile
 from wrapperfunction.document_intelligence.integration.document_intelligence_connector import (
     analyze_file,
 )
-
 
 def read_scanned_pdf_skill(file: UploadFile, recordId):
     responses = []
@@ -20,9 +17,9 @@ def read_scanned_pdf_skill(file: UploadFile, recordId):
     return {"values": responses}
 
 
-def inline_read_scanned_pdf(file: UploadFile):
-    if file:
-        result = analyze_file("prebuilt-read", document=file)
+def inline_read_scanned_pdf(file: UploadFile | None, file_bytes: bytes = None):
+    if file or file_bytes:
+        result = analyze_file(file, "prebuilt-read", file_bytes)
 
         extracted_text = ""
         for page in result.pages:
