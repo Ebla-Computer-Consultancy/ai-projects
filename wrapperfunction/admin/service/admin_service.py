@@ -1,20 +1,9 @@
-from typing import List
 import requests
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data
-from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
-from wrapperfunction.admin.model.crawl_settings import CrawlSettings
-from wrapperfunction.admin.service import crawl_service
 from wrapperfunction.core.config import OPENAI_API_VERSION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-
-
-def crawling(
-    urls: List[CrawlRequestUrls],
-    settings: CrawlSettings,
-):
-    return crawl_service.crawl_urls(urls, settings)
 
 
 def delete_indexes(index_name: str, key: str, value):

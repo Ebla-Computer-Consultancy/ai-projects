@@ -4,6 +4,7 @@ from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.model.indexer_model import IndexerRequest
 from wrapperfunction.admin.service import admin_service
+from wrapperfunction.admin.service.crawl_service import crawl_urls
 
 
 router = APIRouter()
@@ -16,7 +17,7 @@ def crawl(
     settings: CrawlSettings,
 ):
     try:
-        return admin_service.crawling(urls, settings)
+        return crawl_urls(urls, settings)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
