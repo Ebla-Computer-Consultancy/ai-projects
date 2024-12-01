@@ -47,6 +47,7 @@ def orchestrator_function(
         if ".pdf" in url.link:
             request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
             content = inline_read_scanned_pdf(None, request_pdf_file.content)
+            # TODO: fix here 
             site_data = {
                 "url": url.link,
                 "title": get_page_title(url.link),
