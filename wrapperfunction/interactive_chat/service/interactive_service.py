@@ -31,7 +31,7 @@ async def submit_form(arguments:dict, chat_payload: ChatPayload):
         
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error while submitting form: {str(e)}")
 
 async def approve_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
@@ -47,7 +47,7 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
                         ).to_dict()
     except Exception as e:
         print(f"Error While Approving form:{arguments.employee_ID}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error While Approving form:{arguments.employee_ID}: {str(e)}")
 
 
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
@@ -65,7 +65,7 @@ async def disapprove_action(arguments:interactive_model.Status, chat_payload: Ch
                         ).to_dict()
     except Exception as e:
         print(f"Error While Dissapproving form:{arguments.employee_ID}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error While Dissapproving form:{arguments.employee_ID}: {str(e)}")
 
 async def pending_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
@@ -81,7 +81,7 @@ async def pending_action(arguments:interactive_model.Status, chat_payload: ChatP
                         ).to_dict()
     except Exception as e:
         print(f"Error While Pending form:{arguments.employee_ID}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error While Pending form:{arguments.employee_ID}: {str(e)}")
 
 async def getForm_action(arguments: interactive_model.GetForm, chat_payload: ChatPayload):
     try:
@@ -102,7 +102,7 @@ async def getForm_action(arguments: interactive_model.GetForm, chat_payload: Cha
                         ).to_dict()
     except Exception as e:
         print(f"Error While getting forms: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error While getting forms: {str(e)}")
 
 async def getAllForms_action(chat_payload: ChatPayload):
     try:
@@ -120,7 +120,7 @@ async def getAllForms_action(chat_payload: ChatPayload):
                             ).to_dict()
     except Exception as e:
         print(f"Error While getting forms: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=f"Error While getting forms: {str(e)}") 
         
 async def generate_final_resopnse(result, chat_payload: ChatPayload):
     msg = f'''"Generate a good response using the user's language and suggest for user a next step."
