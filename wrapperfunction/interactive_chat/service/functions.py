@@ -4,56 +4,56 @@ import pandas as pd
 from datetime import datetime
 
 
-file_path = 'wrapperfunction\\interactive_chat\\service\\vacation_forms.xlsx'
+file_path = os.path.join(os.path.dirname(__file__), f"vacations_forms.xlsx")
 
 
-# Approve vacation by employee name and department
-def approve_vacation(employee_name, department_name):
+# Approve vacation by employee ID
+def approve_vacation(employee_ID):
     df = pd.read_excel(file_path)
     
-    # Check if the employee exists in the specified department
-    employee_row = df[(df['Employee Name'] == employee_name) & (df['Department'] == department_name)]
+    # Check if the employee ID exists
+    employee_row = df[(df['ID'] == employee_ID)]
     if employee_row.empty:
-        return f"Employee Name: {employee_name}, Department: {department_name} not found."
+        return f"Employee with ID: {employee_ID}, not found."
 
     # Approve vacation for the employee
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Status'] = 'Approved'
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Comments'] = 'Approved by Manager'
+    df.loc[(df['ID'] == employee_ID), 'Status'] = 'Approved'
+    df.loc[(df['ID'] == employee_ID), 'Comments'] = 'Approved by Manager'
     df.to_excel(file_path, index=False)  # Save changes to the Excel file
 
-    return f"Vacation for Employee Name: {employee_name}, Department: {department_name} approved."
+    return f"Vacation for Employee ID: {employee_ID} approved."
 
-# Disapprove vacation by employee name and department
-def disapprove_vacation(employee_name, department_name):
+# Disapprove vacation by employee ID
+def disapprove_vacation(employee_ID):
     df = pd.read_excel(file_path)
     
-    # Check if the employee exists in the specified department
-    employee_row = df[(df['Employee Name'] == employee_name) & (df['Department'] == department_name)]
+    # Check if the employee ID exists
+    employee_row = df[(df['ID'] == employee_ID)]
     if employee_row.empty:
-        return f"Employee Name: {employee_name}, Department: {department_name} not found."
+        return f"Employee with ID: {employee_ID}, not found."
 
     # Disapprove vacation for the employee
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Status'] = 'Disapproved'
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Comments'] = 'Disapproved by Manager'
+    df.loc[(df['ID'] == employee_ID), 'Status'] = 'Disapproved'
+    df.loc[(df['ID'] == employee_ID), 'Comments'] = 'Disapproved by Manager'
     df.to_excel(file_path, index=False)  # Save changes to the Excel file
 
-    return f"Vacation for Employee Name: {employee_name}, Department: {department_name} disapproved."
+    return f"Vacation for Employee ID: {employee_ID}, disapproved."
 
-# Pending vacation by employee name and department
-def pending_vacation(employee_name, department_name):
+# Pending vacation by employee ID
+def pending_vacation(employee_ID):
     df = pd.read_excel(file_path)
     
-    # Check if the employee exists in the specified department
-    employee_row = df[(df['Employee Name'] == employee_name) & (df['Department'] == department_name)]
+    # Check if the employee ID exists
+    employee_row = df[(df['ID'] == employee_ID)]
     if employee_row.empty:
-        return f"Employee Name: {employee_name}, Department: {department_name} not found."
+        return f"Employee with ID: {employee_ID}, not found."
 
     # Set vacation to pending status for the employee
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Status'] = 'Pending'
-    df.loc[(df['Employee Name'] == employee_name) & (df['Department'] == department_name), 'Comments'] = 'Edited by Manager'
+    df.loc[(df['ID'] == employee_ID), 'Status'] = 'Pending'
+    df.loc[(df['ID'] == employee_ID), 'Comments'] = 'Edited by Manager'
     df.to_excel(file_path, index=False)  # Save changes to the Excel file
 
-    return f"Vacation for Employee Name: {employee_name}, Department: {department_name} set to Pending successfully."
+    return f"Vacation for Employee ID: {employee_ID}, set to Pending successfully."
 
 # Show all requests from a specific cuoloms
 def get_forms(coulomn_name,value):
@@ -61,7 +61,7 @@ def get_forms(coulomn_name,value):
     print(coulomn_name,value)
     department_df = df[df[coulomn_name] == value]
     if department_df.empty:
-        return f"No requests found for {coulomn_name}: {value}"
+        return f"No Forms found for {coulomn_name}: {value}"
     
     return department_df.to_dict(orient='records')  # Return the department requests as a list of dictionaries
 

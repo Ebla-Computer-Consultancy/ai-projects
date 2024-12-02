@@ -42,7 +42,7 @@
                     "description": "The name of the employee whose filling the form."
                   },
                   "employee_ID": {
-                    "type": "string",
+                    "type": "integer",
                     "description": "The ID of the employee whose filling the form."
                   },
                   "manager_name": {
@@ -104,16 +104,13 @@
               "parameters": {
                 "type": "object",
                 "properties": {
-                  "employee_name": {
-                    "type": "string",
+                  "employee_ID": {
+                    "type": "integer",
                     "description": "The name of the employee whose vacation request is to be approved."
-                  },
-                  "employee_department": {
-                    "type": "string",
-                    "description": "The department of the employee whose vacation request is to be approved."
                   }
+                  
                 },
-                "required": ["employee_name", "employee_department"]
+                "required": ["employee_ID"]
               }
             }
           },
@@ -125,16 +122,13 @@
               "parameters": {
                 "type": "object",
                 "properties": {
-                  "employee_name": {
-                    "type": "string",
-                    "description": "The name of the employee whose vacation request is to be disapproved."
-                  },
-                  "employee_department": {
-                    "type": "string",
-                    "description": "The department of the employee whose vacation request is to be approved."
+                  "employee_ID": {
+                    "type": "integer",
+                    "description": "The name of the employee whose vacation request is to be approved."
                   }
+                  
                 },
-                "required": ["employee_name", "employee_department"]
+                "required": ["employee_ID"]
               }
             }
           },
@@ -146,16 +140,13 @@
               "parameters": {
                 "type": "object",
                 "properties": {
-                  "employee_name": {
-                    "type": "string",
-                    "description": "The name of the employee whose vacation request is to be disapproved."
-                  },
-                  "employee_department": {
-                    "type": "string",
-                    "description": "The department of the employee whose vacation request is to be approved."
+                  "employee_ID": {
+                    "type": "integer",
+                    "description": "The name of the employee whose vacation request is to be approved."
                   }
+                  
                 },
-                "required": ["employee_name", "employee_department"]
+                "required": ["employee_ID"]
               }
             }
           },
