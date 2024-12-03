@@ -154,3 +154,33 @@ async def add_message(chat_payload: ChatPayload, bot_name: str):
             status=StatusCode.SUCCESS, message="message added successfully", data=conv_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+def get_all_vactions():
+    try:
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+def get_vactions_filter_by(coulomn_name,value):
+    try:
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE,f"{coulomn_name} eq {value}")
+        return res
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+def update_Status(employee_ID: str, status: str):
+    try:
+        forms = get_vactions_filter_by("Employee_ID",employee_ID)
+        if forms:
+            for form in forms:
+                form.update({"Status":status,"Comments":f"{status} by Manager"})
+                db_connector.update_entity(config.COSMOS_VACATION_TABLE, form)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def add_form(form: dict):
+    try:
+        await db_connector.add_entity(config.COSMOS_VACATION_TABLE,form)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

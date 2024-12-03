@@ -1,14 +1,28 @@
 from fastapi import APIRouter, HTTPException
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.interactive_chat.model.interactive_model import GetForm, Status, SubmitForm
+from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, Status, SubmitForm, VacationForm, VacationTypes
 from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, getAllForms_action, getForm_action, pending_action, submit_form
 
 router = APIRouter()
 
-@router.post("/action/submit")
-async def submit_form_action(request: SubmitForm, chat_payload: ChatPayload):
+@router.get("/department_types")
+async def get_department_types():
     try:
-        return await submit_form(request.form,chat_payload)
+        return DepartmentTypes.to_list()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/vacation_types")
+async def get_vacation_types():
+    try:
+        return VacationTypes.to_list()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/action/submit_form")
+async def submit_form_action(form: VacationForm, chat_payload: ChatPayload):
+    try:
+        return await submit_form(form,chat_payload)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
