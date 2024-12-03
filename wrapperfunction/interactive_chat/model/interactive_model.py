@@ -80,8 +80,8 @@ class VacationFormEntity:
             "Employee_Name":self.employee_name,
             "Manager_Name":self.manager_name,
             "Department":self.employee_department,
-            "Start_Day":self.start_date,
-            "End_Day":self.end_date,
+            "Start_Date":self.start_date,
+            "End_Date":self.end_date,
             "Total_Days":self.total_days,
             "Status":self.status,
             "Comments":self.comments

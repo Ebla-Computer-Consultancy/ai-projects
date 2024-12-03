@@ -27,35 +27,35 @@ async def sentiment(request:CustomSkillRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/detect_language/")   
+@router.post("/detect-language/")   
 async def detect_language(request:CustomSkillRequest):
     try:
         return await media_service.detect_language_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/key_phrases/")   
+@router.post("/key-phrases/")   
 async def key_phrases(request:CustomSkillRequest):
     try:
         return await media_service.extract_key_phrases_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/entity_recognition/")   
+@router.post("/entity-recognition/")   
 async def entity_recognition(request:CustomSkillRequest):
     try:
         return await media_service.entity_recognition_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/image_analysis/")   
+@router.post("/image-analysis/")   
 async def image_analysis(request:CustomSkillRequest):
     try:
         return await media_service.image_analysis_skill(values=request.values)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/image_embedding/")   
+@router.post("/image-embedding/")   
 async def image_embedding(request:CustomSkillRequest):
     try:
         return await media_service.image_embedding_skill(values=request.values)

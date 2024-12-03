@@ -5,21 +5,21 @@ from wrapperfunction.interactive_chat.service.interactive_service import approve
 
 router = APIRouter()
 
-@router.get("/department_types")
+@router.get("/department-types")
 async def get_department_types():
     try:
         return DepartmentTypes.to_list()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/vacation_types")
+@router.get("/vacation-types")
 async def get_vacation_types():
     try:
         return VacationTypes.to_list()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/action/submit_form")
+@router.post("/action/submit-form")
 async def submit_form_action(form: VacationForm, chat_payload: ChatPayload):
     try:
         return await submit_form(form,chat_payload)
@@ -33,7 +33,7 @@ async def approve_form_action(arguments:Status, chat_payload: ChatPayload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/action/disapprove")
+@router.post("/action/reject")
 async def disapprove_form_action(arguments:Status, chat_payload: ChatPayload):
     try:
         return await disapprove_action(arguments,chat_payload)
@@ -47,14 +47,14 @@ async def pending_form_action(arguments:Status, chat_payload: ChatPayload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/action/filter_vacation_forms_by")
+@router.get("/action/filter-vacation-forms-by")
 async def getForm_form_action(arguments: GetForm, chat_payload: ChatPayload):
     try:
         return await getForm_action(arguments,chat_payload)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/action/get_all_vacation_forms")
+@router.get("/action/get-all-vacation-forms")
 async def get_All_Forms_action(chat_payload: ChatPayload):
     try:
         return await getAllForms_action(chat_payload) 
