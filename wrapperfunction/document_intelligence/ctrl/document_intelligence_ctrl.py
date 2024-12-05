@@ -17,10 +17,10 @@ def document_intelligence(model_id: str = "prebuilt-layout", file: UploadFile = 
     )
 
 
-@router.post("/uploadfile/")
+@router.post("/auto-split-pdf/")
 async def upload_file(file: UploadFile ,criteria:Optional[str] = None):
     try:
-        res=documentintelligenceservice.split_pdf(file.file, criteria)
+        res=documentintelligenceservice.auto_split_pdf(file.file, criteria)
         return res
     except Exception as e:
         return {"status": "error", "message": str(e)}
