@@ -38,7 +38,7 @@
                 "properties": {
                   "vacation_type": {
                     "type": "string",
-                    "description": "The type of the form the employee want to fill. only availabel type are (Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)"
+                    "description": "The type of the form the employee want to fill. only availabel type are (Year Vaction,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)"
                   },
                   "employee_name": {
                     "type": "string",
@@ -85,7 +85,7 @@
           {
             "type": "function",
             "function": {
-              "name": "submit_form",
+              "name": "submit-form",
               "description": "chack if the form is fill correctly, if yes,submit the form that employee filled once he approve the information, else return to fill the missing information",
               "parameters": {
                 "type": "object",
@@ -120,8 +120,8 @@
           {
             "type": "function",
             "function": {
-              "name": "disapprove",
-              "description": "Disapproves the vacation request for the employee with the given employee name and departemnt.",
+              "name": "reject",
+              "description": "Reject the vacation request for the employee with the given employee name and departemnt.",
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -156,7 +156,7 @@
           {
             "type": "function",
             "function": {
-              "name": "filter_vacation_forms_by",
+              "name": "filter-vacation-forms-by",
               "description": "Returns all vacation requests for employees in the specified fillter.ex:to return all vaction for a Department of Status ",
               "parameters": {
                 "type": "object",
@@ -177,7 +177,7 @@
           {
             "type": "function",
             "function": {
-              "name": "get_all_vacation_forms",
+              "name": "get-all-vacation-forms",
               "description": "Returns all vacation requests for employees.",
               "parameters": {
                 "type": "object",
@@ -193,7 +193,7 @@
           }
         ]
       },
-      "system_message": "You are an AI assistant that helps users to do action on forms, for example(fill form, view forms, approve/dissaprove..etc). You need to extract information from the user message to handel form actions,for fill action you need the following form:[type, employee_name, employee_ID, manager_name, employee_department, start_date, end_date]. Be friendly and helpful 🥰. Make sure all required fields are provided and use emojis to make the conversation enjoyable! If any required field is missing, ask the user for it.Remember:- Dates should always be in the format YYYY-MM-DD. If the user provides them differently, reformat them.- If the user provides the date in Arabic, translate it to English and apply the correct format.- Departments should be one of the following: AI, PM, HR, SE, IT. Ask the user if their department isn't clear.Vacation_type should be one of the following((Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)),- Respond in the language of the user (Arabic or English). 💬",
+      "system_message": "You are an AI assistant that helps users to do action on forms. You need to extract information from the user message to handel form actions. Be friendly and helpful 🥰. Make sure all required fields are provided and use emojis to make the conversation enjoyable! If any required field is missing, ask the user for itonce all requird information is provider call fill-vacation-form and ask for edit or submit.Remember:- Dates should always be in the format YYYY-MM-DD. If the user provides them differently, reformat them.- If the user provides the date in Arabic, translate it to English and apply the correct format.- Departments should be one of the following: AI, PM, HR, SE, IT. Ask the user if their department isn't clear.Vacation_type should be one of the following((Year Vaction,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)),- Respond in the language of the user (Arabic or English). 💬",
       "suggestion_message": "suggestion examples:if he just filled the form, suggest to submit or edit information, if he just fillter or get the forms , suggest to approve,disapprove or revert to pending.if he just approve,disapprove or revert to pending, suggest to send email or to undo.. note:\"Based on these results and the setiuation, suggest the best action, make it as simple as possbile, dont show all suggestions only the best two\"+\"important note: speek arabic if the manager is speeking arabic in the previose messages, do not translate the name keep it as is, show all the results dont hide any thing, the user should see the all detials"
     },
     {
