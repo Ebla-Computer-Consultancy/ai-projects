@@ -19,9 +19,11 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
                                              manager_name=form.manager_name,
                                              start_date=form.start_date,
                                              end_date=form.end_date,
-                                             status=form.status,
+                                             
                                              comments=form.comments).to_dict()
         result = await db.add_form(v_form)
+        if result is None:
+            result = f"Form Submited Successfuly, form data:{v_form}"
         final_message = await generate_final_resopnse("form filled successfuly", chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
@@ -38,7 +40,7 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
 
 async def approve_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
-        result = db.update_Status(arguments.employee_ID,"Approve")
+        result = db.update_Status(arguments.employee_ID,"Approved")
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfuly"
         final_message = await generate_final_resopnse(result, chat_payload)
@@ -58,7 +60,7 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
   
-        result = db.update_Status(arguments.employee_ID,"Disapprove")
+        result = db.update_Status(arguments.employee_ID,"Rejected")
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Disapproved Successfuly"
         final_message = await generate_final_resopnse(result, chat_payload)
@@ -132,45 +134,52 @@ async def getAllForms_action(chat_payload: ChatPayload):
         raise HTTPException(status_code=500, detail=f"Error While getting forms: {str(e)}") 
         
 async def generate_final_resopnse(result, chat_payload: ChatPayload):
-    msg = f'''"Generate a good response using the user's language and suggest for user a next step."
-     f"Here are the results: {result}."
-     {ENTITY_SETTINGS.get("suggestion_message")}
-    '''
-
-    final_response = chat_completion(
-                            chatbot_setting=ChatbotSetting(
-                                index_name=None,
-                                name=None,
-                                system_message=ENTITY_SETTINGS.get("suggestion_message"),
-                                custom_settings=CustomSettings(
-                                    max_tokens=4000,
-                                    temperature=0.95
-                                    )
-                                ),
-                            chat_history=[{"role":Roles.User.value,"content":msg}],
-                        )
-    context = chatbot_service.set_context(final_response)
-    user_message_entity = chatbot_service.set_message(
-        role=Roles.User.value,
-        content=msg,
-        conversation_id=chat_payload.conversation_id,
-        context=context
-        )
-    
-    assistant_message_entity = chatbot_service.set_message(
-        role=Roles.Assistant.value,
-        content=final_response["message"]["content"],
-        conversation_id=chat_payload.conversation_id,
-        context=context)
-                
-    chatbot_service.add_messages_to_history(
-        chat_payload=chat_payload,
-        conversation_id=chat_payload.conversation_id,
-        user_message_entity=user_message_entity,
-        assistant_message_entity=assistant_message_entity,
-        bot_name="interactive")
-    
-    return final_response
+    try:
+        msg = f'''"Generate a good response using the user's language and suggest for user a next step."
+        f"Here are the results: {result}."
+        {ENTITY_SETTINGS.get("suggestion_message")}
+        '''
+        chat = chatbot_service.prepare_chat_history_with_system_message(chat_payload=chat_payload,bot_name="interactive")
+        chat_history = chat["chat_history"]
+        chat_history.append({"role":Roles.User.value,"content":f"Here are the results: {result}. what are you suggestion now? note: answer me with the language i used to talk with it in the previos messages"})
+        
+        final_response = chat_completion(
+                                chatbot_setting=ChatbotSetting(
+                                    index_name=None,
+                                    name=None,
+                                    system_message=msg,
+                                    custom_settings=CustomSettings(
+                                        max_tokens=4000,
+                                        temperature=0.95
+                                        )
+                                    ),
+                                chat_history=chat_history,
+                            )
+        context = chatbot_service.set_context(final_response)
+        user_message_entity = chatbot_service.set_message(
+            role=Roles.User.value,
+            content=msg,
+            conversation_id=chat_payload.conversation_id,
+            context=context
+            )
+        
+        assistant_message_entity = chatbot_service.set_message(
+            role=Roles.Assistant.value,
+            content=final_response["message"]["content"],
+            conversation_id=chat_payload.conversation_id,
+            context=context)
+                    
+        chatbot_service.add_messages_to_history(
+            chat_payload=chat_payload,
+            conversation_id=chat_payload.conversation_id,
+            user_message_entity=user_message_entity,
+            assistant_message_entity=assistant_message_entity,
+            bot_name="interactive")
+        
+        return final_response
+    except Exception as e:
+        print(f"Error While generating final message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error While generating final message: {str(e)}")
 
 def try_parse_int(value):
     try:

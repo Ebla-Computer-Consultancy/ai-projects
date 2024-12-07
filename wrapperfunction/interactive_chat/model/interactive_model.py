@@ -46,7 +46,6 @@ class VacationForm(BaseModel):
     employee_department: str
     start_date: str
     end_date: str
-    status: str
     comments: str
 
 class VacationFormEntity:
@@ -57,7 +56,6 @@ class VacationFormEntity:
     employee_department: str,
     start_date: str,
     end_date: str,
-    status: str,
     comments: str):
         self.vacation_type = vacation_type
         self.employee_name = employee_name
@@ -68,7 +66,6 @@ class VacationFormEntity:
         self.end_date = end_date
         self.total_days = (datetime.strptime(end_date, '%Y-%m-%d') - 
                        datetime.strptime(start_date, '%Y-%m-%d')).days
-        self.status = status
         self.comments = comments
     
     def to_dict(self):
@@ -83,7 +80,7 @@ class VacationFormEntity:
             "Start_Date":self.start_date,
             "End_Date":self.end_date,
             "Total_Days":self.total_days,
-            "Status":self.status,
+            "Status":"Pending",
             "Comments":self.comments
         }
 class Status(BaseModel):

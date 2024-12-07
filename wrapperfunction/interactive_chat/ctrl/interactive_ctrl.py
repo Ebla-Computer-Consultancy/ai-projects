@@ -47,14 +47,14 @@ async def pending_form_action(arguments:Status, chat_payload: ChatPayload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/action/filter-vacation-forms-by")
+@router.post("/action/filter-vacation-forms-by")
 async def getForm_form_action(arguments: GetForm, chat_payload: ChatPayload):
     try:
         return await getForm_action(arguments,chat_payload)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/action/get-all-vacation-forms")
+@router.post("/action/get-all-vacation-forms")
 async def get_All_Forms_action(chat_payload: ChatPayload):
     try:
         return await getAllForms_action(chat_payload) 
