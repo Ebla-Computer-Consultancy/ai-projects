@@ -98,6 +98,8 @@ def perform_sentiment_analysis():
                 conversation_id = conversation[
                     ConversationPropertyName.CONVERSATION_ID.value
                 ]
+                if not conversation_id:
+                    continue
                 messages = get_user_messages(conversation_id)
                 message_texts = [
                     msg[MessagePropertyName.CONTENT.value]
