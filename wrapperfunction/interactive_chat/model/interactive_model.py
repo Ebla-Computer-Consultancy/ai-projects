@@ -67,8 +67,8 @@ class VacationFormEntity:
         self.employee_ID = employee_ID
         self.manager_name = manager_name
         self.employee_department = employee_department
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        self.end_date = datetime.strptime(end_date, '%Y-%m-%d')
         self.total_days = (datetime.strptime(end_date, '%Y-%m-%d') - 
                        datetime.strptime(start_date, '%Y-%m-%d')).days
         self.comments = comments

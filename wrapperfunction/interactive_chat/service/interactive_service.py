@@ -1,13 +1,11 @@
 from fastapi import HTTPException
 from wrapperfunction.chat_history.service import chat_history_service as db
-from wrapperfunction.chatbot.integration.openai_connector import chat_completion
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.service import chatbot_service
 from wrapperfunction.core.config import ENTITY_SETTINGS
-from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.interactive_chat.model import interactive_model
-from wrapperfunction.chatbot.model.chat_message import Roles
+from wrapperfunction.chatbot.model.chat_message import ChatMessage, Roles
 
 
 async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPayload):
@@ -135,46 +133,13 @@ async def getAllForms_action(chat_payload: ChatPayload):
         
 async def generate_final_resopnse(result, chat_payload: ChatPayload):
     try:
-        msg = f'''"Generate a good response using the user's language and suggest for user a next step."
-        f"Here are the results: {result}."
-        {ENTITY_SETTINGS.get("suggestion_message")}
-        '''
-        chat = chatbot_service.prepare_chat_history_with_system_message(chat_payload=chat_payload,bot_name="interactive")
-        chat_history = chat["chat_history"]
-        chat_history.append({"role":Roles.User.value,"content":f"Here are the results: {result}. what are you suggestion now? note: answer me with the language i used to talk with it in the previos messages"})
-        
-        final_response = chat_completion(
-                                chatbot_setting=ChatbotSetting(
-                                    index_name=None,
-                                    name=None,
-                                    system_message=msg,
-                                    custom_settings=CustomSettings(
-                                        max_tokens=4000,
-                                        temperature=0.95
-                                        )
-                                    ),
-                                chat_history=chat_history,
-                            )
-        context = chatbot_service.set_context(final_response)
-        user_message_entity = chatbot_service.set_message(
-            role=Roles.User.value,
-            content=msg,
-            conversation_id=chat_payload.conversation_id,
-            context=context
+        chat_payload.messages.append(
+            ChatMessage(
+                role=Roles.User.value,
+                content=f"Here are the results: {result}. what are you suggestion now? sample of suggestion:{ENTITY_SETTINGS.get('suggestion_message')} note: answer me with the language i used to talk with it in the previos messages."
+                )
             )
-        
-        assistant_message_entity = chatbot_service.set_message(
-            role=Roles.Assistant.value,
-            content=final_response["message"]["content"],
-            conversation_id=chat_payload.conversation_id,
-            context=context)
-                    
-        chatbot_service.add_messages_to_history(
-            chat_payload=chat_payload,
-            conversation_id=chat_payload.conversation_id,
-            user_message_entity=user_message_entity,
-            assistant_message_entity=assistant_message_entity,
-            bot_name="interactive")
+        final_response = await chatbot_service.chat("interactive",chat_payload)
         
         return final_response
     except Exception as e:
