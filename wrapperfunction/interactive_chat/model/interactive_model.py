@@ -19,14 +19,16 @@ class VacationTypes(Enum):
     SickLeave="Sick Leave"
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
-    UnpaidLeave= "Unpaid Leave"
+    UnpaidLeave= "Unpaid Leave",
+    YearVaction="Year Vaction"
     
     def to_list():
         return[
            VacationTypes.SickLeave.value,
            VacationTypes.PersonalLeave.value,
            VacationTypes.PublicHolidays.value,
-           VacationTypes.UnpaidLeave.value
+           VacationTypes.UnpaidLeave.value,
+           VacationTypes.YearVaction
         ]
 
 class DepartmentTypes(Enum):
