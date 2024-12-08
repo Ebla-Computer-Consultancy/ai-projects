@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 import uuid
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
@@ -25,7 +26,7 @@ from wrapperfunction.interactive_chat.model.interactive_model import FormStatus
 
 def get_conversations(user_id):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.name} eq '{user_id}'")     
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.value} eq '{user_id}'")     
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
@@ -40,7 +41,6 @@ def get_conversation_data(conversation_id):
 
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         return res
     except Exception as e:
@@ -68,11 +68,13 @@ async def add_entity(message_entity:MessageEntity,assistant_entity:Optional[Mess
     try:
         if conv_entity:
             await db_connector.add_entity(config.CONVERSATION_TABLE_NAME,conv_entity.to_dict())
+        await db_connector.add_entity(config.MESSAGE_TABLE_NAME,message_entity.to_dict())    
         if assistant_entity:
-            await db_connector.add_entity(config.MESSAGE_TABLE_NAME,assistant_entity.to_dict())
+            asyncio.sleep(1)
+            await db_connector.add_entity(config.MESSAGE_TABLE_NAME, assistant_entity.to_dict())
 
-        await db_connector.add_entity(config.MESSAGE_TABLE_NAME,message_entity.to_dict())
-        
+
+
 
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))   
