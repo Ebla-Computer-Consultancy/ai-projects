@@ -20,7 +20,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
         chat_history_with_system_message = prepare_chat_history_with_system_message(
             chat_payload, bot_name
         )
-
+        
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
         chatbot_settings = config.load_chatbot_settings(bot_name)
         chatbot_settings.system_message = chat_history_with_system_message[
@@ -68,7 +68,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload):
             tools_message_entity=tools_message_entity,
         )
 
-        if chat_payload.stream_id is not None:
+        if chat_payload.stream_id is not None and results["message"]["content"] is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
 
