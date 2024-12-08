@@ -40,7 +40,7 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
 
 async def approve_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
-        result = db.update_Status(arguments.employee_ID,"Approved")
+        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfuly"
         final_message = await generate_final_resopnse(result, chat_payload)
@@ -60,9 +60,9 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
   
-        result = db.update_Status(arguments.employee_ID,"Rejected")
+        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
         if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Disapproved Successfuly"
+            result = f"Employee With ID:{arguments.employee_ID} Form Rejeted Successfuly"
         final_message = await generate_final_resopnse(result, chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
@@ -70,15 +70,15 @@ async def disapprove_action(arguments:interactive_model.Status, chat_payload: Ch
                             "action_results": str(result),
                             "final_message": final_message
                             },
-                        message=f"Employee With ID:{arguments.employee_ID} Form Disapproved Successfuly"
+                        message=f"Employee With ID:{arguments.employee_ID} Form Rejeted Successfuly"
                         ).to_dict()
     except Exception as e:
-        print(f"Error While Dissapproving form:{arguments.employee_ID}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error While Dissapproving form:{arguments.employee_ID}: {str(e)}")
+        print(f"Error While Rejeting form:{arguments.employee_ID}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error While Rejeting form:{arguments.employee_ID}: {str(e)}")
 
 async def pending_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
-        result = db.update_Status(arguments.employee_ID,"Pending")
+        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfuly"
         final_message = await generate_final_resopnse(result, chat_payload)
