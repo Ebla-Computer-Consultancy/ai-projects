@@ -16,14 +16,20 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
                 file_result["tables"][index]["cells"].append(
                     {"content": cell["content"], "kind": cell.kind}
                 )
-        chatbot_settings = config.load_chatbot_settings(bot_name)
-        chatbot_settings.examples.append(
-            {"role": "user", "content": json.dumps(file_result)}
-        )
 
         return chatbotservice.ask_open_ai_chatbot(
             bot_name=bot_name,
-            chat_payload=ChatPayload(messages=chatbot_settings.examples),
+            chat_payload=ChatPayload(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": json.dumps(
+                            file_result,
+                            ensure_ascii=False,
+                        ),
+                    }
+                ]
+            ),
         )
 
     except Exception as e:

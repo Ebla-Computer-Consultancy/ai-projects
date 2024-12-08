@@ -33,9 +33,14 @@ SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
 MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
-CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CVONVERSATION_TABLE")
+CONVERSATION_TABLE_NAME=os.getenv("COSMOS_CONVERSATION_TABLE")
 AZURE_TEXT_ANALYTICS_ENDPOINT=os.getenv("AZURE_TEXT_ANALYTICS_ENDPOINT")
 AZURE_TEXT_ANALYTICS_KEY=os.getenv("AZURE_TEXT_ANALYTICS_KEY")
+STORAGE_ACCOUNT_KEY=os.getenv("STORAGE_ACCOUNT_KEY")
+AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
+AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
+OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
+COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -43,7 +48,6 @@ def load_entity_settings():
             return json.load(file)
     else:
         return {}
-
 
 ENTITY_SETTINGS = load_entity_settings()
 AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
@@ -54,14 +58,19 @@ def load_chatbot_settings(bot_name: str):
         if chatbot_obj["name"] == bot_name:
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
-            custom_settings = CustomSettings(temperature=temperature)
-            custom_settings = CustomSettings(temperature=temperature)
+            max_tokens = custom_settings_data.get("max_tokens", 800)
+            top_p = custom_settings_data.get("top_p", 0.95)
+            tools = custom_settings_data.get("tools",None)
+            custom_settings = CustomSettings(temperature=temperature,
+                                             top_p=top_p,
+                                             max_tokens=max_tokens,
+                                             tools=tools)
             chatbot = ChatbotSetting(
-                name=chatbot_obj["name"],
-                index_name=chatbot_obj.get("index_name", ""),
-                system_message=chatbot_obj["system_message"],
-                examples=chatbot_obj.get("examples", []),
-                custom_settings=custom_settings,
+                name = chatbot_obj["name"],
+                index_name = chatbot_obj.get("index_name", None),
+                system_message = chatbot_obj["system_message"],
+                examples = chatbot_obj.get("examples", []),
+                custom_settings = custom_settings,
             )
             return chatbot
 
