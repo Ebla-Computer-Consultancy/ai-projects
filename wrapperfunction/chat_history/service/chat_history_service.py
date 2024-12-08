@@ -18,6 +18,7 @@ from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
+from wrapperfunction.interactive_chat.model.interactive_model import FormStatus
 
 
 
@@ -169,12 +170,13 @@ def get_vactions_filter_by(coulomn_name,value):
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
-def update_Status(employee_ID: str, status: str):
+def update_Status(employee_ID: str, status: int):
     try:
         forms = get_vactions_filter_by("Employee_ID",employee_ID)
         if forms:
             for form in forms:
-                form.update({"Status":status,"Comments":f"{status} by Manager"})
+                
+                form.update({"Status":status,"Comments":f"{FormStatus(status).name} by Manager"})
                 db_connector.update_entity(config.COSMOS_VACATION_TABLE, form)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

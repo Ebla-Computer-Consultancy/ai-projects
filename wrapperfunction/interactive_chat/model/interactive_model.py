@@ -10,6 +10,11 @@ class Prompt(BaseModel):
 class SubmitForm(BaseModel):
     form:dict
 
+class FormStatus(Enum):
+    APPROVED = 0
+    REJECTED = 1
+    PENDING = 2
+    
 class VacationTypes(Enum):
     SickLeave="Sick Leave"
     PersonalLeave="Personal Leave"
@@ -80,7 +85,7 @@ class VacationFormEntity:
             "Start_Date":self.start_date,
             "End_Date":self.end_date,
             "Total_Days":self.total_days,
-            "Status":"Pending",
+            "Status":FormStatus.PENDING,
             "Comments":self.comments
         }
 class Status(BaseModel):
