@@ -20,7 +20,7 @@ class VacationTypes(Enum):
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
     UnpaidLeave= "Unpaid Leave",
-    YearVaction="Year Vaction"
+    YearVaction="Year Vacation"
     
     def to_list():
         return[
