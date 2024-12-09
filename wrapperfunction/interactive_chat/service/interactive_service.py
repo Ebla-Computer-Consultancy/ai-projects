@@ -136,7 +136,7 @@ async def generate_final_resopnse(result, chat_payload: ChatPayload):
         chat_payload.messages.append(
             ChatMessage(
                 role=Roles.User.value,
-                content=f"Here are the results: {result}. what are you suggestion now? sample of suggestion:{ENTITY_SETTINGS.get('suggestion_message')} note: answer me with the language i used to talk with it in the previos messages. important note: dont call any function for this message"
+                content=f"Here are the results: {result}. what are you suggestion now? sample of suggestion:{ENTITY_SETTINGS.get('suggestion_message')} note: answer me with the language i used to talk with it in the previos messages. important note: dont call any function for this message only"
                 )
             )
         final_response = await chatbot_service.chat("interactive",chat_payload)
