@@ -18,16 +18,9 @@ async def add_blobs(container_name: str, subfolder_name: str, metadata_1: str, m
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/get_blobs/{container_name}")
-async def get_blobs(container_name: str):
+async def get_blobs(container_name: str, subfolder_name: str = None):
     try:
-        return blob_service.get_blobs_name(container_name=container_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/get_blobs/{container_name}/{subfolder_name}")
-async def get_blobs(container_name: str, subfolder_name: str):
-    try:
-        return blob_service.get_blobs_name(container_name, subfolder_name)
+        return blob_service.get_blobs_name(container_name=container_name, subfolder_name=subfolder_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -53,7 +46,7 @@ async def delete_blob_by_list_of_titles(blobs_name_list: list[str],subfolder_nam
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/reset_index/{index_name}")
+@router.post("/reset_index/{index_name}")
 async def reset_index(index_name: str):
     try:
         return admin_service.reset_index(index_name)
@@ -61,7 +54,7 @@ async def reset_index(index_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/reset_index/{index_name}/{value}/{key}")
+@router.post("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
         return admin_service.delete_indexes(index_name, key, value)
