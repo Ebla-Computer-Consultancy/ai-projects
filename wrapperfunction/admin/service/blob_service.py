@@ -1,6 +1,6 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
 from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
-from azure.storage.blob import BlobType, BlobBlock,BlobServiceClient
+from azure.storage.blob import BlobType, BlobBlock
 import urllib.parse
 from wrapperfunction.core import config
 from fastapi import HTTPException
@@ -10,7 +10,7 @@ import json
 import os
 
 
-def get_blobs_name(container_name: str, subfolder_name: str= None):
+def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
