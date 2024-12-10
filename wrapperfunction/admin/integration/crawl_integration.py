@@ -1,42 +1,10 @@
-from io import BytesIO
-from turtle import pd
 import json
-from scrapy.crawler import CrawlerProcess
 from wrapperfunction.admin.integration.storage_connector import upload_file_to_azure
-from wrapperfunction.core.utls.spiders.crawling_spider import (
-    CrawlingSpider,
-)
-from scrapy.spiders import Rule
-from scrapy.linkextractors import LinkExtractor
+
 import wrapperfunction.core.config as config
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urljoin, urlparse
-
-def run_crawler(
-    urls: str,
-    headers: dict = None,
-    cookies: dict = None,
-    deepCrawling: bool = False,
-):
-    process = CrawlerProcess()
-    if deepCrawling:
-        CrawlingSpider.rules = (
-            Rule(
-                LinkExtractor(),
-                callback="parse_items",
-                follow=True,
-            ),
-        )
-    else:
-        CrawlingSpider.rules = (
-            Rule(
-                callback="parse_items",
-                follow=False,
-            ),
-        )
-    process.crawl(CrawlingSpider, start_urls=urls, cookies=cookies, headers=headers)
-    process.start()
 
 def get_all_Links_in_urls(urls: list):
     try:
