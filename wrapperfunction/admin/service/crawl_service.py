@@ -47,7 +47,7 @@ def orchestrator_function(
         if ".pdf" in url.link:
             request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
             content = inline_read_scanned_pdf(None, request_pdf_file.content)
-            # TODO: fix here 
+            
             site_data = {
                 "url": url.link,
                 "title": get_page_title(url.link),
@@ -131,7 +131,6 @@ def get_page_title(link, data = None):
 
 # Gets all of the URLs from the webpage.
 def collect_urls(data, url, settings):
-    urls = set()
     try:
         url_elements = data.select("a[href]")
         for url_element in url_elements:
@@ -142,7 +141,7 @@ def collect_urls(data, url, settings):
             )
             if validators.url(absolute_url):
                 if (
-                    absolute_url and ".pdf" in absolute_url
+                    absolute_url
                     and absolute_url.replace("https://", "")
                     .replace("http://", "")
                     .split("/")[0]
