@@ -10,7 +10,7 @@ def get_blob_client(container_name:str, blob_name: str):
 
 def get_container_client(
     container_name:str,
-    subfolder_name:str="jsondata"
+    subfolder_name:str
     
 ):
     # Create the BlobServiceClient object
