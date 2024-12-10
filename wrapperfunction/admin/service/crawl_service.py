@@ -1,11 +1,10 @@
 import json
 import re
-from typing import BinaryIO
 from urllib.parse import urljoin
 import requests
 
 from bs4 import BeautifulSoup
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
 import validators
 
 from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
