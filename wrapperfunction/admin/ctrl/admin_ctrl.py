@@ -75,14 +75,6 @@ async def run_index(index_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.post("/add_pdfs/")
-async def add_pdfs(request: Request):
-    try:
-        return await admin_service.add_pdfs()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @router.post("/reset-indexer/")
 async def resetIndexer(request: IndexerRequest):
     try:

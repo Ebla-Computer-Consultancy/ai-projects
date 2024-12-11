@@ -1,12 +1,12 @@
 import requests
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data
 from wrapperfunction.core.config import OPENAI_API_VERSION, SEARCH_ENDPOINT, SEARCH_KEY
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from fastapi import HTTPException
-from wrapperfunction.admin.integration.aisearch_connector import delete_indexed_data, get_index_info,reset_indexed_data,run_indexer
 from fastapi.responses import JSONResponse
+
+from wrapperfunction.search.integration.aisearch_connector import delete_indexed_data, get_index_info, reset_indexed_data, run_indexer
 
 def delete_indexes(index_name: str, key: str, value):
     try:

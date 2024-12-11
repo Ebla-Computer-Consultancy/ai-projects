@@ -9,8 +9,9 @@ import validators
 
 from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
-from wrapperfunction.admin.model.crawl_settings import CrawlSettings
+from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
 from wrapperfunction.admin.service.blob_service import append_blob
+from wrapperfunction.core import config
 from wrapperfunction.core.config import SUBFOLDER_NAME
 from wrapperfunction.core.utls.helper import process_text_name
 
@@ -57,11 +58,20 @@ def orchestrator_function(
         data, response = crawl_site(
             url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
-        site_data = {
-            "url": url.link,
-            "title": data if response.headers.get('content-type') == 'application/pdf' else get_page_title(url.link, data),
-            "content":  get_page_content(data, settings),
-        }
+        if settings.mediaCrawling:
+            relevant_text, imgs_links = get_page_media_with_topics(data, settings.topics)
+            site_data = {
+                "ref_url": base_url,
+                "url": url.link,
+                "content": relevant_text,
+                "images_urls": imgs_links
+            }
+        else:
+            site_data = {
+                "url": url.link,
+                "title": data if response.headers.get('content-type') == 'application/pdf' else get_page_title(url.link, data),
+                "content":  get_page_content(data, settings),
+            }
 
         json_data = json.dumps(site_data, ensure_ascii=False)
         blob_name = f"item_{process_text_name(url.link)}.json"
@@ -71,7 +81,7 @@ def orchestrator_function(
             blob=json_data,
             metadata_1=url.link[:-1],
             metadata_2=url.link,
-            metadata_3="crawled",
+            metadata_3=IndexingType.CRAWLED,
             metadata_4="link",
         )
         crawled_sites.add(url.link)
@@ -95,7 +105,7 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
-    if response.headers.get('content-type') == 'application/pdf':
+    if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
         return BeautifulSoup(response.text, "lxml"), response
@@ -169,8 +179,8 @@ def get_page_content(data, settings: CrawlSettings):
     try:
         content = "".join(
             set(
-                tag.text
-                for tag in data.select(", ".join(str(s) for s in settings.selectors))
+                element.text
+                for element in data.select(", ".join(str(s) for s in settings.selectors))
             )
         )
         content = " ".join(re.sub("[\t\n]", "", content).split()).strip()
@@ -179,4 +189,35 @@ def get_page_content(data, settings: CrawlSettings):
         raise HTTPException(
             status_code=400,
             detail=f"Error retrieving the URLs in the site: {error.__cause__}",
+        )
+    
+
+def get_page_media_with_topics(data, topics: list[str]):
+    try:
+        media_settings = config.ENTITY_SETTINGS.get("media_settings", {})
+        # Extract target classes for p and img
+        target_p_classes = media_settings.get("p_class", [])
+        target_img_classes = media_settings.get("img_class", [])
+
+        # Initialize sets to store unique texts and filtered image links
+        content = "".join(
+            [paragraph_text for paragraph_text in set(
+                element.text
+                for element in data.select(", ".join(str(s) for s in [parent_div_class + " p" for parent_div_class in target_p_classes]))
+            ) if any(topic in paragraph_text for topic in topics)]
+        )
+        relevant_text = " ".join(re.sub("[\t\n]", "", content).split()).strip()
+
+        imgs_links = [
+            src if src.startswith(('http', 'https')) else urljoin(base_url, src) 
+            for src in set(img.src for img in data.select(
+                ", ".join(str(s) for s in [parent_div_class + " img" for parent_div_class in target_img_classes])
+                )
+            ) if "logo" not in src and validators.url(urljoin(base_url, src))]
+        return relevant_text, imgs_links
+    
+    except Exception as error:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error while extracting media content and links: {error.__cause__}",
         )

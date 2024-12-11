@@ -1,8 +1,12 @@
 from fastapi import HTTPException
-from wrapperfunction.admin.integration import crawl_integration, imageanalytics_connector
-from wrapperfunction.admin.integration import storage_connector
+from wrapperfunction.admin.integration import imageanalytics_connector
 from wrapperfunction.admin.integration import textanalytics_connector
+from wrapperfunction.admin.integration.blob_storage_integration import generate_blob_sas_url
+from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
+from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
 from wrapperfunction.admin.service import admin_service
+from wrapperfunction.admin.service.blob_service import append_blob
+from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
@@ -15,7 +19,6 @@ async def generate_report(search_text: str):
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
-        print(chat_settings.index_name)
         chat_history = [{"role": "system", "content": chat_settings.system_message}]
         chat_history.append({"role": "user", "content": str(user_message)})
 
@@ -25,18 +28,17 @@ async def generate_report(search_text: str):
         )
         report_file_name = search_text.replace(" ","_")
         
-        storage_connector.upload_file_to_azure(content=chat_res["message"]["content"],
-                                              connection_string= config.RERA_STORAGE_CONNECTION,
-                                              container_name= "rera-media-reports",
-                                              blob_name=f"{report_file_name}.txt")
+        append_blob(blob=chat_res["message"]["content"],
+                    metadata_3=IndexingType.GENERATED,
+                    container_name= "rera-media-reports",
+                    blob_name=f"{report_file_name}.txt")
         
-        sas_url = storage_connector.generate_blob_sas_url(connection_string= config.RERA_STORAGE_CONNECTION,
-                                              container_name= "rera-media-reports",
-                                              blob_name=f"{report_file_name}.txt")
+        sas_url = generate_blob_sas_url(container_name= "rera-media-reports",
+                                            blob_name=f"{report_file_name}.txt")
         # Push the file to the Azure container
         return ServiceReturn(
             status=StatusCode.CREATED,
-            message=f"{search_text} Report Generated Successfuly",
+            message=f"{search_text} Report Generated Successfully",
             data={
                 "report_url": sas_url,
             }
@@ -44,28 +46,23 @@ async def generate_report(search_text: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def media_crawl(topics: list, urls: list):
+async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
-        media_settings = config.ENTITY_SETTINGS.get("media_settings",None)
+        media_settings = config.ENTITY_SETTINGS.get("media_settings", {})
         if len(media_settings.get("supported_webpages",[])) == 0:
             raise HTTPException(status_code=500, detail="There is no supported web pages")
-        
-        #1 get data
-        links = crawl_integration.get_all_Links_in_urls(urls=urls)
         #2 save to blob storage
-        crawl_integration.save_media_with_topics(
-            news_links=links,
-            topics=topics,
-            container_name="rera-media",
-            connection_string=config.RERA_STORAGE_CONNECTION
-            )
+        crawl_urls(
+            urls,
+            settings
+        )
         #3 run indexer
-        res2 = await admin_service.runIndexer(name="rera-media-test-indexer")
+        await admin_service.runIndexer(name="rera-media-test-indexer")
         
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
-                            message=f"URL's:{urls} | Topics:{topics} crawled succefuly", 
-                             ).to_dict()
+                            message=f"URL's:{urls} | Topics:{settings.topics} crawled successfully", 
+                        ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
