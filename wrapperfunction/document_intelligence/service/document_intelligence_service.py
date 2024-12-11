@@ -3,6 +3,7 @@ import ast
 from io import BytesIO
 import json
 import os
+import tempfile
 from typing import Optional
 import uuid
 import zipfile
@@ -95,18 +96,23 @@ def detection(text,criteria:Optional[str] = None):
 
 
 
-def auto_split_pdf(pdf, criteria):
+def auto_split_pdf(pdf: UploadFile, criteria):
     try:
-        reader = PdfReader(pdf)
-        text_per_page = [page.extract_text() for page in reader.pages]
+        result = documentintelligenceconnector.analyze_file(pdf) 
+        text_per_page = []
+        for page in result.pages:
+            page_text = "\n".join([line.content for line in page.lines])
+            text_per_page.append(page_text)
+
         full_text = "\n".join(f"Page {i+1}:\n{text}" for i, text in enumerate(text_per_page))
 
+
         pages = detection(full_text, criteria)
+        pages.append([len(result.pages) + 1]) 
 
 
-        pages.append([len(reader.pages) + 1])  
+        reader = PdfReader(pdf.file)
         files = []
-
         for i in range(len(pages) - 1):
             writer = PdfWriter()
 
@@ -118,13 +124,13 @@ def auto_split_pdf(pdf, criteria):
                 writer.write(output_file)
             files.append(output_file_path)
 
+
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for file in files:
                 zip_file.write(file, os.path.basename(file))
-                os.remove(file) 
+                os.remove(file)  
         zip_buffer.seek(0)
-
 
         container_client = storageconnector.get_blob_service_client(config.SPLITER_CONTAINER_NAME)
         response = container_client.upload_blob(f"{uuid.uuid4()}.zip", zip_buffer, overwrite=True)
