@@ -239,7 +239,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
             msg["tool_call_id"] = chat_payload.conversation_id
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
- 
+
     return {"system_message": system_message, "chat_history": chat_history}
 
 
