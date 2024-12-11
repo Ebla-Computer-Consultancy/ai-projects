@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
