@@ -207,24 +207,29 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
         chat_history_arr = chat_history_service.get_messages(
             conversation_id=chat_payload.conversation_id
         )
+    bot_settings = config.load_chatbot_settings(bot_name)
+    
+    if not bot_settings.custom_settings.full_history:
+        chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
+        
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)
     if chat_payload.stream_id:
         if is_ar:
             system_message = f"IMPORTANT: Represent numbers in alphabet only not numeric. Always respond with very short answers. {config.load_chatbot_settings(bot_name).system_message}"
         else:
-            system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
+            system_message = f"{bot_settings.system_message}, I want you to detect the input language and responds in the same language. Always respond with very short answers."
     else:
-        system_message = f"{config.load_chatbot_settings(bot_name).system_message}, I want you to detect the input language and responds in the same language."
+        system_message = f"{bot_settings.system_message}, I want you to detect the input language and responds in the same language."
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
 
-    chat_history.extend(config.load_chatbot_settings(bot_name).examples)
-    ##if have tools
+    chat_history.extend(bot_settings.examples)
+    
     for item in chat_history_arr:
         msg = {"role": item["role"], "content": item["content"]}
         if (
-            config.load_chatbot_settings(bot_name).custom_settings.tools
+            bot_settings.custom_settings.tools
             and item["role"] == "tool"
         ):
             tool = json.loads(item["content"])
@@ -234,8 +239,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
             msg["tool_call_id"] = chat_payload.conversation_id
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
-    chat_history = chat_history[:1] + chat_history[-10:]
-
+ 
     return {"system_message": system_message, "chat_history": chat_history}
 
 
