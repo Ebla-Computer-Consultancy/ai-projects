@@ -9,6 +9,14 @@ from wrapperfunction.admin.service.crawl_service import crawl_urls
 
 router = APIRouter()
 
+@router.post("/crawler/")
+def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings):
+    try:
+        # Read the content of the file
+        return crawl_urls(urls, settings)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/add_json_blobs/")
 async def add_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile] = File()):
     try:
