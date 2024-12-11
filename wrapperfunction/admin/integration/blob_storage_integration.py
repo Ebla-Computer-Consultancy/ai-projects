@@ -1,5 +1,6 @@
+import datetime
 from wrapperfunction.core import config
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 
 connect_str = config.STORAGE_CONNECTION
 
@@ -22,3 +23,25 @@ def get_container_client(
     else:
         blobs = container_client.list_blobs()
     return container_client, blobs
+
+
+def generate_blob_sas_url(container_name: str, blob_name: str, expiration_minutes: int = 60):
+    try:
+        blob_service_client = get_blob_client(container_name, blob_name)
+        expiry_time = (datetime.datetime.utcnow() + datetime.timedelta(minutes=expiration_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        sas_token = generate_blob_sas(
+            account_key=config.STORAGE_ACCOUNT_KEY,
+            account_name=blob_service_client.account_name,
+            container_name=container_name,
+            blob_name=blob_name,
+            permission=BlobSasPermissions(read=True),
+            expiry=expiry_time
+        )
+
+        blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+        return blob_url
+
+    except Exception as e:
+        return(f"Error generating SAS URL: {str(e)}")
+    
