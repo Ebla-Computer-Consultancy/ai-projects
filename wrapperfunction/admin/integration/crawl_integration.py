@@ -1,6 +1,5 @@
 import json
 from wrapperfunction.admin.integration.storage_connector import upload_file_to_azure
-from wrapperfunction.core.utls.helper import process_text_name
 import wrapperfunction.core.config as config
 from bs4 import BeautifulSoup
 import requests
