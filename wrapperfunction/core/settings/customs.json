@@ -13,6 +13,7 @@
         "index_name": null,
         "custom_settings": {
           "temperature": 0.5,
+          "full_history":true,
           "max_tokens": 400,
           "tool_choice": "auto",
           "tools": [
