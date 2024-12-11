@@ -203,14 +203,15 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
 
 def prepare_chat_history_with_system_message(chat_payload, bot_name):
     chat_history_arr = []
-    if chat_payload.conversation_id:
-        chat_history_arr = chat_history_service.get_messages(
-            conversation_id=chat_payload.conversation_id
-        )
     bot_settings = config.load_chatbot_settings(bot_name)
+    if bot_settings.custom_settings.max_history_length != 0:
+        if chat_payload.conversation_id:
+            chat_history_arr = chat_history_service.get_messages(
+                conversation_id=chat_payload.conversation_id
+            )
     
-    if not bot_settings.custom_settings.full_history:
-        chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
+        if bot_settings.custom_settings.max_history_length > 0:
+            chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
         
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)
