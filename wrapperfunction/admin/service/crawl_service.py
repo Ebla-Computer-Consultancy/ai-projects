@@ -81,7 +81,7 @@ def orchestrator_function(
             blob=json_data,
             metadata_1=url.link[:-1],
             metadata_2=url.link,
-            metadata_3=IndexingType.CRAWLED,
+            metadata_3=IndexingType.CRAWLED.value,
             metadata_4="link",
         )
         crawled_sites.add(url.link)
@@ -142,7 +142,7 @@ def get_page_title(link, data = None):
 
 
 # Gets all of the URLs from the webpage.
-def collect_urls(data, url, settings):
+def collect_urls(data, url, settings:CrawlSettings):
     try:
         url_elements = data.select("a[href]")
         for url_element in url_elements:
@@ -165,6 +165,7 @@ def collect_urls(data, url, settings):
                     site_link_data.cookies = url.cookies
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
+                    settings.deep = False
                     orchestrator_function(site_link_data, settings)
 
     except Exception as error:
@@ -195,26 +196,34 @@ def get_page_content(data, settings: CrawlSettings):
 def get_page_media_with_topics(data, topics: list[str]):
     try:
         media_settings = config.ENTITY_SETTINGS.get("media_settings", {})
-        # Extract target classes for p and img
         target_p_classes = media_settings.get("p_class", [])
         target_img_classes = media_settings.get("img_class", [])
 
-        # Initialize sets to store unique texts and filtered image links
-        content = "".join(
-            [paragraph_text for paragraph_text in set(
-                element.text
-                for element in data.select(", ".join(str(s) for s in [parent_div_class + " p" for parent_div_class in target_p_classes]))
-            ) if any(topic in paragraph_text for topic in topics)]
-        )
-        relevant_text = " ".join(re.sub("[\t\n]", "", content).split()).strip()
+        # Extract relevant text
+        relevant_texts = set()
+        for p_class in target_p_classes:
+            for div in data.find_all("div", class_=p_class):
+                for p_tag in div.find_all("p"):
+                    paragraph_text = p_tag.get_text(strip=True)
+                    if any(topic.lower() in paragraph_text.lower() for topic in topics):
+                        relevant_texts.add(paragraph_text)
 
-        imgs_links = [
-            src if src.startswith(('http', 'https')) else urljoin(base_url, src) 
-            for src in set(img.src for img in data.select(
-                ", ".join(str(s) for s in [parent_div_class + " img" for parent_div_class in target_img_classes])
-                )
-            ) if "logo" not in src and validators.url(urljoin(base_url, src))]
-        return relevant_text, imgs_links
+        relevant_text = " ".join(
+            re.sub(r"[\t\n]+", " ", text).strip() for text in relevant_texts
+        )
+
+        # Extract and validate image links
+        imgs_links = set()
+        for img_class in target_img_classes:
+            for div in data.find_all("div", class_=img_class):
+                for img_tag in div.find_all("img"):
+                    src = img_tag.get("src")
+                    if src:
+                        img_url = urljoin(base_url, src)
+                        if validators.url(img_url) and "logo" not in img_url.lower():
+                            imgs_links.add(img_url)
+
+        return relevant_text, list(imgs_links)
     
     except Exception as error:
         raise HTTPException(

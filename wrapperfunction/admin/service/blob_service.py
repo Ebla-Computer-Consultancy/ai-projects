@@ -23,7 +23,7 @@ async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, meta
                     folder_name = subfolder_name,
                     metadata_1 = metadata_1,
                     metadata_2= metadata_2,
-                    metadata_3= IndexingType.NOT_CRAWLED,
+                    metadata_3= IndexingType.NOT_CRAWLED.value,
                     metadata_4= metadata_4)
     return JSONResponse(
             content={
@@ -36,14 +36,14 @@ def append_blob(
     blob_name: str,
     blob: str,
     container_name=config.BLOB_CONTAINER_NAME,
-    folder_name: str = config.SUBFOLDER_NAME,
+    folder_name: str = config.SUBFOLDER_NAME ,
     metadata_1=None,
     metadata_2=None,
-    metadata_3: IndexingType = IndexingType.CRAWLED,
+    metadata_3: IndexingType = IndexingType.CRAWLED.value,
     metadata_4=None,
 ):
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
-    if metadata_3 == IndexingType.CRAWLED or metadata_3 == IndexingType.GENERATED:
+    if metadata_3 == IndexingType.CRAWLED.value or metadata_3 == IndexingType.GENERATED.value:
         blob_client.upload_blob(blob, blob_type=BlobType.AppendBlob, overwrite=True)
     else:
         blob_client.upload_blob(blob, overwrite=True)

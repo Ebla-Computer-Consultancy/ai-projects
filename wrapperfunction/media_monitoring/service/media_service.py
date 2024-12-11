@@ -16,7 +16,7 @@ from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as
 
 async def generate_report(search_text: str):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}. provide the resources and dates",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
         chat_history = [{"role": "system", "content": chat_settings.system_message}]

@@ -6,7 +6,7 @@ from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
 
-@router.post("/generate_report/")
+@router.post("/generate-report/")
 async def generate_report(request:MediaRequest):
     try:
         return await media_service.generate_report(request.search_text)
