@@ -43,25 +43,25 @@ def orchestrator_function(
     settings: CrawlSettings,
 ):
     try:
-        if ".pdf" in url.link:
-            request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
-            content = inline_read_scanned_pdf(None, request_pdf_file.content)
+        # if ".pdf" in url.link:
+        #     request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
+        #     content = inline_read_scanned_pdf(None, request_pdf_file.content)
             
-            site_data = {
-                "url": url.link,
-                "title": get_page_title(url.link),
-                "content": content,
-            }
-            settings.deep = False
-        else:
-            data = crawl_site(
-                url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
-            )
-            site_data = {
-                "url": url.link,
-                "title": get_page_title(url.link, data),
-                "content": get_page_content(data, settings),
-            }
+        #     site_data = {
+        #         "url": url.link,
+        #         "title": get_page_title(url.link),
+        #         "content": content,
+        #     }
+        #     settings.deep = False
+        # else:
+        data, response = crawl_site(
+            url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
+        )
+        site_data = {
+            "url": url.link,
+            "title": data if response.headers.get('content-type') == 'application/pdf' else get_page_title(url.link, data),
+            "content":  get_page_content(data, settings),
+        }
 
         json_data = json.dumps(site_data, ensure_ascii=False)
         blob_name = f"item_{process_text_name(url.link)}.json"
@@ -95,7 +95,10 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
-    return BeautifulSoup(response.text, "lxml")
+    if response.headers.get('content-type') == 'application/pdf':
+        return inline_read_scanned_pdf(None, response.content), response
+    else:
+        return BeautifulSoup(response.text, "lxml"), response
 
 
 def requestUrl(
