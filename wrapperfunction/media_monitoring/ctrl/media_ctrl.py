@@ -6,17 +6,17 @@ from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
 
-@router.post("/search/")
-async def media_search(request:MediaRequest):
+@router.post("/generate_report/")
+async def generate_report(request:MediaRequest):
     try:
         return await media_service.generate_report(request.search_text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/crawl/")   
+@router.post("/crawl/")
 async def media_crawl(request:MediaCrawlRequest):
     try:
-        return await media_service.media_crawl(request.topics,request.urls)
+        return await media_service.media_crawl(request.urls, request.settings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
