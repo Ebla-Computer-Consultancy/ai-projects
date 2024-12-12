@@ -60,7 +60,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             settings
         )
         #3 run indexer
-        await admin_service.runIndexer(name="rera-media-test-indexer")
+        await admin_service.runIndexer(name="rera-media")
         
         return ServiceReturn(
                             status=StatusCode.SUCCESS,

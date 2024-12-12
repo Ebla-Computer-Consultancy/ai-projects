@@ -34,9 +34,9 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             allow_domains.add(domain_name)
             orchestrator_function(url, settings)
 
-            return "crawled successfully"
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")
+    return "crawled successfully"
 
 
 def orchestrator_function(
@@ -67,11 +67,20 @@ def orchestrator_function(
                 "images_urls": imgs_links
             }
         else:
-            site_data = {
-                "url": url.link,
-                "title": get_page_title(url.link, data),
-                "content": data if response.headers.get('Content-Type') == 'application/pdf' else get_page_content(data, settings),
-            }
+            if response.headers.get('Content-Type') == 'application/pdf': 
+                site_data = {
+                    "url": url.link,
+                    "title": get_page_title(url.link, None),
+                    "content": data,
+                }
+                settings.deep = False
+            else:
+                site_data = {
+                    "url": url.link,
+                    "title": get_page_title(url.link, data),
+                    "content": get_page_content(data, settings),
+                }
+                
 
         json_data = json.dumps(site_data, ensure_ascii=False)
         blob_name = f"item_{process_text_name(url.link)}.json"
