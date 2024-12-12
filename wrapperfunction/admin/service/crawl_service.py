@@ -44,17 +44,6 @@ def orchestrator_function(
     settings: CrawlSettings,
 ):
     try:
-        # if ".pdf" in url.link:
-        #     request_pdf_file = requestUrl(url.link, cookies=url.cookies, headers=url.headers, payload=url.payload)
-        #     content = inline_read_scanned_pdf(None, request_pdf_file.content)
-            
-        #     site_data = {
-        #         "url": url.link,
-        #         "title": get_page_title(url.link),
-        #         "content": content,
-        #     }
-        #     settings.deep = False
-        # else:
         data, response = crawl_site(
             url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
@@ -70,7 +59,7 @@ def orchestrator_function(
             if response.headers.get('Content-Type') == 'application/pdf': 
                 site_data = {
                     "url": url.link,
-                    "title": get_page_title(url.link, None),
+                    "title": get_page_title(url.link),
                     "content": data,
                 }
                 settings.deep = False
