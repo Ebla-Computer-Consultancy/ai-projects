@@ -227,8 +227,7 @@ async def entity_recognition_skill(values: list):
                     "skills": entities[tak.SKILL.value],
                     "products": entities[tak.PRODUCT.value],
                     "quantities": entities[tak.QUANTITY.value],
-                    "addresses": entities[tak.ADDRESS.value],
-                    "entities": entities[tak.ENTITIES.value],
+                    "addresses": entities[tak.ADDRESS.value]
                 },
                 errors=None,
                 warnings=None
