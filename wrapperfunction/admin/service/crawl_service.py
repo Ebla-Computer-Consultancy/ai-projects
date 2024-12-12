@@ -69,8 +69,8 @@ def orchestrator_function(
         else:
             site_data = {
                 "url": url.link,
-                "title": data if response.headers.get('content-type') == 'application/pdf' else get_page_title(url.link, data),
-                "content":  get_page_content(data, settings),
+                "title": get_page_title(url.link, data),
+                "content": data if response.headers.get('Content-Type') == 'application/pdf' else get_page_content(data, settings),
             }
 
         json_data = json.dumps(site_data, ensure_ascii=False)
