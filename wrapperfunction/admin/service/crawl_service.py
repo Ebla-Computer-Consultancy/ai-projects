@@ -79,6 +79,7 @@ def orchestrator_function(
             folder_name=SUBFOLDER_NAME,
             blob_name=blob_name,
             blob=json_data,
+            container_name="rera-media" if settings.mediaCrawling else None,
             metadata_1=url.link[:-1],
             metadata_2=url.link,
             metadata_3=IndexingType.CRAWLED.value,
