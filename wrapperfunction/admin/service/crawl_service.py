@@ -79,7 +79,7 @@ def orchestrator_function(
             folder_name=SUBFOLDER_NAME,
             blob_name=blob_name,
             blob=json_data,
-            container_name="rera-media" if settings.mediaCrawling else None,
+            container_name=settings.containerName,
             metadata_1=url.link[:-1],
             metadata_2=url.link,
             metadata_3=IndexingType.CRAWLED.value,
@@ -166,7 +166,6 @@ def collect_urls(data, url, settings:CrawlSettings):
                     site_link_data.cookies = url.cookies
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
-                    settings.deep = False
                     orchestrator_function(site_link_data, settings)
 
     except Exception as error:
