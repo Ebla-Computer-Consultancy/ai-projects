@@ -7,6 +7,7 @@ class CrawlSettings(BaseModel):
     selectors: set[str] = set()
     mediaCrawling: bool = False
     topics: list[str] = set()
+    containerName: str = None
 
 class IndexingType(Enum):
     CRAWLED = "crawled"

@@ -11,12 +11,10 @@ def get_search_client(search_index: str):
     return SearchClient(
         config.SEARCH_ENDPOINT, search_index, azure_credential
     )
-def get_search_indexer_client(search_index: str):
+def get_search_indexer_client():
     # Create a search client
-    azure_credential = SearchIndexerClient(config.SEARCH_KEY)
-    return SearchClient(
-        config.SEARCH_ENDPOINT, search_index, azure_credential
-    )
+    return SearchIndexerClient(endpoint=config.AI_SEARCH_ENDPOINT, credential=AzureKeyCredential(config.AI_SEARCH_KEY))  
+
 def search_query(
     search_index,
     search_text,
@@ -86,7 +84,7 @@ def reset_indexed_data(index_name:str):
 
 def run_indexer(index_name:str):
     # Create a search client
-    search_indexer_client = get_search_indexer_client(index_name)
+    search_indexer_client = get_search_indexer_client()
     # Get indexer details
     indexers = search_indexer_client.get_indexers()
     indexer_details = next((indexer for indexer in indexers if indexer.target_index_name == index_name), None)
@@ -97,15 +95,18 @@ def run_indexer(index_name:str):
 
 def get_index_info(index_name:str):
     # Create a search index client
-    search_indexer_client = get_search_indexer_client(index_name)
+    search_indexer_client = get_search_indexer_client()  
+    
     # Get indexer details
     indexers = search_indexer_client.get_indexers()
     indexer_details = next((indexer for indexer in indexers if indexer.target_index_name == index_name), None)
+    
     # Get data source details
     data_source = search_indexer_client.get_data_source_connection(indexer_details.data_source_name)
     data_source_name = data_source.name
     data_source_type = data_source.type
     data_storage_name = data_source.container.name
+    
     # Get skillset name
     skillset_name = indexer_details.skillset_name if indexer_details else None
     return IndexInfo(
