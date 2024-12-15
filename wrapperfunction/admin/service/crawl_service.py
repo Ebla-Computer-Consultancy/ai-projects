@@ -22,7 +22,7 @@ crawled_sites = set()
 base_url = ""
 
 
-def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
+def crawl_urls(urls: list[CrawlRequestUrls]):
     for url in urls:
         if validators.url(url.link):
             start_with = url.link.split('//')[0]
@@ -32,7 +32,7 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             base_url = start_with + '//' + domain_name
 
             allow_domains.add(domain_name)
-            orchestrator_function(url, settings)
+            orchestrator_function(url, url.settings)
 
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")
