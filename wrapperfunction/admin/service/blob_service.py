@@ -1,5 +1,6 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
-from azure.storage.blob import BlobType
+from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
+from azure.storage.blob import BlobType,BlobBlock
 import urllib.parse
 from wrapperfunction.admin.model.crawl_settings import IndexingType
 from wrapperfunction.core import config
@@ -133,3 +134,47 @@ def delete_blobs(
                 blob_client.delete_blob()
         else:
             blob_client.delete_blob()
+
+def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdata"):
+        # Get the container client
+        container_client, _ =  get_container_client(container_name = container_name,subfolder_name = subfolder_name)    
+        for file in files:
+                # Construct the blob path
+                blob_path = f'{subfolder_name}/{file.filename}'
+            
+                # Get the blob client
+                blob_client = container_client.get_blob_client(blob=blob_path)
+                # Open the file in binary mode
+                file_size = file.file._file.getbuffer().nbytes
+                chunk_size = 4 * 1024 * 1024  # 4MB
+                blocks = []
+                block_id = 0
+                
+                while True:
+                    chunk = file.file.read(chunk_size)
+                    if not chunk:
+                        break
+                    block_id_str = f'{block_id:06d}'
+                    blob_client.stage_block(block_id_str, chunk)
+                    blocks.append(BlobBlock(block_id=block_id_str))
+                    block_id += 1
+                
+                blob_client.commit_block_list(blocks)
+
+def update_json_with_pdf_text(json_file, folder_path):
+    with open(json_file, "r", encoding="utf8") as file:
+        data = json.load(file)
+    for item in data:
+        if "pdf_url" in item:
+            item["url"] = item.pop("pdf_url")
+            pdf_filename = item["title"]
+            pdf_path = folder_path + "/" + pdf_filename
+            # Extract text from the PDF
+            extracted_text = inline_read_scanned_pdf(pdf_path)
+            # Append the extracted text to the JSON item
+            item["body"] = extracted_text
+
+    # Save the updated JSON back to the file
+    with open("updated_" + json_file[2:], "w", encoding="utf8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
