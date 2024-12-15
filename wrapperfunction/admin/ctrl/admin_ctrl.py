@@ -1,59 +1,100 @@
-from fastapi import APIRouter, HTTPException, Request
-# import wrapperfunction.admin.service.admin_service as adminservice
-from fastapi import HTTPException , File, Form
-from wrapperfunction.admin.model.indexer_model import IndexerRequest
-from wrapperfunction.admin.service import admin_service
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
+from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
+from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
+from wrapperfunction.admin.service import blob_service
+from wrapperfunction.admin.service.crawl_service import crawl_urls
+from wrapperfunction.search.service import search_service
 
-# import wrapperfunction.admin.model.crawl_model as CrawlRequest
 
 router = APIRouter()
 
-@router.post("/crawl/")
-async def crawl(request: Request):
+@router.post("/crawler/")
+def crawler(urls: list[CrawlRequestUrls]):
     try:
-        return await admin_service.crawl(request)
+        # Read the content of the file
+        return crawl_urls(urls)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/delete_subfolder/")
-async def delete_subfolder(request: Request):
+@router.post("/upload_blobs/")
+async def add_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile] = File()):
     try:
-        return await admin_service.delete_subfolder(request)
+        json_files=[]
+        pdf_files=[]
+        for file in files:
+            if file.content_type == "application/pdf":
+                pdf_files.append(file)
+                # json_files.append(inline_read_scanned_pdf(file))
+            else:
+                json_files.append(file)
+        blob_service.upload_files_to_blob(pdf_files, container_name, subfolder_name="pdfdata")
+        await blob_service.add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, json_files)
+        return {"message": "Files uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/delete_blob/")
-async def delete_blob(request: Request):
+@router.post("/get_blobs/{container_name}")
+async def get_blobs(container_name: str, subfolder_name: str = None):
     try:
-        return await admin_service.delete_blob(request)
+        return blob_service.get_blobs_name(container_name=container_name, subfolder_name=subfolder_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @router.post("/edit_blob/")
-# async def edit_blob(metadata_key: str, metadata_value: str,
-#                     new_content_file: UploadFile = File()):
-#     try:
-#         # Read the content of the file
-#         return admin_service.edit_blob(new_content_file,metadata_key,metadata_value)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-@router.post("/add_pdfs/")
-async def add_pdfs(request: Request):
+@router.delete("/delete_subfolder")
+async def delete_subfolder(container_name: str, subfolder_name: str):
     try:
-        return await admin_service.add_pdfs()
+        return await blob_service.delete_subfolder(container_name, subfolder_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
+@router.delete("/delete_blob_by_metadata")
+async def delete_blob_by_metadata(metadata_key: str, metadata_value: str):
+    try:
+        return await blob_service.delete_blob_by_metadata(metadata_key, metadata_value)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete_blob_by_list_of_titles")
+async def delete_blob_by_list_of_titles(blobs_name_list: list[str],subfolder_name:str, container_name:str): # not working
+    try:
+        return await blob_service.delete_blob_by_list_of_title(blobs_name_list = blobs_name_list,subfolder_name=subfolder_name, container_name=container_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/reset_index/{index_name}")
+async def reset_index(index_name: str):
+    try:
+        return search_service.reset_index(index_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/reset_index/{index_name}/{value}/{key}")
+async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
+    try:
+        return search_service.delete_indexes(index_name, key="chunk_id", value=None)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/reset-indexer/")
 async def resetIndexer(request: IndexerRequest):
     try:
-        return await admin_service.resetIndexer(request.index_name)
+        return await search_service.resetIndexer(request.index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/run-indexer/")
-async def runIndexer(request: IndexerRequest):
+@router.post("/run_indexer/{index_name}")
+async def run_indexer(index_name: str):
     try:
-        return await admin_service.runIndexer(request.index_name)
+        return search_service.run_indexer(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/index-info/{index_name}", response_model=IndexInfo)
+async def index_info(index_name: str):
+    try:
+        return search_service.index_info(index_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
