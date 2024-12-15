@@ -13,7 +13,7 @@ from wrapperfunction.core.utls.helper import clean_text
 
 async def generate_report(search_text: str):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}, note: add resources an dates",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
         print(chat_settings.index_name)
