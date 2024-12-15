@@ -1,5 +1,4 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
-from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from azure.storage.blob import BlobType,BlobBlock
 import urllib.parse
 from wrapperfunction.admin.model.crawl_settings import IndexingType
@@ -70,9 +69,7 @@ async def delete_blob_by_metadata(metadata_key, metadata_value):
     if not metadata_key or not metadata_value:
         raise HTTPException(status_code=400, detail="Missing required parameters")
     try:
-        print(metadata_value)
         metadata_value_ = unquote(metadata_value)
-        print(metadata_value_)
         delete_blobs(metadata_key=metadata_key, metadata_value=metadata_value)
         return JSONResponse(
             content={
@@ -160,21 +157,4 @@ def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdat
                     block_id += 1
                 
                 blob_client.commit_block_list(blocks)
-
-def update_json_with_pdf_text(json_file, folder_path):
-    with open(json_file, "r", encoding="utf8") as file:
-        data = json.load(file)
-    for item in data:
-        if "pdf_url" in item:
-            item["url"] = item.pop("pdf_url")
-            pdf_filename = item["title"]
-            pdf_path = folder_path + "/" + pdf_filename
-            # Extract text from the PDF
-            extracted_text = inline_read_scanned_pdf(pdf_path)
-            # Append the extracted text to the JSON item
-            item["body"] = extracted_text
-
-    # Save the updated JSON back to the file
-    with open("updated_" + json_file[2:], "w", encoding="utf8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
 

@@ -1,19 +1,19 @@
-from typing import List
-from fastapi import APIRouter, HTTPException, Request, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
-from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
-from wrapperfunction.admin.service import admin_service, blob_service
+from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
+from wrapperfunction.search.service import search_service
 
 
 router = APIRouter()
 
 @router.post("/crawler/")
-def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings):
+def crawler(urls: list[CrawlRequestUrls]):
     try:
         # Read the content of the file
-        return crawl_urls(urls, settings)
+        return crawl_urls(urls)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -23,9 +23,9 @@ async def add_blobs(container_name: str, subfolder_name: str, metadata_1: str, m
         json_files=[]
         pdf_files=[]
         for file in files:
-            # Check the file content type
             if file.content_type == "application/pdf":
                 pdf_files.append(file)
+                # json_files.append(inline_read_scanned_pdf(file))
             else:
                 json_files.append(file)
         blob_service.upload_files_to_blob(pdf_files, container_name, subfolder_name="pdfdata")
@@ -66,42 +66,35 @@ async def delete_blob_by_list_of_titles(blobs_name_list: list[str],subfolder_nam
 @router.post("/reset_index/{index_name}")
 async def reset_index(index_name: str):
     try:
-        return admin_service.reset_index(index_name)
+        return search_service.reset_index(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/reset_index/{index_name}/{value}/{key}")
 async def reset_index(index_name: str, value: str, key: str = "chunk_id"):
     try:
-        return admin_service.delete_indexes(index_name, key="chunk_id", value=None)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/run_index/{index_name}")
-async def run_index(index_name: str):
-    try:
-        return admin_service.run_index(index_name)
+        return search_service.delete_indexes(index_name, key="chunk_id", value=None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/reset-indexer/")
 async def resetIndexer(request: IndexerRequest):
     try:
-        return await admin_service.resetIndexer(request.index_name)
+        return await search_service.resetIndexer(request.index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/run-indexer/")
-async def runIndexer(request: IndexerRequest):
+@router.post("/run_indexer/{index_name}")
+async def run_indexer(index_name: str):
     try:
-        return await admin_service.runIndexer(request.index_name)
+        return search_service.run_indexer(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/index-info/{index_name}", response_model=IndexInfo)
 async def index_info(index_name: str):
     try:
-        return admin_service.index_info(index_name)
+        return search_service.index_info(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
