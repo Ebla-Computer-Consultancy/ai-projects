@@ -13,6 +13,7 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
+from wrapperfunction.search.integration.aisearch_connector import run_indexer
 
 async def generate_report(search_text: str):
     try:
@@ -57,7 +58,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             settings
         )
         #3 run indexer
-        await admin_service.runIndexer(name="rera-media")
+        await run_indexer(name="rera-media")
         
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
