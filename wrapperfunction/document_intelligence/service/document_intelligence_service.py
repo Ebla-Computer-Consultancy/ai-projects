@@ -6,7 +6,7 @@ import wrapperfunction.chatbot.service.chatbot_service as chatbotservice
 
 def inline_read_scanned_pdf(file: UploadFile | None, file_bytes: bytes = None):
     if file or file_bytes:
-        result = analyze_file(file, "prebuilt-read", file_bytes)
+        result = documentintelligenceconnector.analyze_file(file, "prebuilt-read", file_bytes)
 
         extracted_text = ""
         for page in result.pages:
