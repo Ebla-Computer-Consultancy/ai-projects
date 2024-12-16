@@ -1,27 +1,27 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
-from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from azure.storage.blob import BlobType,BlobBlock
 import urllib.parse
 from wrapperfunction.admin.model.crawl_settings import IndexingType
-from azure.ai.formrecognizer import DocumentAnalysisClient
 from wrapperfunction.core import config
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from urllib.parse import unquote
 import json
+
+from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 
 def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
 
-async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files):
+def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
     for file in files:
-        contents = await file.read()
-        #data = json.dumps(contents.decode('utf-8'), ensure_ascii=False)
-        data = json.loads(contents.decode('utf-8'))
+        contents = file.read()
+
+        data = json.dumps(json.loads(contents), ensure_ascii=False)
         append_blob(blob_name= file.filename,
-                    blob= json.dumps(data, ensure_ascii=False),
+                    blob= data,
                     container_name=container_name,
                     folder_name = subfolder_name,
                     metadata_1 = metadata_1,
@@ -172,7 +172,7 @@ def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name
         extracted_text = inline_read_scanned_pdf(file=None,file_bytes=f)
 
         data = {"ref_url":meta_url,"title":filename[:-4],"body":extracted_text}
-        json_data = json.dumps(data, ensure_ascii=False)#.encode('utf-8')
+        json_data = json.dumps(data, ensure_ascii=False)
         append_blob(blob_name= filename[:-4] + '.json',
                     blob=json_data,
                     container_name=container_name,

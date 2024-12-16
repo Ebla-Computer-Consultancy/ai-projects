@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
+from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
 from wrapperfunction.admin.service import blob_service
@@ -18,7 +17,7 @@ def crawler(urls: list[CrawlRequestUrls]):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload_blobs/")
-async def upload_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile] ):
+def upload_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile]):
     try:
         json_files=[]
         pdf_files=[]
@@ -28,13 +27,13 @@ async def upload_blobs(container_name: str, subfolder_name: str, metadata_1: str
             else:
                 json_files.append(file)
         blob_service.read_and_upload_pdfs(pdf_files, container_name, store_pdf_subfolder=subfolder_name+"_pdf",subfolder_name= subfolder_name)
-        await blob_service.add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, json_files)
+        blob_service.add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, json_files)
         return {"message": "Files uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/get_blobs/{container_name}")
-async def get_blobs(container_name: str, subfolder_name: str = None):
+def get_blobs(container_name: str, subfolder_name: str = None):
     try:
         return blob_service.get_blobs_name(container_name=container_name, subfolder_name=subfolder_name)
     except Exception as e:

@@ -10,15 +10,12 @@ python-dotenv
 pydantic
 fastapi
 azure-cognitiveservices-speech
-azure-ai-formrecognizer
 python-multipart
 azure-storage-blob
 pydub
-scrapy
 num2words
 azure-ai-documentintelligence
 azure-ai-textanalytics
 azure-data-tables
-pandas
 bs4==0.0.2
 azure-ai-vision-imageanalysis==1.0.0b2
