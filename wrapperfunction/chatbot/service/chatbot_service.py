@@ -48,6 +48,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             role=Roles.User.value,
             context=None,
         )
+
         add_messages_to_history(
             chat_payload=chat_payload,
             conversation_id=conversation_id,
@@ -72,6 +73,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             role=Roles.User.value,
             context=None,
         )
+
 
         chatbot_settings = config.load_chatbot_settings(bot_name)
         if chatbot_settings.get('enable_history', False):
