@@ -1,7 +1,9 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
+from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
 from azure.storage.blob import BlobType,BlobBlock
 import urllib.parse
 from wrapperfunction.admin.model.crawl_settings import IndexingType
+from azure.ai.formrecognizer import DocumentAnalysisClient
 from wrapperfunction.core import config
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
@@ -16,9 +18,9 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
 async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files):
     for file in files:
         contents = await file.read()
-        data = json.dumps(contents.decode('utf-8'))
+        data = json.dumps(contents.decode('utf-8'), ensure_ascii=False)
         append_blob(blob_name= file.filename,
-                    blob=data,
+                    blob= data,
                     container_name=container_name,
                     folder_name = subfolder_name,
                     metadata_1 = metadata_1,
@@ -157,4 +159,25 @@ def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdat
                     block_id += 1
                 
                 blob_client.commit_block_list(blocks)
+                metadata_storage_path =blob_client.url
+                return metadata_storage_path
 
+def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name):
+    for file in files:
+        filename = file.filename
+        meta_url=upload_files_to_blob([file], container_name= container_name,subfolder_name= store_pdf_subfolder)
+        file.file.seek(0)
+        f = file.file.read()
+        extracted_text = inline_read_scanned_pdf(file=None,file_bytes=f)
+
+        data = {"ref_url":meta_url,"title":filename[:-4],"body":extracted_text}
+        json_data = json.dumps(data, ensure_ascii=False)#.encode('utf-8')
+        append_blob(blob_name= filename[:-4] + '.json',
+                    blob=json_data,
+                    container_name=container_name,
+                    folder_name = subfolder_name,
+                    metadata_1 = None,
+                    metadata_2= None,
+                    metadata_3= IndexingType.NOT_CRAWLED.value,
+                    metadata_4= "pdf")
+        print(f"Uploaded OCR results for {filename} to Azure Storage.")
