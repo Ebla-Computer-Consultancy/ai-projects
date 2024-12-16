@@ -18,9 +18,10 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
 async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files):
     for file in files:
         contents = await file.read()
-        data = json.dumps(contents.decode('utf-8'), ensure_ascii=False)
+        #data = json.dumps(contents.decode('utf-8'), ensure_ascii=False)
+        data = json.loads(contents.decode('utf-8'))
         append_blob(blob_name= file.filename,
-                    blob= data,
+                    blob= json.dumps(data, ensure_ascii=False),
                     container_name=container_name,
                     folder_name = subfolder_name,
                     metadata_1 = metadata_1,
