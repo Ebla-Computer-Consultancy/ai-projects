@@ -94,7 +94,7 @@ def perform_sentiment_analysis():
     try:
         conversations = get_all_conversations()
         for conversation in conversations:
-            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined":
+            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined" and conversation[ConversationPropertyName.BOT_NAME.value] != "interactive":
                 conversation_id = conversation[
                     ConversationPropertyName.CONVERSATION_ID.value
                 ]
@@ -110,6 +110,7 @@ def perform_sentiment_analysis():
                     continue
                 all_message_texts = " ".join(message_texts) + " "
                 semantic_data = text_connector.analyze_sentiment([all_message_texts])
+                
                 update_conversation(
                     conversation_id,
                     {ConversationPropertyName.SENTIMENT.value: semantic_data},

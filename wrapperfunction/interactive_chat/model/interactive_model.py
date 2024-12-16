@@ -20,7 +20,7 @@ class VacationTypes(Enum):
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
     UnpaidLeave= "Unpaid Leave",
-    YearVaction="Year Vaction"
+    YearVaction="Year Vacation"
     
     def to_list():
         return[
@@ -87,7 +87,7 @@ class VacationFormEntity:
             "Start_Date":self.start_date,
             "End_Date":self.end_date,
             "Total_Days":self.total_days,
-            "Status":FormStatus.PENDING,
+            "Status":FormStatus.PENDING.value,
             "Comments":self.comments
         }
 class Status(BaseModel):
