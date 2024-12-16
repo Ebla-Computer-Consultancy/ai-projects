@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from fastapi import HTTPException
 import validators
 
-from wrapperfunction.admin.integration.skills_connector import inline_read_scanned_pdf
+from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
 from wrapperfunction.admin.service.blob_service import append_blob
@@ -22,7 +22,7 @@ crawled_sites = set()
 base_url = ""
 
 
-def crawl_urls(urls: list[CrawlRequestUrls]):
+def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     for url in urls:
         if validators.url(url.link):
             start_with = url.link.split('//')[0]
@@ -32,7 +32,7 @@ def crawl_urls(urls: list[CrawlRequestUrls]):
             base_url = start_with + '//' + domain_name
 
             allow_domains.add(domain_name)
-            orchestrator_function(url, url.settings)
+            orchestrator_function(url, url.settings if url.settings else settings)
 
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")

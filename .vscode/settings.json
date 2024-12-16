@@ -24,6 +24,7 @@
         "getall",
         "imageanalysis",
         "innertext",
+        "KHTML",
         "languageconfig",
         "linkextractors",
         "lxml",
