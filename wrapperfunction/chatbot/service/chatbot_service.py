@@ -41,20 +41,17 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             role=Roles.User.value,
             context=None,
         )
-        add_messages_to_history(
-            chat_payload=chat_payload,
-            conversation_id=conversation_id,
-            bot_name=bot_name,
-            user_message_entity=user_message_entity,
-            client_ip=client_ip,
-            forwarded_ip=forwarded_ip,
-            device_info=str(device_info),
-        )
-
-
-
-        
         chatbot_settings = config.load_chatbot_settings(bot_name)
+        if chatbot_settings.get('enable_history', False):
+            add_messages_to_history(
+                chat_payload=chat_payload,
+                conversation_id=conversation_id,
+                bot_name=bot_name,
+                user_message_entity=user_message_entity,
+                client_ip=client_ip,
+                forwarded_ip=forwarded_ip,
+                device_info=str(device_info),
+            )
         chatbot_settings.system_message = chat_history_with_system_message[
             "system_message"
         ]
@@ -85,14 +82,14 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             )
 
         # Add Messages
-        add_messages_to_history(
-            chat_payload=chat_payload,
-            conversation_id=conversation_id,
-            assistant_message_entity=assistant_message_entity,
-            bot_name=bot_name,
-            tools_message_entity=tools_message_entity,
-        )
-
+        if chatbot_settings.get('enable_history', False):
+            add_messages_to_history(
+                chat_payload=chat_payload,
+                conversation_id=conversation_id,
+                assistant_message_entity=assistant_message_entity,
+                bot_name=bot_name,
+                tools_message_entity=tools_message_entity,
+            )
         if chat_payload.stream_id is not None and results["message"]["content"] is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
             # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
