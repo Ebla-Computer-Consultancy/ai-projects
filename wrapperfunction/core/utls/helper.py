@@ -19,52 +19,6 @@ def process_text_name(txt):
     return individual_filename
 
 
-def download_pdfs(input_file, output_folder):
-    # Load the input JSON
-    with open(input_file, "r", encoding="utf8") as file:
-        data = json.load(file)
-
-    # Ensure the output folder exists
-    os.makedirs(output_folder, exist_ok=True)
-
-    for item in data:
-        if "pdf_url" in item:
-            pdf_url = item["pdf_url"]
-            title = item.get(
-                "title", pdf_url.split("/")[-1]
-            )  # Use title if available, otherwise filename from URL
-
-            # Download the PDF
-            response = requests.get(pdf_url)
-            pdf_path = os.path.join(output_folder, title)
-
-            with open(pdf_path, "wb") as pdf_file:
-                pdf_file.write(response.content)
-
-
-def download_pdfs(input_file, output_folder):
-    # Load the input JSON
-    with open(input_file, "r", encoding="utf8") as file:
-        data = json.load(file)
-
-    # Ensure the output folder exists
-    os.makedirs(output_folder, exist_ok=True)
-
-    for item in data:
-        if "pdf_url" in item:
-            pdf_url = item["pdf_url"]
-            title = item.get(
-                "title", pdf_url.split("/")[-1]
-            )  # Use title if available, otherwise filename from URL
-
-            # Download the PDF
-            response = requests.get(pdf_url)
-            pdf_path = os.path.join(output_folder, title)
-
-            with open(pdf_path, "wb") as pdf_file:
-                pdf_file.write(response.content)
-
-
 def clean_text(text: str, is_ar: bool = False):
     # Remove any pattern like [doc*], where * represents numbers
     # Remove non-readable characters (anything not a letter, number, punctuation, or whitespace)
