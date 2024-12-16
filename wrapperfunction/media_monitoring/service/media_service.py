@@ -216,7 +216,7 @@ async def entity_recognition_skill(values: list):
                     "events": entities[tak.EVENT.value],
                     "emails": entities[tak.EMAIL.value],
                     "locations": entities[tak.LOCATION.value],
-                    "phonesNumbers": entities[tak.PHONENUMBER.value],
+                    "phonesNumbers": entities[tak.PHONE_NUMBER.value],
                     "skills": entities[tak.SKILL.value],
                     "products": entities[tak.PRODUCT.value],
                     "quantities": entities[tak.QUANTITY.value],
