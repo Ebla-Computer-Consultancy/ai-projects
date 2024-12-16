@@ -32,21 +32,32 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
         "browser": user_agent_parsed.browser.family,
         "os": user_agent_parsed.os.family,
 
+
         "device_type": user_agent_parsed.device.family,
+
     }
+        conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
+        chat_history_with_system_message = prepare_chat_history_with_system_message(
+            chat_payload, bot_name
+        )
+        
         # Set user message
         user_message_entity = set_message(
             conversation_id=conversation_id,
             content=chat_history_with_system_message["chat_history"][-1]["content"],
             role=Roles.User.value,
-            context=context,
+            context=None,
         )
         add_messages_to_history(
             chat_payload=chat_payload,
             conversation_id=conversation_id,
             bot_name=bot_name,
             user_message_entity=user_message_entity,
+            client_ip=client_ip,
+            forwarded_ip=forwarded_ip,
+            device_info=str(device_info),
         )
+
 
 
 
@@ -61,6 +72,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             role=Roles.User.value,
             context=None,
         )
+
         chatbot_settings = config.load_chatbot_settings(bot_name)
         if chatbot_settings.get('enable_history', False):
             add_messages_to_history(
@@ -163,7 +175,9 @@ def set_message(conversation_id, role, content=None, tool_calls=None, context=No
             content=json.dumps(tool_call, ensure_ascii=False),
             role=Roles.Tool.value,
             context=context,
+
             tokens=len(json.dumps(tool_call), ensure_ascii=False),
+
         )
         for tool_call in tool_calls
     ]
@@ -196,7 +210,9 @@ def add_messages_to_history(
                 conv_entity=conv_entity,
             )
 
+
         elif assistant_message_entity is not None:
+
 
             add_message_to_Entity(
                 user_message_entity=None,
@@ -237,7 +253,9 @@ def add_message_to_Entity(
         asyncio.create_task(
             chat_history_service.add_entity(
 
+
                 message_entity=user_message_entity,conv_entity= conv_entity
+
 
             ),    
         )
@@ -245,7 +263,9 @@ def add_message_to_Entity(
         asyncio.create_task(
             chat_history_service.add_entity(
 
+
                assistant_entity= assistant_message_entity
+
 
 
             ),)
