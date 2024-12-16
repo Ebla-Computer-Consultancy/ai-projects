@@ -12,7 +12,9 @@ class MessagePropertyName(Enum):
     CONVERSATION_ID = "conversation_id"
     ROLE = "role"
     CONTEXT = "context"
+
     TOKENS="tokens"
+
     MessageType = "MessageType"
 
 class MessageEntity:

@@ -63,6 +63,7 @@ def get_all_conversations(bot_name: Optional[str] = None):
         return HTTPException(status_code=400, detail=str(e)) 
     
 async def add_entity(message_entity:Optional[MessageEntity]=None,assistant_entity:Optional[MessageEntity] = None,conv_entity:Optional[ConversationEntity] = None):
+
     try:
         if conv_entity:
             await db_connector.add_entity(config.CONVERSATION_TABLE_NAME,conv_entity.to_dict())
