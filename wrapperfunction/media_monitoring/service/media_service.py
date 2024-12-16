@@ -12,7 +12,6 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
-from wrapperfunction.search.integration.aisearch_connector import run_indexer
 
 async def generate_report(search_text: str):
     try:
@@ -51,16 +50,10 @@ async def generate_report(search_text: str):
 
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
-        media_settings = config.ENTITY_SETTINGS.get("media_settings", {})
-        if len(media_settings.get("supported_webpages",[])) == 0:
-            raise HTTPException(status_code=500, detail="There is no supported web pages")
-        #2 save to blob storage
         crawl_urls(
             urls,
             settings
         )
-        #3 run indexer
-        await run_indexer(name="rera-media")
         
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
