@@ -2,6 +2,7 @@ import json
 import os
 from dotenv import load_dotenv
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -13,7 +14,7 @@ OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL")
 OPENAI_EMB_MODEL = os.getenv("OPENAI_EMB_MODEL")
-RERA_VOICES_CONTAINER = os.getenv("RERA_VOICES_CONTAINER")
+VOICES_CONTAINER = os.getenv("RERA_VOICES_CONTAINER")
 SPEECH_SERVICE_REGION = os.getenv("SPEECH_SERVICE_REGION")
 SPEECH_SERVICE_KEY = os.getenv("SPEECH_SERVICE_KEY")
 AVATAR_API_URL = os.getenv("AVATAR_API_URL")
@@ -22,14 +23,13 @@ AVATAR_CODE = os.getenv("AVATAR_CODE")
 AVATAR_CODE_FULL_SIZE = os.getenv("AVATAR_CODE_FULL_SIZE")
 AVATAR_VOICE_ID = os.getenv("AVATAR_VOICE_ID")
 AVATAR_VOICE_PROVIDER = os.getenv("AVATAR_VOICE_PROVIDER")
-RERA_STORAGE_ACCOUNT_NAME = os.getenv("STORAGE_ACCOUNT_NAME")
-RERA_STORAGE_CONNECTION = os.getenv("RERA_STORAGE_CONNECTION")
-RERA_CONTAINER_NAME = os.getenv("BLOB_CONTAINER_NAME")
-RERA_SUBFOLDER_NAME = os.getenv("SUBFOLDER_NAME")
-RERA_DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
+STORAGE_ACCOUNT_NAME = os.getenv("STORAGE_ACCOUNT_NAME")
+STORAGE_CONNECTION = os.getenv("RERA_STORAGE_CONNECTION")
+BLOB_CONTAINER_NAME = os.getenv("BLOB_CONTAINER_NAME")
+SUBFOLDER_NAME = os.getenv("SUBFOLDER_NAME")
+DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
 DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
-SYSTEM_MESSAGE=os.getenv('SYSTEM_MESSAGE')
 ENTITY_NAME = os.getenv("ENTITY_NAME")
 CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
 MESSAGE_TABLE_NAME=os.getenv("COSMOS_MESSAGE_TABLE")
@@ -41,6 +41,7 @@ AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
     if os.path.exists(file_path):
@@ -69,11 +70,11 @@ def load_chatbot_settings(bot_name: str):
                                              max_history_length=max_history_length,
                                             )
             chatbot = ChatbotSetting(
-                name = chatbot_obj["name"],
-                index_name = chatbot_obj.get("index_name", None),
-                system_message = chatbot_obj["system_message"],
-                examples = chatbot_obj.get("examples", []),
-                custom_settings = custom_settings,
+                name=chatbot_obj["name"],
+                index_name=chatbot_obj.get("index_name", None),
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj.get("examples", []),
+                custom_settings=custom_settings,
             )
             return chatbot
 
