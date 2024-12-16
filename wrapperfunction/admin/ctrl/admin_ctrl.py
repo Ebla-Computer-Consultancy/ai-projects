@@ -18,17 +18,16 @@ def crawler(urls: list[CrawlRequestUrls]):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload_blobs/")
-async def add_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile] = File()):
+async def upload_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile] ):
     try:
         json_files=[]
         pdf_files=[]
         for file in files:
             if file.content_type == "application/pdf":
                 pdf_files.append(file)
-                # json_files.append(inline_read_scanned_pdf(file))
             else:
                 json_files.append(file)
-        blob_service.upload_files_to_blob(pdf_files, container_name, subfolder_name="pdfdata")
+        blob_service.read_and_upload_pdfs(pdf_files, container_name, store_pdf_subfolder=subfolder_name+"_pdf",subfolder_name= subfolder_name)
         await blob_service.add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, json_files)
         return {"message": "Files uploaded successfully"}
     except Exception as e:
