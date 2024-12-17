@@ -1,20 +1,15 @@
 import asyncio
 import json
-from typing import Optional
 import uuid
 from fastapi import Request
-from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
-from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.model.chat_message import Roles
-from wrapperfunction.chatbot.model.third_user_types_model import ThirdUserTypes
+from wrapperfunction.chatbot.model.third_user_model import ThirdUserTypes
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
-from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.utls.helper import extract_client_details
-from wrapperfunction.document_intelligence.service.document_intelligence_service import analyze_file
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:

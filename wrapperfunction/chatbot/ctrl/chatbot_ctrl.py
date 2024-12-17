@@ -1,7 +1,8 @@
 from wrapperfunction.chat_history.service.chat_history_service import upload_documents
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from fastapi import APIRouter, Request, HTTPException,UploadFile
-from wrapperfunction.chatbot.model.investigation_model import ThirdUserAction
+
+from wrapperfunction.chatbot.model.third_user_model import ThirdUserAction
 import wrapperfunction.chatbot.service.chatbot_service as chatbotservice
 from typing import List, Optional
 
