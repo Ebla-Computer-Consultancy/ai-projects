@@ -3,7 +3,7 @@ import json
 from typing import Optional
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
-from wrapperfunction.chatbot.model.third_user_types_model import ThirdUserTypes
+from wrapperfunction.chatbot.model.third_user_model import ThirdUserTypes
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
