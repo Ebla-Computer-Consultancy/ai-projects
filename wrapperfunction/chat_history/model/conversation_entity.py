@@ -13,9 +13,11 @@ class ConversationPropertyName(Enum):
     BOT_NAME = "bot_name"
     TITLE = "title"
 
+
     CLIENT_IP="client_ip"
     FORWARDED_IP="forwarded_ip"
     DEVICE_INFO="device_info"
+
 
     
 

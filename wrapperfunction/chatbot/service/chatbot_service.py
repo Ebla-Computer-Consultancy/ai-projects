@@ -178,7 +178,9 @@ def set_message(conversation_id, role, content=None, tool_calls=None, context=No
             role=Roles.Tool.value,
             context=context,
 
+
             tokens=len(json.dumps(tool_call), ensure_ascii=False),
+
 
         )
         for tool_call in tool_calls
