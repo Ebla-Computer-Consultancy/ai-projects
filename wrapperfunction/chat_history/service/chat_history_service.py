@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 import uuid
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
@@ -18,13 +19,14 @@ from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
 
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
+from wrapperfunction.interactive_chat.model.interactive_model import FormStatus
 
 
 
 
 def get_conversations(user_id):
     try:
-        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.name} eq '{user_id}'")     
+        res=db_connector.get_entities(config.CONVERSATION_TABLE_NAME,f"{ConversationPropertyName.USER_ID.value} eq '{user_id}'")     
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
@@ -39,7 +41,6 @@ def get_conversation_data(conversation_id):
 
 def get_messages(conversation_id):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
         return res
     except Exception as e:
@@ -67,11 +68,13 @@ async def add_entity(message_entity:MessageEntity,assistant_entity:Optional[Mess
     try:
         if conv_entity:
             await db_connector.add_entity(config.CONVERSATION_TABLE_NAME,conv_entity.to_dict())
+        await db_connector.add_entity(config.MESSAGE_TABLE_NAME,message_entity.to_dict())    
         if assistant_entity:
-            await db_connector.add_entity(config.MESSAGE_TABLE_NAME,assistant_entity.to_dict())
+            asyncio.sleep(1)
+            await db_connector.add_entity(config.MESSAGE_TABLE_NAME, assistant_entity.to_dict())
 
-        await db_connector.add_entity(config.MESSAGE_TABLE_NAME,message_entity.to_dict())
-        
+
+
 
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))   
@@ -91,10 +94,12 @@ def perform_sentiment_analysis():
     try:
         conversations = get_all_conversations()
         for conversation in conversations:
-            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined":
+            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined" and conversation[ConversationPropertyName.BOT_NAME.value] != "interactive":
                 conversation_id = conversation[
                     ConversationPropertyName.CONVERSATION_ID.value
                 ]
+                if not conversation_id:
+                    continue
                 messages = get_user_messages(conversation_id)
                 message_texts = [
                     msg[MessagePropertyName.CONTENT.value]
@@ -105,6 +110,7 @@ def perform_sentiment_analysis():
                     continue
                 all_message_texts = " ".join(message_texts) + " "
                 semantic_data = text_connector.analyze_sentiment([all_message_texts])
+                
                 update_conversation(
                     conversation_id,
                     {ConversationPropertyName.SENTIMENT.value: semantic_data},
@@ -169,12 +175,13 @@ def get_vactions_filter_by(coulomn_name,value):
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
-def update_Status(employee_ID: str, status: str):
+def update_Status(employee_ID: str, status: int):
     try:
         forms = get_vactions_filter_by("Employee_ID",employee_ID)
         if forms:
             for form in forms:
-                form.update({"Status":status,"Comments":f"{status} by Manager"})
+                
+                form.update({"Status":status,"Comments":f"{FormStatus(status).name} by Manager"})
                 db_connector.update_entity(config.COSMOS_VACATION_TABLE, form)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

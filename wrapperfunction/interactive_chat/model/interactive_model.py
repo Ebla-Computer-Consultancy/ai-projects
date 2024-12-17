@@ -10,18 +10,25 @@ class Prompt(BaseModel):
 class SubmitForm(BaseModel):
     form:dict
 
+class FormStatus(Enum):
+    APPROVED = 0
+    REJECTED = 1
+    PENDING = 2
+    
 class VacationTypes(Enum):
     SickLeave="Sick Leave"
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
-    UnpaidLeave= "Unpaid Leave"
+    UnpaidLeave= "Unpaid Leave",
+    YearVaction="Year Vacation"
     
     def to_list():
         return[
            VacationTypes.SickLeave.value,
            VacationTypes.PersonalLeave.value,
            VacationTypes.PublicHolidays.value,
-           VacationTypes.UnpaidLeave.value
+           VacationTypes.UnpaidLeave.value,
+           VacationTypes.YearVaction
         ]
 
 class DepartmentTypes(Enum):
@@ -46,7 +53,6 @@ class VacationForm(BaseModel):
     employee_department: str
     start_date: str
     end_date: str
-    status: str
     comments: str
 
 class VacationFormEntity:
@@ -57,18 +63,16 @@ class VacationFormEntity:
     employee_department: str,
     start_date: str,
     end_date: str,
-    status: str,
     comments: str):
         self.vacation_type = vacation_type
         self.employee_name = employee_name
         self.employee_ID = employee_ID
         self.manager_name = manager_name
         self.employee_department = employee_department
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        self.end_date = datetime.strptime(end_date, '%Y-%m-%d')
         self.total_days = (datetime.strptime(end_date, '%Y-%m-%d') - 
                        datetime.strptime(start_date, '%Y-%m-%d')).days
-        self.status = status
         self.comments = comments
     
     def to_dict(self):
@@ -83,7 +87,7 @@ class VacationFormEntity:
             "Start_Date":self.start_date,
             "End_Date":self.end_date,
             "Total_Days":self.total_days,
-            "Status":self.status,
+            "Status":FormStatus.PENDING.value,
             "Comments":self.comments
         }
 class Status(BaseModel):

@@ -39,7 +39,6 @@ class TextAnalyticsCatigories:
         self.product = product if product is not None else []
         self.quantity = quantity if quantity is not None else []
         self.address = address if address is not None else []
-        self.entities = entities if entities is not None else []
 
 
     def to_dict(self):
@@ -58,6 +57,5 @@ class TextAnalyticsCatigories:
             TextAnalyticsKEYS.SKILL.value: self.skill,
             TextAnalyticsKEYS.PRODUCT.value: self.product,
             TextAnalyticsKEYS.QUANTITY.value: self.quantity,
-            TextAnalyticsKEYS.ADDRESS.value: self.address,
-            TextAnalyticsKEYS.ENTITIES.value: self.entities
+            TextAnalyticsKEYS.ADDRESS.value: self.address
         }
