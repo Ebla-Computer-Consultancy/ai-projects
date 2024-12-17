@@ -138,10 +138,10 @@ def set_message(conversation_id, role, content=None, tool_calls=None, context=No
     return [
         MessageEntity(
             conversation_id=conversation_id,
-            content=json.dumps(tool_call),
+            content=json.dumps(tool_call, ensure_ascii=False),
             role=Roles.Tool.value,
             context=context,
-            tokens=len(json.dumps(tool_call)),
+            tokens=len(json.dumps(tool_call), ensure_ascii=False),
         )
         for tool_call in tool_calls
     ]
@@ -279,7 +279,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
         ):
             tool = json.loads(item["content"])
             tool["id"] = chat_payload.conversation_id
-            tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"])
+            tool["function"]["arguments"] = json.dumps(tool["function"]["arguments"], ensure_ascii=False)
             chat_history.append({"role": "assistant", "tool_calls": [tool]})
             msg["tool_call_id"] = chat_payload.conversation_id
         chat_history.append(msg)

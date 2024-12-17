@@ -12,9 +12,9 @@ class ConversationPropertyName(Enum):
     FEEDBACK = "feedback"
     BOT_NAME = "bot_name"
     TITLE = "title"
-    client_ip="client_ip"
-    forwarded_ip="forwarded_ip"
-    device_info="device_info"
+    CLIENT_IP="client_ip"
+    FORWARDED_IP="forwarded_ip"
+    DEVICE_INFO="device_info"
     
 
 class ConversationEntity:
