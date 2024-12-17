@@ -6,6 +6,8 @@ from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPerm
 from wrapperfunction.core import config
 
 
+
+
 async def upload_to_blob_container(
     file: UploadFile, connection_string: str, container_name: str, voice_name: str
 ):
@@ -89,3 +91,7 @@ def generate_blob_sas_url(container_name: str, blob_name: str, connection_string
     except Exception as e:
         return(f"Error generating SAS URL: {str(e)}")
     
+def get_blob_service_client(container_name):
+    blob_service_client = BlobServiceClient.from_connection_string(config.RERA_STORAGE_CONNECTION)
+    container_client = blob_service_client.get_container_client(container_name)
+    return container_client
