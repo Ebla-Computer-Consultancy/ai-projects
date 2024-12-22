@@ -45,21 +45,6 @@ def delete_indexes(index_name: str, key: str, value):
     except:
         raise HTTPException(status_code=404, detail="Blob not found")
 
-async def resetIndexer(name: str):
-    try:
-        url = f"{config.SEARCH_ENDPOINT}/indexers/{name}/reset?api-version={config.OPENAI_API_VERSION}"
-        headers = {
-            "Content-Type": "application/json",
-            "api-key": config.SEARCH_KEY
-        }
-        requests.post(url=url,headers=headers)
-        return ServiceReturn(
-                            status=StatusCode.SUCCESS,
-                            message=f"{name} Indexer Reset Successfully", 
-                            ).to_dict()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 def reset_index(index_name: str):
     try:
         aisearchconnector.reset_indexed_data(index_name)

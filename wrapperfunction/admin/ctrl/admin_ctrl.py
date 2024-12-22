@@ -73,13 +73,6 @@ async def reset_index(index_name: str, value: str = None, key: str = "chunk_id")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/reset-indexer/")
-async def resetIndexer(request: IndexerRequest):
-    try:
-        return await search_service.resetIndexer(request.index_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @router.post("/run_indexer/{index_name}")
 async def run_indexer(index_name: str):
     try:
