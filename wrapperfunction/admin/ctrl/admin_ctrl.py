@@ -18,7 +18,7 @@ def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload_blobs/")
-def upload_blobs(container_name: str, subfolder_name: str, metadata_1: str, metadata_2: str, metadata_4: str, files: list[UploadFile]):
+def upload_blobs(files: list[UploadFile], container_name: str, subfolder_name: str, metadata_1: str = None, metadata_2: str = None, metadata_4: str = "pdf"):
     try:
         json_files=[]
         pdf_files=[]
