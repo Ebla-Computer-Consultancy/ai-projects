@@ -36,9 +36,9 @@ def extract_key_phrases(messages: list, language: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error in key_phrases analysis: {str(e)}")
 
-def entity_recognition(messages: list, language: str):
+def entity_recognition(messages: list, language: str = "en"):
     try:
-        recognize_entities = text_analytics_client.recognize_entities(documents = messages,language="en")[0]
+        recognize_entities = text_analytics_client.recognize_entities(documents = messages,language=language)[0]
         
         results = TextAnalyticsCatigories(
             organization=[entity.text for entity in recognize_entities.entities if entity.category == tak.ORGANIZATION.value],
@@ -54,8 +54,8 @@ def entity_recognition(messages: list, language: str):
             skill=[entity.text for entity in recognize_entities.entities if entity.category == tak.SKILL.value],
             product=[entity.text for entity in recognize_entities.entities if entity.category == tak.PRODUCT.value],
             quantity=[entity.text for entity in recognize_entities.entities if entity.category == tak.QUANTITY.value],
-            address=[entity.text for entity in recognize_entities.entities if entity.category == tak.ADDRESS.value],
-            entities=recognize_entities.entities,)
+            address=[entity.text for entity in recognize_entities.entities if entity.category == tak.ADDRESS.value]
+            )
         
         return results.to_dict()
 

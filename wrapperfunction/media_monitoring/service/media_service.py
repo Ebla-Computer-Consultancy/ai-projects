@@ -9,10 +9,11 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
+from wrapperfunction.core.utls.helper import clean_text
 
 async def generate_report(search_text: str):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}, note: add resources and dates",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
         print(chat_settings.index_name)
@@ -23,8 +24,9 @@ async def generate_report(search_text: str):
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
+         
+        ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
-        
         storage_connector.upload_file_to_azure(content=chat_res["message"]["content"],
                                               connection_string= config.RERA_STORAGE_CONNECTION,
                                               container_name= "rera-media-reports",
@@ -39,6 +41,8 @@ async def generate_report(search_text: str):
             message=f"{search_text} Report Generated Successfuly",
             data={
                 "report_url": sas_url,
+                "references":list(ref),
+                "final_response": chat_res 
             }
         ).to_dict()
     except Exception as e:
@@ -227,8 +231,7 @@ async def entity_recognition_skill(values: list):
                     "skills": entities[tak.SKILL.value],
                     "products": entities[tak.PRODUCT.value],
                     "quantities": entities[tak.QUANTITY.value],
-                    "addresses": entities[tak.ADDRESS.value],
-                    "entities": entities[tak.ENTITIES.value],
+                    "addresses": entities[tak.ADDRESS.value]
                 },
                 errors=None,
                 warnings=None
