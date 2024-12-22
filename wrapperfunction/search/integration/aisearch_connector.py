@@ -13,7 +13,7 @@ def get_search_client(search_index: str):
     )
 def get_search_indexer_client():
     # Create a search client
-    return SearchIndexerClient(endpoint=config.AI_SEARCH_ENDPOINT, credential=AzureKeyCredential(config.AI_SEARCH_KEY))  
+    return SearchIndexerClient(endpoint=config.SEARCH_ENDPOINT, credential=AzureKeyCredential(config.SEARCH_KEY))  
 
 def search_query(
     search_index,

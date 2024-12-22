@@ -64,6 +64,14 @@ def append_blob(
             "type": metadata_4,
         }
         blob_metadata.update(more_blob_metadata)
+    else:
+        more_blob_metadata = {
+            "website_url": "",
+            "ref_url": encoded_url,
+            "indexing_type": metadata_3,
+            "type": metadata_4,
+        }
+        blob_metadata.update(more_blob_metadata)
 
     # Set metadata on the blob
     blob_client.set_blob_metadata(metadata=blob_metadata)
@@ -171,14 +179,14 @@ def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name
         f = file.file.read()
         extracted_text = inline_read_scanned_pdf(file=None,file_bytes=f)
 
-        data = {"ref_url":meta_url,"title":filename[:-4],"body":extracted_text}
+        data = {"url":meta_url,"title":filename[:-4],"body":extracted_text}
         json_data = json.dumps(data, ensure_ascii=False)
         append_blob(blob_name= filename[:-4] + '.json',
                     blob=json_data,
                     container_name=container_name,
                     folder_name = subfolder_name,
                     metadata_1 = None,
-                    metadata_2= None,
+                    metadata_2= meta_url,
                     metadata_3= IndexingType.NOT_CRAWLED.value,
                     metadata_4= "pdf")
         print(f"Uploaded OCR results for {filename} to Azure Storage.")
