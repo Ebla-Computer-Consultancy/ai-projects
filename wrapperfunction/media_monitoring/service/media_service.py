@@ -30,7 +30,7 @@ async def generate_report(search_text: str):
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
         append_blob(blob=chat_res["message"]["content"],
-                    metadata_3=IndexingType.GENERATED,
+                    metadata_3=IndexingType.GENERATED.value,
                     container_name= "rera-media-reports",
                     blob_name=f"{report_file_name}.txt")
         

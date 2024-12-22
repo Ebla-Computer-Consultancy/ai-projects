@@ -56,22 +56,13 @@ def append_blob(
         encoded_url = urllib.parse.quote(metadata_2)
     if metadata_4 == "link" and metadata_2 is not None:
         encoded_url = urllib.parse.unquote(encoded_url)
-    if metadata_1 is not None and metadata_2 is not None:
-        more_blob_metadata = {
-            "website_url": metadata_1,
-            "ref_url": encoded_url,
-            "indexing_type": metadata_3,
-            "type": metadata_4,
-        }
-        blob_metadata.update(more_blob_metadata)
-    else:
-        more_blob_metadata = {
-            "website_url": "",
-            "ref_url": encoded_url,
-            "indexing_type": metadata_3,
-            "type": metadata_4,
-        }
-        blob_metadata.update(more_blob_metadata)
+    more_blob_metadata = {
+        "website_url": metadata_1 if metadata_1 else "",
+        "ref_url": encoded_url if metadata_2 else "",
+        "indexing_type": metadata_3,
+        "type": metadata_4,
+    }
+    blob_metadata.update(more_blob_metadata)
 
     # Set metadata on the blob
     blob_client.set_blob_metadata(metadata=blob_metadata)

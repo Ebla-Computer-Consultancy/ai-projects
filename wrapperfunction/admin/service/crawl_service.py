@@ -1,16 +1,17 @@
+from io import BytesIO
 import json
 import re
 from urllib.parse import urljoin
 import requests
 
 from bs4 import BeautifulSoup
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 import validators
 
 from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
-from wrapperfunction.admin.service.blob_service import append_blob
+from wrapperfunction.admin.service.blob_service import append_blob, upload_files_to_blob
 from wrapperfunction.core import config
 from wrapperfunction.core.config import SUBFOLDER_NAME
 from wrapperfunction.core.utls.helper import process_text_name
@@ -62,6 +63,7 @@ def orchestrator_function(
                     "title": get_page_title(url.link),
                     "content": data,
                 }
+                upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=SUBFOLDER_NAME+'_pdf')
                 settings.deep = False
             else:
                 site_data = {
@@ -78,7 +80,7 @@ def orchestrator_function(
             blob_name=blob_name,
             blob=json_data,
             container_name=settings.containerName,
-            metadata_1=url.link[:-1],
+            metadata_1=url.link,
             metadata_2=url.link,
             metadata_3=IndexingType.CRAWLED.value,
             metadata_4="link",
