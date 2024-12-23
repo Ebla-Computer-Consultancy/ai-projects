@@ -24,7 +24,7 @@ async def generate_report(search_text: str):
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
-        chat_res["message"]["content"] = clean_text(chat_res["message"]["content"]) 
+         
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
         storage_connector.upload_file_to_azure(content=chat_res["message"]["content"],
