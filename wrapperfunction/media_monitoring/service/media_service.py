@@ -9,11 +9,10 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
-from wrapperfunction.core.utls.helper import clean_text
 
 async def generate_report(search_text: str):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}, note: add resources and dates",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
         print(chat_settings.index_name)
