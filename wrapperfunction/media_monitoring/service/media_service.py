@@ -9,7 +9,6 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
-from wrapperfunction.core.utls.helper import clean_text
 
 async def generate_report(search_text: str):
     try:
