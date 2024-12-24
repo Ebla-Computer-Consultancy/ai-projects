@@ -1,9 +1,7 @@
 import re
 from num2words import num2words
 import wrapperfunction.core.config as config
-import json
-import os
-import requests
+
 
 
 def process_text_name(txt):
@@ -58,3 +56,13 @@ def get_title(url, title=""):
 
 def sanitize_filename(filename):
     return re.sub(r'[<>:"\\|?*]', "", filename)
+
+def pdfs_files_filter(files):
+    json_files=[]
+    pdf_files=[]
+    for file in files:
+        if file.content_type == "application/pdf":
+            pdf_files.append(file)
+        else:
+            json_files.append(file)
+    return pdf_files, json_files
