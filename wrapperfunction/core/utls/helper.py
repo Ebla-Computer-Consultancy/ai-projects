@@ -59,7 +59,7 @@ def get_title(url, title=""):
 def sanitize_filename(filename):
     return re.sub(r'[<>:"\\|?*]', "", filename)
 
-def sorter(files):
+def pdfs_files_filter(files):
     json_files=[]
     pdf_files=[]
     for file in files:
