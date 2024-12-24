@@ -2,7 +2,7 @@
 import ast
 from io import BytesIO
 import json
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 import uuid
 import zipfile
 from fastapi import File, HTTPException, UploadFile
@@ -89,52 +89,61 @@ def detection(text,criteria:Optional[str] = None):
 
 
 
-def auto_split_pdf(pdf: UploadFile, criteria):
+def extract_text_from_pdf(result) -> List[str]:
+    return [
+        "\n".join([line.content for line in page.lines])
+        for page in result.pages
+    ]
+
+def get_page_ranges(full_text: str, criteria: str) -> List[List[int]]:
+    ranges = detection(full_text, criteria)
+    if not ranges or not isinstance(ranges, list):
+        raise ValueError("Invalid or empty page ranges detected.")
+    return ranges
+
+def split_pdf(reader: PdfReader, ranges: List[List[int]]) -> List[Tuple[str, BytesIO]]:
+    files = []
+    for i, (start, end) in enumerate(ranges):
+        writer = PdfWriter()
+        for page_num in range(start - 1, end):
+            if page_num < len(reader.pages):
+                writer.add_page(reader.pages[page_num])
+        temp_file = BytesIO()
+        writer.write(temp_file)
+        temp_file.seek(0)
+        files.append((f"split_{i + 1}.pdf", temp_file))
+    return files
+
+def create_zip(files: List[Tuple[str, BytesIO]]) -> BytesIO:
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for file_name, file_content in files:
+            zip_file.writestr(file_name, file_content.read())
+    zip_buffer.seek(0)
+    return zip_buffer
+
+def upload_to_storage( zip_buffer: BytesIO) -> str:
+    container_client=storageconnector.get_blob_service_client(config.SPLITER_CONTAINER_NAME)
+    blob_name = f"{uuid.uuid4()}.zip"
+    blob_response = container_client.upload_blob(name=blob_name, data=zip_buffer, overwrite=True)
+    return blob_response.url
+
+def auto_split_pdf(pdf: UploadFile, criteria: str) -> Dict:
     try:
-        result = documentintelligenceconnector.analyze_file(pdf)
-        
-        text_per_page = []
-        for page in result.pages:
-            page_text = "\n".join([line.content for line in page.lines])
-            text_per_page.append(page_text)
-
+        result =documentintelligenceconnector.analyze_file(pdf)
+        text_per_page = extract_text_from_pdf(result)
         full_text = "\n".join(f"Page {i + 1}:\n{text}" for i, text in enumerate(text_per_page))
-
-        pages = detection(full_text, criteria)
-        pages.append([len(result.pages) + 1])
-
+        page_ranges = get_page_ranges(full_text, criteria)
+        page_ranges.append([len(result.pages) + 1])
         reader = PdfReader(pdf.file)
-        files = []
-
-        for i in range(len(pages) - 1):
-            writer = PdfWriter()
-
-            if i + 1 < len(pages):
-                for j in range(pages[i][0] - 1, pages[i + 1][0] - 1):
-                    if j < len(reader.pages):
-                        writer.add_page(reader.pages[j])
-
-                temp_file = BytesIO()
-                writer.write(temp_file)
-                temp_file.seek(0)
-                files.append((f"split_{i + 1}.pdf", temp_file))
-
-        zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file_name, file_content in files:
-                zip_file.writestr(file_name, file_content.read())
-        zip_buffer.seek(0)
-
-        container_client = storageconnector.get_blob_service_client(config.SPLITER_CONTAINER_NAME)
-        blob_name = f"{uuid.uuid4()}.zip"
-        response = container_client.upload_blob(name=blob_name, data=zip_buffer, overwrite=True)
-
+        split_files = split_pdf(reader, page_ranges[:-1])
+        zip_buffer = create_zip(split_files)
+        zip_url = upload_to_storage(zip_buffer)
         return {
             "status": "success",
             "message": "Zip file uploaded successfully",
-            "url": f"{response.url}",
-            "ranges": pages,
+            "url": zip_url,
+            "ranges": page_ranges[:-1],
         }
-
     except Exception as e:
         return {"status": "error", "message": str(e)}
