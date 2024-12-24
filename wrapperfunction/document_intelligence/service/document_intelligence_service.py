@@ -2,8 +2,6 @@
 import ast
 from io import BytesIO
 import json
-import os
-import tempfile
 from typing import Optional
 import uuid
 import zipfile
@@ -53,13 +51,12 @@ def get_openai_instruction(prompt):
 
     try:
         response = openaiconnector.client.chat.completions.create(
-            engine=config.OPENAI_CHAT_MODEL,  
+            model=config.OPENAI_CHAT_MODEL,  
             messages=[{"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}],
-            max_tokens=100,
-            temperature=0.5,
+            temperature=0.4,
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message.content
     except Exception as e:
         return f"Error with Azure OpenAI API: {e}"
 
@@ -80,62 +77,64 @@ def detection(text,criteria:Optional[str] = None):
     f"{text}"
 )
     try:
-        response = openaiconnector.client.chat.completions.create( 
-            model=config.OPENAI_CHAT_MODEL, 
-            messages=[ 
-                {"role": "system", "content": "You are a helpful assistant."}, 
-                {"role": "user", "content": prompt} 
-            ], 
-            max_tokens=200, 
-            temperature=0.4, 
-        )
-        content = response.choices[0].message.content  
-        return list(ast.literal_eval(content))
+        content=get_openai_instruction(prompt)
+        ranges = ast.literal_eval(content)
+        if isinstance(ranges, list) and all(isinstance(r, list) and len(r) == 2 for r in ranges):
+            return ranges
+        else:
+            raise ValueError("Invalid response format from OpenAI.")
     except Exception as e:
-        return f"Error with Azure OpenAI API: {e}"
+        return []
+
 
 
 
 def auto_split_pdf(pdf: UploadFile, criteria):
     try:
-        result = documentintelligenceconnector.analyze_file(pdf) 
+        result = documentintelligenceconnector.analyze_file(pdf)
+        
         text_per_page = []
         for page in result.pages:
             page_text = "\n".join([line.content for line in page.lines])
             text_per_page.append(page_text)
 
-        full_text = "\n".join(f"Page {i+1}:\n{text}" for i, text in enumerate(text_per_page))
-
+        full_text = "\n".join(f"Page {i + 1}:\n{text}" for i, text in enumerate(text_per_page))
 
         pages = detection(full_text, criteria)
-        pages.append([len(result.pages) + 1]) 
-
+        pages.append([len(result.pages) + 1])
 
         reader = PdfReader(pdf.file)
         files = []
+
         for i in range(len(pages) - 1):
             writer = PdfWriter()
 
-            for j in range(pages[i][0] - 1, pages[i + 1][0] - 1):
-                writer.add_page(reader.pages[j])
+            if i + 1 < len(pages):
+                for j in range(pages[i][0] - 1, pages[i + 1][0] - 1):
+                    if j < len(reader.pages):
+                        writer.add_page(reader.pages[j])
 
-            output_file_path = f"{i + 1}.pdf"
-            with open(output_file_path, "wb") as output_file:
-                writer.write(output_file)
-            files.append(output_file_path)
-
+                temp_file = BytesIO()
+                writer.write(temp_file)
+                temp_file.seek(0)
+                files.append((f"split_{i + 1}.pdf", temp_file))
 
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file in files:
-                zip_file.write(file, os.path.basename(file))
-                os.remove(file)  
+            for file_name, file_content in files:
+                zip_file.writestr(file_name, file_content.read())
         zip_buffer.seek(0)
 
         container_client = storageconnector.get_blob_service_client(config.SPLITER_CONTAINER_NAME)
-        response = container_client.upload_blob(f"{uuid.uuid4()}.zip", zip_buffer, overwrite=True)
+        blob_name = f"{uuid.uuid4()}.zip"
+        response = container_client.upload_blob(name=blob_name, data=zip_buffer, overwrite=True)
 
-        return {"status": "success", "message": "Zip file uploaded successfully", "url": f"{response.url}", "ranges": f"{pages}"}
+        return {
+            "status": "success",
+            "message": "Zip file uploaded successfully",
+            "url": f"{response.url}",
+            "ranges": pages,
+        }
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
