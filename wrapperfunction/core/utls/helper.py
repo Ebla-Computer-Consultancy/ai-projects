@@ -1,9 +1,7 @@
 import re
 from num2words import num2words
 import wrapperfunction.core.config as config
-import json
-import os
-import requests
+
 
 
 def process_text_name(txt):

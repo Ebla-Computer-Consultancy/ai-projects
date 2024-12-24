@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
-from wrapperfunction.admin.model.indexer_model import IndexInfo, IndexerRequest
+from wrapperfunction.admin.model.indexer_model import IndexInfo
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.search.service import search_service
