@@ -58,3 +58,13 @@ def get_title(url, title=""):
 
 def sanitize_filename(filename):
     return re.sub(r'[<>:"\\|?*]', "", filename)
+
+def sorter(files):
+    json_files=[]
+    pdf_files=[]
+    for file in files:
+        if file.content_type == "application/pdf":
+            pdf_files.append(file)
+        else:
+            json_files.append(file)
+    return pdf_files, json_files
