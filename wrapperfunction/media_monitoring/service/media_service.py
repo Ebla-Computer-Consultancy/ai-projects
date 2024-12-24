@@ -12,11 +12,10 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
-from wrapperfunction.core.utls.helper import clean_text
 
 async def generate_report(search_text: str):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}, note: add resources and dates",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
         
         chat_settings = config.load_chatbot_settings(bot_name="media")
         chat_history = [{"role": "system", "content": chat_settings.system_message}]
@@ -26,7 +25,7 @@ async def generate_report(search_text: str):
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
-        chat_res["message"]["content"] = clean_text(chat_res["message"]["content"]) 
+         
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
         append_blob(blob=chat_res["message"]["content"],
