@@ -57,20 +57,6 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
 
         #   "content": "{'manufacturer':{'producer':'','supplier':'','company-name':'','manufacturer-supplier':'','manufacturers-name-and-Address':''},'trade-name':{'product-name':'','commercial-name':'','brand-name':'','product-identifier':'','proprietary-name':'','common-name':''},'chemical-name':{'substance-name':'','scientific-name':'','iupac-name':'','proper-Chemical-name':'','systematic-name':''},'cas-no':{'cas-registry-number':'','chemical-abstracts-service-number':'','cas-number':'','cas-identification-number':'','cas-rn':''},'state':{'physical-state':'','form':'','appearance':'','condition-Solid-Liquid-Gas':'','state-of-matter':''},'storage-condition':{'storage-requirements':'','storage-guidelines':'','storage-instructions':'','storage-information':'','storage-recommendations':''},'prevention-method':{'preventative-measures':'','safety-precautions':'','preventive-actions':'','hazard-prevention':'','precautionary-measures':''},'control-method':{'control-measures':'','exposure-controls':'','protection-measures':'','control-procedures':'','engineering-controls':''},'classification':{'hazard-classification':'','risk-classification':'','hazard-category':'','hazard-class':'','ghs-classification-globally-harmonized-system':''},'hs-code':{'harmonized-system-code':'','harmonized-tariff-code':'','hts-code':'','customs-code':'','tariff-code':''},'un-no':{'un-number':'','un-identification-number':'','united-nations-number':'','un-id':'','un-hazard-number':''}}"
 
-def get_openai_instruction(prompt, bot_name):
-    chat_history = [
-        {"role": "user", "content": prompt},
-    ]
-    chatbot_settings = config.load_chatbot_settings(bot_name)
-
-    try:
-        response = openaiconnector.chat_completion(chatbot_settings, chat_history)
-       
-        return response['message']['content']
-    except Exception as e:
-        return {"error": f"Error with Azure OpenAI API: {e}"}
-
-
 def detection(text,bot_name,criteria:Optional[str] = None):
     if not criteria:
         prompt = (
@@ -87,7 +73,7 @@ def detection(text,bot_name,criteria:Optional[str] = None):
     f"{text}"
 )
     try:
-        content=get_openai_instruction(prompt,bot_name)
+        content=chatbotservice.get_openai_instruction(prompt,bot_name)
         ranges = ast.literal_eval(content)
         if isinstance(ranges, list) and all(isinstance(r, list) and len(r) == 2 for r in ranges):
             return ranges

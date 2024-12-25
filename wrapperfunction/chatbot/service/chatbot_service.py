@@ -274,3 +274,15 @@ async def upload_documents(files, bot_name, conversation_id: Optional[str] = Non
         return ServiceReturn(
             status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
         ).to_dict()
+def get_openai_instruction(prompt, bot_name):
+    chat_history = [
+        {"role": "user", "content": prompt},
+    ]
+    chatbot_settings = config.load_chatbot_settings(bot_name)
+
+    try:
+        response = openaiconnector.chat_completion(chatbot_settings, chat_history)
+       
+        return response['message']['content']
+    except Exception as e:
+        return {"error": f"Error with Azure OpenAI API: {e}"}
