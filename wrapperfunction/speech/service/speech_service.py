@@ -1,10 +1,10 @@
-from io import BytesIO
 import os
 import tempfile
-import wrapperfunction.speech.integration.speech_connector as speechconnector
+from io import BytesIO
 from fastapi import File, Form, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
+import wrapperfunction.speech.integration.speech_connector as speech_connector
 
 async def transcribe(file: bytes = File(...), filename: str = Form(...)):
     _, file_extension = os.path.splitext(filename)
@@ -17,7 +17,7 @@ async def transcribe(file: bytes = File(...), filename: str = Form(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio_file:
         tmp_audio_file.write(processed_audio_bytes)
         tmp_filename = tmp_audio_file.name
-    transcription_result = speechconnector.transcribe_audio_file(
+    transcription_result = speech_connector.transcribe_audio_file(
         tmp_filename
     )
     os.unlink(tmp_filename)
@@ -51,4 +51,4 @@ async def fast_file(file: bytes):
 
 
 def get_speech_token():
-    return speechconnector.get_speech_token()
+    return speech_connector.get_speech_token()

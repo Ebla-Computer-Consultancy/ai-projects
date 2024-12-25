@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, Status, SubmitForm, VacationForm, VacationTypes
+from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, Status, VacationForm, VacationTypes
 from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, getAllForms_action, getForm_action, pending_action, submit_form
 
 router = APIRouter()

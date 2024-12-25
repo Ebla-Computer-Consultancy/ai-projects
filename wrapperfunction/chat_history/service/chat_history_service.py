@@ -161,23 +161,23 @@ async def add_message(chat_payload: ChatPayload, bot_name: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def get_all_vactions():
+def get_all_vacations():
     try:
         res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE)
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
-def get_vactions_filter_by(coulomn_name,value):
+def get_vacations_filter_by(column_name,value):
     try:
-        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE,f"{coulomn_name} eq {value}")
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE,f"{column_name} eq {value}")
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
 def update_Status(employee_ID: str, status: int):
     try:
-        forms = get_vactions_filter_by("Employee_ID",employee_ID)
+        forms = get_vacations_filter_by("Employee_ID",employee_ID)
         if forms:
             for form in forms:
                 
