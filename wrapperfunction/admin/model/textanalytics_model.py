@@ -21,9 +21,9 @@ class TextAnalyticsKEYS(Enum):
     
 class TextAnalyticsCategories:
     def __init__(self, organization: list = None, dateTime: list = None, IPAddress: list = None, 
-                 person: list = None, personType: list = None, url: list = None, event: list = None, 
-                 email: list = None, location: list = None, phoneNumber: list = None, skill: list = None, 
-                 product: list = None, quantity: list = None, address: list = None, entities: list = None):
+                person: list = None, personType: list = None, url: list = None, event: list = None, 
+                email: list = None, location: list = None, phoneNumber: list = None, skill: list = None, 
+                product: list = None, quantity: list = None, address: list = None, entities: list = None):
         
         self.organization = organization if organization is not None else []
         self.dateTime = dateTime if dateTime is not None else []

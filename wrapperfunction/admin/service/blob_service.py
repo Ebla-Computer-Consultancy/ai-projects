@@ -1,13 +1,13 @@
-from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
-from azure.storage.blob import BlobType,BlobBlock
+import json
 import urllib.parse
-from wrapperfunction.admin.model.crawl_settings import IndexingType
-from wrapperfunction.core import config
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-from urllib.parse import unquote
-import json
 
+from azure.storage.blob import BlobType,BlobBlock
+
+from wrapperfunction.core import config
+from wrapperfunction.admin.model.crawl_settings import IndexingType
+from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
 from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 
 def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
@@ -71,7 +71,6 @@ async def delete_blob_by_metadata(metadata_key, metadata_value):
     if not metadata_key or not metadata_value:
         raise HTTPException(status_code=400, detail="Missing required parameters")
     try:
-        metadata_value_ = unquote(metadata_value)
         delete_blobs(metadata_key=metadata_key, metadata_value=metadata_value)
         return JSONResponse(
             content={
@@ -126,7 +125,7 @@ def delete_blobs(
         blob_metadata = blob_client.get_blob_properties().metadata
         blob_name = blob_client.get_blob_properties().name.split("/")[1]
         if metadata_key is not None:
-            if blob_metadata.get(metadata_key) == metadata_value or unquote(blob_metadata.get(metadata_key)) == metadata_value:
+            if blob_metadata.get(metadata_key) == metadata_value or urllib.parse.unquote(blob_metadata.get(metadata_key)) == metadata_value:
                 blob_client.delete_blob()
         elif blobs_name_list is not None:
             if blob_name in blobs_name_list:
@@ -144,7 +143,6 @@ def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdat
                 # Get the blob client
                 blob_client = container_client.get_blob_client(blob=blob_path)
                 # Open the file in binary mode
-                file_size = file.file._file.getbuffer().nbytes
                 chunk_size = 4 * 1024 * 1024  # 4MB
                 blocks = []
                 block_id = 0
@@ -169,7 +167,6 @@ def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name
         file.file.seek(0)
         f = file.file.read()
         extracted_text = inline_read_scanned_pdf(file=None,file_bytes=f)
-
         data = {"url":meta_url,"title":filename[:-4],"body":extracted_text}
         json_data = json.dumps(data, ensure_ascii=False)
         append_blob(blob_name= filename[:-4] + '.json',

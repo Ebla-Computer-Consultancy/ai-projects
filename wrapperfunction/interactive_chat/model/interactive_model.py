@@ -20,15 +20,15 @@ class VacationTypes(Enum):
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
     UnpaidLeave= "Unpaid Leave",
-    YearVaction="Year Vacation"
+    YearVacation="Year Vacation"
     
     def to_list():
         return[
-           VacationTypes.SickLeave.value,
-           VacationTypes.PersonalLeave.value,
-           VacationTypes.PublicHolidays.value,
-           VacationTypes.UnpaidLeave.value,
-           VacationTypes.YearVaction
+            VacationTypes.SickLeave.value,
+            VacationTypes.PersonalLeave.value,
+            VacationTypes.PublicHolidays.value,
+            VacationTypes.UnpaidLeave.value,
+            VacationTypes.YearVacation
         ]
 
 class DepartmentTypes(Enum):
@@ -72,7 +72,7 @@ class VacationFormEntity:
         self.start_date = datetime.strptime(start_date, '%Y-%m-%d')
         self.end_date = datetime.strptime(end_date, '%Y-%m-%d')
         self.total_days = (datetime.strptime(end_date, '%Y-%m-%d') - 
-                       datetime.strptime(start_date, '%Y-%m-%d')).days
+                        datetime.strptime(start_date, '%Y-%m-%d')).days
         self.comments = comments
     
     def to_dict(self):
@@ -94,7 +94,7 @@ class Status(BaseModel):
     employee_ID:int
     
 class GetForm(BaseModel):
-    coulomn_name:str
+    column_name:str
     value:str
 
 class ToolCall(BaseModel):

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
-from wrapperfunction.admin.model.indexer_model import IndexInfo
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
+from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
 
@@ -13,7 +13,6 @@ router = APIRouter()
 @router.post("/crawler/")
 def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
     try:
-        # Read the content of the file
         return crawl_urls(urls, settings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

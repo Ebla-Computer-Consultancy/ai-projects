@@ -3,7 +3,8 @@ import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexerClient
-from wrapperfunction.admin.model.indexer_model import IndexInfo
+
+from wrapperfunction.search.model.indexer_model import IndexInfo
 
 def get_search_client(search_index: str):
     # Create a search client
