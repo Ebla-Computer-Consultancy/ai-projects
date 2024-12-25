@@ -8,13 +8,21 @@ import zipfile
 from fastapi import File, HTTPException, UploadFile
 from pypdf import PdfReader, PdfWriter
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.core import config
 import wrapperfunction.document_intelligence.integration.document_intelligence_connector as documentintelligenceconnector
 import wrapperfunction.chatbot.service.chatbot_service as chatbotservice
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.admin.integration.storage_connector as storageconnector
 
 
+def inline_read_scanned_pdf(file: UploadFile | None, file_bytes: bytes = None):
+    if file or file_bytes:
+        result = documentintelligenceconnector.analyze_file(file, "prebuilt-read", file_bytes)
+
+        extracted_text = ""
+        for page in result.pages:
+            for line in page.lines:
+                extracted_text += line.content + "\n"
+        return extracted_text
 
 def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
     try:

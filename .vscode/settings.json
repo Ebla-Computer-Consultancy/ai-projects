@@ -7,6 +7,10 @@
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.projectLanguageModel": 2,
     "cSpell.words": [
+        "adminservice",
+        "aisearch",
+        "aisearchconnector",
+        "certifi",
         "chatbotservice",
         "chatservice",
         "cognitiveservices",
@@ -14,12 +18,25 @@
         "documentintelligence",
         "documentintelligenceconnector",
         "documentintelligenceservice",
+        "downloadermiddlewares",
+        "eblapagecrawler",
+        "errback",
+        "getall",
+        "imageanalysis",
+        "innertext",
+        "KHTML",
         "languageconfig",
+        "linkextractors",
+        "lxml",
         "openaiconnector",
+        "pdfs",
         "pydub",
         "readall",
         "rera",
+        "skillset",
         "textanalytics",
-        "wrapperfunction"
+        "utls",
+        "wrapperfunction",
+        "wsservice"
     ]
 }

@@ -8,8 +8,9 @@ from wrapperfunction.core import config
 
 
 def analyze_file(
-    file: UploadFile,
+    file: UploadFile | None,
     model_id: str = "prebuilt-layout",
+    file_bytes: bytes = None
 ) -> AnalyzeResult:
     document_intelligence_client = DocumentIntelligenceClient(
         endpoint=config.DOCUMENT_INTELLIGENCE_ENDPOINT,
@@ -17,7 +18,7 @@ def analyze_file(
     )
     poller = document_intelligence_client.begin_analyze_document(
         model_id,
-        AnalyzeDocumentRequest(bytes_source=file.file.read()),
+        AnalyzeDocumentRequest(bytes_source=file_bytes if file_bytes else file.file.read()),
     )
 
     return poller.result()
