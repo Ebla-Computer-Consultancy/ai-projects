@@ -8,7 +8,7 @@ from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
-import wrapperfunction.avatar.integration.avatar_connector as avatarconnector
+import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
@@ -95,7 +95,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
 
             asyncio.create_task(
-                avatarconnector.render_text_async(
+                avatar_connector.render_text_async(
                     chat_payload.stream_id, results["message"]["content"], is_ar
                 )
             )

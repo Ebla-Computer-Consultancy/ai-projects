@@ -1,12 +1,8 @@
 from datetime import datetime
-import json
 from uuid import uuid4
 from enum import Enum
 
-
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
-
-
 
 class MessagePropertyName(Enum):
     PARTITION_KEY = "PartitionKey"
@@ -41,10 +37,11 @@ class MessageEntity:
             MessagePropertyName.CONVERSATION_ID.value: self.conversation_id,
             MessagePropertyName.ROLE.value: self.role,
             MessagePropertyName.CONTEXT.value: self.context,
+
             MessagePropertyName.MessageType.value: self.type,
             MessagePropertyName.tokens.value: self.tokens
                 
 
 
-        }
 
+        }
