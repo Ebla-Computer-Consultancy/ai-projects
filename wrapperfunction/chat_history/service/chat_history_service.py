@@ -2,8 +2,6 @@ import asyncio
 from typing import Optional
 import uuid
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-import uuid
-from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
 from fastapi import HTTPException
 from wrapperfunction.chat_history.model.message_entity import (
