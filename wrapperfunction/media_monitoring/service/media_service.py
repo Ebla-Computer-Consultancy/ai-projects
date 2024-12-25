@@ -25,7 +25,6 @@ async def generate_report(search_text: str):
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
-         
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
         append_blob(blob=chat_res["message"]["content"],
@@ -211,7 +210,7 @@ async def entity_recognition_skill(values: list):
                     "dateTime": entities[tak.DATETIME.value],
                     "IPAddress": entities[tak.IPADDRESS.value],
                     "persons": entities[tak.PERSON.value],
-                    "personsType": entities[tak.PERSONTYPE.value],
+                    "personsType": entities[tak.PERSON_TYPE.value],
                     "urls": entities[tak.URL.value],
                     "events": entities[tak.EVENT.value],
                     "emails": entities[tak.EMAIL.value],
@@ -254,7 +253,7 @@ async def image_embedding_skill(values: list):
             if not url:
                 raise ValueError("Missing 'url' field in data")
 
-            # Vactorize Image
+            # Vectorize Image
             vector = imageanalytics_connector.image_embedding(img_url=url)
 
             # Add successful result

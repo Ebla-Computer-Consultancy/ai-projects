@@ -9,11 +9,10 @@ from fastapi import HTTPException, UploadFile
 import validators
 
 from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
+from wrapperfunction.core import config
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
 from wrapperfunction.admin.service.blob_service import append_blob, upload_files_to_blob
-from wrapperfunction.core import config
-from wrapperfunction.core.config import SUBFOLDER_NAME
 from wrapperfunction.core.utls.helper import process_text_name
 
 global allow_domains
@@ -63,7 +62,7 @@ def orchestrator_function(
                     "title": get_page_title(url.link),
                     "content": data,
                 }
-                upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=SUBFOLDER_NAME+'_pdf')
+                upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=config.SUBFOLDER_NAME+'_pdf')
                 settings.deep = False
             else:
                 site_data = {
@@ -76,7 +75,7 @@ def orchestrator_function(
         json_data = json.dumps(site_data, ensure_ascii=False)
         blob_name = f"item_{process_text_name(url.link)}.json"
         append_blob(
-            folder_name=SUBFOLDER_NAME,
+            folder_name=config.SUBFOLDER_NAME,
             blob_name=blob_name,
             blob=json_data,
             container_name=settings.containerName,
@@ -178,13 +177,13 @@ def collect_urls(data, url, settings:CrawlSettings):
 # parse website content .
 def get_page_content(data, settings: CrawlSettings):
     try:
-        content = "".join(
+        content = " ".join(
             set(
                 element.text
                 for element in data.select(", ".join(str(s) for s in settings.selectors))
             )
         )
-        content = " ".join(re.sub("[\t\n]", "", content).split()).strip()
+        content = " ".join(re.sub("[\t\n]", " ", content).split()).strip()
         return content
     except Exception as error:
         raise HTTPException(

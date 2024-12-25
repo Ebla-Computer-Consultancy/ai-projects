@@ -2,9 +2,7 @@ import json
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-import requests
 from wrapperfunction.core import config
-from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.search.integration.aisearch_connector as aisearchconnector
 from wrapperfunction.search.model.search_criterial import searchCriteria
 

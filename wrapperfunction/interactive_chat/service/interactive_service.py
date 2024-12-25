@@ -11,25 +11,24 @@ from wrapperfunction.chatbot.model.chat_message import ChatMessage, Roles
 async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPayload):
     try:
         v_form = interactive_model.VacationFormEntity(vacation_type=form.vacation_type,
-                                             employee_ID=form.employee_ID,
-                                             employee_name=form.employee_name,
-                                             employee_department=form.employee_department,
-                                             manager_name=form.manager_name,
-                                             start_date=form.start_date,
-                                             end_date=form.end_date,
-                                             
-                                             comments=form.comments).to_dict()
+                                            employee_ID=form.employee_ID,
+                                            employee_name=form.employee_name,
+                                            employee_department=form.employee_department,
+                                            manager_name=form.manager_name,
+                                            start_date=form.start_date,
+                                            end_date=form.end_date,
+                                            comments=form.comments).to_dict()
         result = await db.add_form(v_form)
         if result is None:
-            result = f"Form Submited Successfuly, form data:{v_form}"
-        final_message = await generate_final_resopnse("form filled successfuly", chat_payload)
+            result = f"Form Submitted Successfully, form data:{v_form}"
+        final_message = await generate_final_response("form filled Successfully", chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         data={
                             "action_results":result,
                             "final_message": final_message
                             },
-                        message=f"Form Submited Successfuly, form data:{v_form}"
+                        message=f"Form Submitted Successfully, form data:{v_form}"
                         ).to_dict()
         
     except Exception as e:
@@ -40,15 +39,15 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
     try:
         result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
         if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfuly"
-        final_message = await generate_final_resopnse(result, chat_payload)
+            result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfully"
+        final_message = await generate_final_response(result, chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         data={
                             "action_results": result,
                             "final_message": final_message
                             },
-                        message=f"Employee With ID:{arguments.employee_ID} Form Approved Successfuly"
+                        message=f"Employee With ID:{arguments.employee_ID} Form Approved Successfully"
                         ).to_dict()
     except Exception as e:
         print(f"Error While Approving form:{arguments.employee_ID}: {str(e)}")
@@ -57,36 +56,35 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
 
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
-  
         result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
         if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Rejeted Successfuly"
-        final_message = await generate_final_resopnse(result, chat_payload)
+            result = f"Employee With ID:{arguments.employee_ID} Form Rejected Successfully"
+        final_message = await generate_final_response(result, chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         data={
                             "action_results": str(result),
                             "final_message": final_message
                             },
-                        message=f"Employee With ID:{arguments.employee_ID} Form Rejeted Successfuly"
+                        message=f"Employee With ID:{arguments.employee_ID} Form Rejected Successfully"
                         ).to_dict()
     except Exception as e:
-        print(f"Error While Rejeting form:{arguments.employee_ID}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error While Rejeting form:{arguments.employee_ID}: {str(e)}")
+        print(f"Error While Rejecting form:{arguments.employee_ID}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error While Rejected form:{arguments.employee_ID}: {str(e)}")
 
 async def pending_action(arguments:interactive_model.Status, chat_payload: ChatPayload):
     try:
         result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
         if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfuly"
-        final_message = await generate_final_resopnse(result, chat_payload)
+            result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfully"
+        final_message = await generate_final_response(result, chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         data={
                             "action_results": str(result),
                             "final_message": final_message
                             },
-                        message=f"Employee With ID:{arguments.employee_ID} Form Pended Successfuly"
+                        message=f"Employee With ID:{arguments.employee_ID} Form Pended Successfully"
                         ).to_dict()
     except Exception as e:
         print(f"Error While Pending form:{arguments.employee_ID}: {str(e)}")
@@ -97,17 +95,17 @@ async def getForm_action(arguments: interactive_model.GetForm, chat_payload: Cha
         print(f'Argument-Type:{type(arguments)}')
         print(f'Argument:{arguments}')
         
-        result = db.get_vactions_filter_by(arguments.coulomn_name,arguments.value)
+        result = db.get_vacations_filter_by(arguments.column_name,arguments.value)
         if len(result) == 0: 
-            result = f"No forms found for {arguments.coulomn_name}:{arguments.value}"
-        final_message = await generate_final_resopnse(result, chat_payload)
+            result = f"No forms found for {arguments.column_name}:{arguments.value}"
+        final_message = await generate_final_response(result, chat_payload)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         data={
                             "action_results": result,
                             "final_message": final_message
                             },
-                        message=f"All {arguments.coulomn_name}:{arguments.value} Forms Returned Successfuly"
+                        message=f"All {arguments.column_name}:{arguments.value} Forms Returned Successfully"
                         ).to_dict()
     except Exception as e:
         print(f"Error While getting forms: {str(e)}")
@@ -115,28 +113,28 @@ async def getForm_action(arguments: interactive_model.GetForm, chat_payload: Cha
 
 async def getAllForms_action(chat_payload: ChatPayload):
     try:
-        result = db.get_all_vactions()
+        result = db.get_all_vacations()
         if len(result) == 0: 
             result = f"No forms found"
-        final_message = await generate_final_resopnse(result, chat_payload)
+        final_message = await generate_final_response(result, chat_payload)
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
                             data={
                                 "action_results": result,
                                 "final_message": final_message
                                 },
-                            message="All Forms Returned Successfuly"
+                            message="All Forms Returned Successfully"
                             ).to_dict()
     except Exception as e:
         print(f"Error While getting forms: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error While getting forms: {str(e)}") 
         
-async def generate_final_resopnse(result, chat_payload: ChatPayload):
+async def generate_final_response(result, chat_payload: ChatPayload):
     try:
         chat_payload.messages.append(
             ChatMessage(
                 role=Roles.User.value,
-                content=f"Here are the results: {result}. what are your suggestion now? sample of suggestion:{ENTITY_SETTINGS.get('suggestion_message')} note: answer me with the language i used to talk with it in the previos messages. important note: dont call any function for this message only. important note: dont return None, make sure to give me a suggestion or a dicription about the results"
+                content=f"Here are the results: {result}. what are your suggestion now? sample of suggestion:{ENTITY_SETTINGS.get('suggestion_message')} note: answer me with the language i used to talk with it in the previous messages. important note: dont call any function for this message only. important note: dont return None, make sure to give me a suggestion or a description about the results"
                 )
             )
         final_response = await chatbot_service.chat("interactive",chat_payload)
