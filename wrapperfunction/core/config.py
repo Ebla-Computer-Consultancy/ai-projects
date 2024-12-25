@@ -14,7 +14,6 @@ OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL")
 OPENAI_EMB_MODEL = os.getenv("OPENAI_EMB_MODEL")
-VOICES_CONTAINER = os.getenv("RERA_VOICES_CONTAINER")
 SPEECH_SERVICE_REGION = os.getenv("SPEECH_SERVICE_REGION")
 SPEECH_SERVICE_KEY = os.getenv("SPEECH_SERVICE_KEY")
 AVATAR_API_URL = os.getenv("AVATAR_API_URL")
@@ -23,11 +22,9 @@ AVATAR_CODE = os.getenv("AVATAR_CODE")
 AVATAR_CODE_FULL_SIZE = os.getenv("AVATAR_CODE_FULL_SIZE")
 AVATAR_VOICE_ID = os.getenv("AVATAR_VOICE_ID")
 AVATAR_VOICE_PROVIDER = os.getenv("AVATAR_VOICE_PROVIDER")
-STORAGE_ACCOUNT_NAME = os.getenv("STORAGE_ACCOUNT_NAME")
-STORAGE_CONNECTION = os.getenv("RERA_STORAGE_CONNECTION")
+STORAGE_CONNECTION = os.getenv("STORAGE_CONNECTION")
 BLOB_CONTAINER_NAME = os.getenv("BLOB_CONTAINER_NAME")
 SUBFOLDER_NAME = os.getenv("SUBFOLDER_NAME")
-DOCS_SUBFOLDER_NAME = os.getenv("DOCS_SUBFOLDER_NAME")
 DOCUMENT_INTELLIGENCE_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
 DOCUMENT_INTELLIGENCE_API_KEY = os.getenv("DOCUMENT_INTELLIGENCE_API_KEY")
 ENTITY_NAME = os.getenv("ENTITY_NAME")
@@ -64,11 +61,11 @@ def load_chatbot_settings(bot_name: str):
             top_p = custom_settings_data.get("top_p", 0.95)
             tools = custom_settings_data.get("tools",None)
             custom_settings = CustomSettings(temperature=temperature,
-                                             top_p=top_p,
-                                             max_tokens=max_tokens,
-                                             tools=tools,
-                                             max_history_length=max_history_length,
-                                            )
+                                            top_p=top_p,
+                                            max_tokens=max_tokens,
+                                            tools=tools,
+                                            max_history_length=max_history_length,
+                                        )
             chatbot = ChatbotSetting(
                 name=chatbot_obj["name"],
                 index_name=chatbot_obj.get("index_name", None),
