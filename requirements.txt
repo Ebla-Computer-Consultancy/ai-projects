@@ -20,7 +20,9 @@ azure-data-tables
 bs4==0.0.2
 azure-ai-vision-imageanalysis==1.0.0b2
 
+
 validators
+
 
 user_agents
 
