@@ -8,10 +8,12 @@ import zipfile
 from fastapi import File, HTTPException, UploadFile
 from pypdf import PdfReader, PdfWriter
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
+from wrapperfunction.core import config
+from wrapperfunction.core.model.entity_setting import ChatbotSetting
 import wrapperfunction.document_intelligence.integration.document_intelligence_connector as documentintelligenceconnector
 import wrapperfunction.chatbot.service.chatbot_service as chatbotservice
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
-import wrapperfunction.admin.integration.storage_connector as storageconnector
+import wrapperfunction.admin.integration.blob_storage_integration as storageconnector
 
 
 def inline_read_scanned_pdf(file: UploadFile | None, file_bytes: bytes = None):
@@ -55,21 +57,21 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
 
         #   "content": "{'manufacturer':{'producer':'','supplier':'','company-name':'','manufacturer-supplier':'','manufacturers-name-and-Address':''},'trade-name':{'product-name':'','commercial-name':'','brand-name':'','product-identifier':'','proprietary-name':'','common-name':''},'chemical-name':{'substance-name':'','scientific-name':'','iupac-name':'','proper-Chemical-name':'','systematic-name':''},'cas-no':{'cas-registry-number':'','chemical-abstracts-service-number':'','cas-number':'','cas-identification-number':'','cas-rn':''},'state':{'physical-state':'','form':'','appearance':'','condition-Solid-Liquid-Gas':'','state-of-matter':''},'storage-condition':{'storage-requirements':'','storage-guidelines':'','storage-instructions':'','storage-information':'','storage-recommendations':''},'prevention-method':{'preventative-measures':'','safety-precautions':'','preventive-actions':'','hazard-prevention':'','precautionary-measures':''},'control-method':{'control-measures':'','exposure-controls':'','protection-measures':'','control-procedures':'','engineering-controls':''},'classification':{'hazard-classification':'','risk-classification':'','hazard-category':'','hazard-class':'','ghs-classification-globally-harmonized-system':''},'hs-code':{'harmonized-system-code':'','harmonized-tariff-code':'','hts-code':'','customs-code':'','tariff-code':''},'un-no':{'un-number':'','un-identification-number':'','united-nations-number':'','un-id':'','un-hazard-number':''}}"
 
-def get_openai_instruction(prompt):
+def get_openai_instruction(prompt, bot_name):
+    chat_history = [
+        {"role": "user", "content": prompt},
+    ]
+    chatbot_settings = config.load_chatbot_settings(bot_name)
 
     try:
-        response = openaiconnector.client.chat.completions.create(
-            model=config.OPENAI_CHAT_MODEL,  
-            messages=[{"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}],
-            temperature=0.4,
-        )
-        return response.choices[0].message.content
+        response = openaiconnector.chat_completion(chatbot_settings, chat_history)
+       
+        return response['message']['content']
     except Exception as e:
-        return f"Error with Azure OpenAI API: {e}"
+        return {"error": f"Error with Azure OpenAI API: {e}"}
 
 
-def detection(text,criteria:Optional[str] = None):
+def detection(text,bot_name,criteria:Optional[str] = None):
     if not criteria:
         prompt = (
             "The following text is extracted from file. Identify the best practice to split this file. "
@@ -85,7 +87,7 @@ def detection(text,criteria:Optional[str] = None):
     f"{text}"
 )
     try:
-        content=get_openai_instruction(prompt)
+        content=get_openai_instruction(prompt,bot_name)
         ranges = ast.literal_eval(content)
         if isinstance(ranges, list) and all(isinstance(r, list) and len(r) == 2 for r in ranges):
             return ranges
@@ -103,8 +105,8 @@ def extract_text_from_pdf(result) -> List[str]:
         for page in result.pages
     ]
 
-def get_page_ranges(full_text: str, criteria: str) -> List[List[int]]:
-    ranges = detection(full_text, criteria)
+def get_page_ranges(full_text: str, criteria: str,bot_name) -> List[List[int]]:
+    ranges = detection(full_text, bot_name,criteria)
     if not ranges or not isinstance(ranges, list):
         raise ValueError("Invalid or empty page ranges detected.")
     return ranges
@@ -131,17 +133,17 @@ def create_zip(files: List[Tuple[str, BytesIO]]) -> BytesIO:
     return zip_buffer
 
 def upload_to_storage( zip_buffer: BytesIO) -> str:
-    container_client=storageconnector.get_blob_service_client(config.SPLITER_CONTAINER_NAME)
+    container_client=storageconnector.get_container_client(config.SPLITER_CONTAINER_NAME,None)[0]
     blob_name = f"{uuid.uuid4()}.zip"
     blob_response = container_client.upload_blob(name=blob_name, data=zip_buffer, overwrite=True)
     return blob_response.url
 
-def auto_split_pdf(pdf: UploadFile, criteria: str) -> Dict:
+def auto_split_pdf(pdf: UploadFile, criteria: str,bot_name) -> Dict:
     try:
         result =documentintelligenceconnector.analyze_file(pdf)
         text_per_page = extract_text_from_pdf(result)
         full_text = "\n".join(f"Page {i + 1}:\n{text}" for i, text in enumerate(text_per_page))
-        page_ranges = get_page_ranges(full_text, criteria)
+        page_ranges = get_page_ranges(full_text, criteria,bot_name)
         page_ranges.append([len(result.pages) + 1])
         reader = PdfReader(pdf.file)
         split_files = split_pdf(reader, page_ranges[:-1])
