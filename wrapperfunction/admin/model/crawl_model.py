@@ -1,5 +1,10 @@
-from typing import List
 from pydantic import BaseModel
 
-# class CrawlRequest(BaseModel):
-#     new_content_file: 
+from wrapperfunction.admin.model.crawl_settings import CrawlSettings
+
+class CrawlRequestUrls(BaseModel):
+    link: str
+    headers: dict = {}
+    cookies: dict = {}
+    payload: dict = None
+    settings: CrawlSettings = None
