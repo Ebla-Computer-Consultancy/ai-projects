@@ -178,13 +178,13 @@ def collect_urls(data, url, settings:CrawlSettings):
 # parse website content .
 def get_page_content(data, settings: CrawlSettings):
     try:
-        content = "".join(
+        content = " ".join(
             set(
                 element.text
                 for element in data.select(", ".join(str(s) for s in settings.selectors))
             )
         )
-        content = " ".join(re.sub("[\t\n]", "", content).split()).strip()
+        content = " ".join(re.sub("[\t\n]", " ", content).split()).strip()
         return content
     except Exception as error:
         raise HTTPException(
