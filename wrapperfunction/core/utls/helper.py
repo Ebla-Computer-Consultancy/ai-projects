@@ -2,17 +2,18 @@ import re
 from num2words import num2words
 import wrapperfunction.core.config as config
 
+
+
 def process_text_name(txt):
     # Remove URL components
-    individual_filename = txt.replace("https://", '').replace("www.", '').replace(".com", '')
+    individual_filename = txt.replace("https://", '').replace("http://", '').replace("www.", '').replace(".com", '')
     
     # Replace special characters with underscores
-    individual_filename = re.sub(r'[?+.=\-\\\/|%]', '_', individual_filename)
-    
+    individual_filename = re.sub(r'[?+.=\_\\\/|%]', '-', individual_filename)
+    individual_filename = re.sub(r'__', '-', individual_filename)
     # Truncate if the filename is too long
     if len(individual_filename) >= 40:
-        individual_filename = individual_filename[:25] + individual_filename[-30:]
-    
+        individual_filename = individual_filename[:25] + individual_filename[-30:]    
     return individual_filename
 
 
@@ -40,7 +41,28 @@ def replace_numbers_with_words(phrase):
     phrase = re.sub(digit_pattern, replace_number, phrase)
     return phrase
 
+
 def replace_ar_text(text: str) -> str:
     for key, value in config.AR_DICT.items():
         text = text.replace(key, value)
     return text
+
+
+def get_title(url, title=""):
+    if title == "":
+        title = url.split("/")[-1]
+    return title
+
+
+def sanitize_filename(filename):
+    return re.sub(r'[<>:"\\|?*]', "", filename)
+
+def pdfs_files_filter(files):
+    json_files=[]
+    pdf_files=[]
+    for file in files:
+        if file.content_type == "application/pdf":
+            pdf_files.append(file)
+        else:
+            json_files.append(file)
+    return pdf_files, json_files
