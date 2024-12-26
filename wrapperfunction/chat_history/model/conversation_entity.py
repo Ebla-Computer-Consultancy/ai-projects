@@ -47,7 +47,7 @@ class ConversationEntity:
             ConversationPropertyName.SENTIMENT.value: self.sentiment,
             ConversationPropertyName.BOT_NAME.value: self.bot_name,
             ConversationPropertyName.TITLE.value: self.title,
-            ConversationPropertyName.client_ip.value: self.client_ip,
-            ConversationPropertyName.forwarded_ip.value: self.forwarded_ip,
-            ConversationPropertyName.device_info.value: self.device_info
+            ConversationPropertyName.CLIENT_IP.value: self.client_ip,
+            ConversationPropertyName.FORWARDED_IP.value: self.forwarded_ip,
+            ConversationPropertyName.DEVICE_INFO.value: self.device_info
         }

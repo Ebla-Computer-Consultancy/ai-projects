@@ -47,6 +47,9 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
             content=chat_history_with_system_message["chat_history"][-1]["content"],
             role=Roles.User.value,
             context=None,
+            completion_tokens=None,
+            prompt_tokens=None,
+            total_tokens=None,
         )
 
         add_messages_to_history(
@@ -76,7 +79,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
 
 
         chatbot_settings = config.load_chatbot_settings(bot_name)
-        if chatbot_settings.get('enable_history', False):
+        if chatbot_settings.enable_history:
             add_messages_to_history(
                 chat_payload=chat_payload,
                 conversation_id=conversation_id,
@@ -93,7 +96,6 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history_with_system_message["chat_history"]
         )
-
         context = set_context(results)
 
 
@@ -106,6 +108,10 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
                 role=Roles.Tool.value,
                 tool_calls=results["message"]["tool_calls"],
                 context=context,
+                completion_tokens=results["usage"]["completion_tokens"],
+                prompt_tokens=results["usage"]["prompt_tokens"],
+                total_tokens=results["usage"]["total_tokens"],
+     
             )
         else:
             assistant_message_entity = set_message(
@@ -113,11 +119,15 @@ async def chat(bot_name: str, chat_payload: ChatPayload,request: Request):
                 content=results["message"]["content"],
                 role=Roles.Assistant.value,
                 context=context,
+                completion_tokens=results["usage"]["completion_tokens"],
+                prompt_tokens=results["usage"]["prompt_tokens"],
+                total_tokens=results["usage"]["total_tokens"],
             )
 
         # Add Messages
 
-        if chatbot_settings.get('enable_history', False):
+        if chatbot_settings.enable_history:
+
             add_messages_to_history(
                 chat_payload=chat_payload,
                 conversation_id=conversation_id,
@@ -165,11 +175,11 @@ def set_context(results):
         return json.dumps({"error": True, "message": str(error)})
 
 
-def set_message(conversation_id, role, content=None, tool_calls=None, context=None):
+def set_message(conversation_id, role, content=None, tool_calls=None, context=None,completion_tokens=None,prompt_tokens=None,total_tokens=None):
     # Set message Entity
     if role is not Roles.Tool.value:
         return MessageEntity(
-            conversation_id=conversation_id, content=content, role=role, context=context,tokens=len(content)
+            conversation_id=conversation_id, content=content, role=role, context=context,completion_tokens=completion_tokens,prompt_tokens=prompt_tokens,total_tokens=total_tokens
         )
     return [
         MessageEntity(
@@ -178,9 +188,9 @@ def set_message(conversation_id, role, content=None, tool_calls=None, context=No
             role=Roles.Tool.value,
             context=context,
 
-
-            tokens=len(json.dumps(tool_call), ensure_ascii=False),
-
+            completion_tokens=completion_tokens,
+            prompt_tokens=prompt_tokens,
+            total_tokens=total_tokens
 
         )
         for tool_call in tool_calls
