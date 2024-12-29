@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
+from wrapperfunction.admin.model.settings_model import SettingCreate, SettingsUpdate
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
+from wrapperfunction.core.service import settings_service
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
@@ -81,3 +83,37 @@ async def index_info(index_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/settings")
+async def get_all_settings():
+    try:
+        return settings_service.read_items()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+    
+@router.get("/settings/{entity_name}")
+async def get_setting(entity_name: str):
+    try:
+        return settings_service.read_item(entity_name)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
+
+@router.post("/settings/{entity_name}")
+async def update_setting(entity_name: str, body: SettingsUpdate):
+    try:
+        return settings_service.update_item(entity_name= entity_name, filed=body.field, value=body.value)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/settings")
+async def add_setting(body: SettingCreate):
+    try:
+        return settings_service.create_item(data=body.data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.delete("/settings/{entity_name}")
+async def delete_setting(entity_name: str):
+    try:
+        return settings_service.delete_item(entity_name=entity_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
