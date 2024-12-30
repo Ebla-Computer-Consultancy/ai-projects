@@ -13,8 +13,16 @@ class ConversationPropertyName(Enum):
     BOT_NAME = "bot_name"
     TITLE = "title"
 
+
+    CLIENT_IP="client_ip"
+    FORWARDED_IP="forwarded_ip"
+    DEVICE_INFO="device_info"
+
+
+    
+
 class ConversationEntity:
-    def __init__(self, user_id: str, conversation_id: str, bot_name: str, title: str):
+    def __init__(self, user_id: str, conversation_id: str, bot_name: str, title: str, client_ip:str, forwarded_ip:str, device_info:str):
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
         self.user_id = user_id
@@ -24,6 +32,9 @@ class ConversationEntity:
         self.feedback = 0
         self.bot_name = bot_name
         self.title = title
+        self.client_ip=client_ip
+        self.forwarded_ip=forwarded_ip
+        self.device_info=device_info
 
     def to_dict(self):
         return {
@@ -35,5 +46,8 @@ class ConversationEntity:
             ConversationPropertyName.FEEDBACK.value: self.feedback,
             ConversationPropertyName.SENTIMENT.value: self.sentiment,
             ConversationPropertyName.BOT_NAME.value: self.bot_name,
-            ConversationPropertyName.TITLE.value: self.title
+            ConversationPropertyName.TITLE.value: self.title,
+            ConversationPropertyName.CLIENT_IP.value: self.client_ip,
+            ConversationPropertyName.FORWARDED_IP.value: self.forwarded_ip,
+            ConversationPropertyName.DEVICE_INFO.value: self.device_info
         }
