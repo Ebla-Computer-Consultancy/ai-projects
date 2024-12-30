@@ -91,7 +91,7 @@ def orchestrator_function(
     except Exception as error:
         raise HTTPException(
             status_code=400,
-            detail=f"Error while making a request to the site: {error.__cause__}",
+            detail=f"Error while making a request to the site: {error.message}",
         )
 
 

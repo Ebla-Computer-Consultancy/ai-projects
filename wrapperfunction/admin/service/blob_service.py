@@ -3,7 +3,7 @@ import urllib.parse
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from azure.storage.blob import BlobType,BlobBlock
+from azure.storage.blob import BlobBlock
 
 from wrapperfunction.core import config
 from wrapperfunction.admin.model.crawl_settings import IndexingType
@@ -46,10 +46,7 @@ def append_blob(
     metadata_4=None,
 ):
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
-    if metadata_3 == IndexingType.CRAWLED.value or metadata_3 == IndexingType.GENERATED.value:
-        blob_client.upload_blob(blob, blob_type=BlobType.AppendBlob, overwrite=True)
-    else:
-        blob_client.upload_blob(blob, overwrite=True)
+    blob_client.upload_blob(blob, overwrite=True)
 
     blob_metadata = blob_client.get_blob_properties().metadata or {}
     if metadata_2 is not None:
