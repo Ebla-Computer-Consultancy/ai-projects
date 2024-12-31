@@ -44,9 +44,10 @@ def append_blob(
     metadata_2=None,
     metadata_3: IndexingType = IndexingType.CRAWLED.value,
     metadata_4=None,
-):
+):       
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
     blob_client.upload_blob(blob, overwrite=True)
+    
 
     blob_metadata = blob_client.get_blob_properties().metadata or {}
     if metadata_2 is not None:
@@ -130,7 +131,7 @@ def delete_blobs(
         else:
             blob_client.delete_blob()
 
-def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdata"):
+def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
         # Get the container client
         container_client, _ =  get_container_client(container_name = container_name,subfolder_name = subfolder_name)    
         for file in files:

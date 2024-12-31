@@ -47,6 +47,7 @@ def orchestrator_function(
         data, response = crawl_site(
             url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
+
         if settings.mediaCrawling:
             relevant_text, imgs_links = get_page_media_with_topics(data, settings.topics)
             site_data = {
@@ -91,7 +92,7 @@ def orchestrator_function(
     except Exception as error:
         raise HTTPException(
             status_code=400,
-            detail=f"Error while making a request to the site: {error.message}",
+            detail=f"Error while making a request to the site: {str(error)}",
         )
 
 
