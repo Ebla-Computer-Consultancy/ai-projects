@@ -8,6 +8,7 @@ from wrapperfunction.search.model.indexer_model import IndexInfo
 import requests
 from wrapperfunction.search.model.indexer_model import IndexInfo
 
+
 def get_search_client(search_index: str):
     # Create a search client
     azure_credential = AzureKeyCredential(config.SEARCH_KEY)
