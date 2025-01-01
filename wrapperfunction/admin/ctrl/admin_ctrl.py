@@ -1,7 +1,7 @@
+from typing import Any, Dict
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
-from wrapperfunction.admin.model.settings_model import SettingCreate, SettingsUpdate
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.core.service import settings_service
@@ -106,34 +106,41 @@ async def indexes_name():
     
 async def get_all_settings():
     try:
-        return settings_service.read_items()
+        return settings_service.get_all_settings()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
     
 @router.get("/settings/{entity_name}")
 async def get_setting(entity_name: str):
     try:
-        return settings_service.read_item(entity_name)
+        return settings_service.get_settings_by_entity(entity_name)
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
 
-@router.post("/settings/{entity_name}")
-async def update_setting(entity_name: str, body: SettingsUpdate):
+@router.get("/settings/{entity_name}/{bot_name}")
+async def get_setting_by_botname(entity_name: str, bot_name: str):
     try:
-        return settings_service.update_item(entity_name= entity_name, filed=body.field, value=body.value)
+        return settings_service.get_chatbot_settings_by_entity(entity_name= entity_name, chatbot_name=bot_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
+@router.post("/settings")
+async def update_setting(entity: Dict[str, Any]):
+    try:
+        return settings_service.update_bot_settings(entity=entity)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+    
 @router.put("/settings")
-async def add_setting(body: SettingCreate):
+async def add_setting(body: Dict[str, Any]):
     try:
-        return settings_service.create_item(data=body.data)
+        return await settings_service.add_setting(entity=body)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
-@router.delete("/settings/{entity_name}")
-async def delete_setting(entity_name: str):
+@router.delete("/settings")
+async def delete_setting(row_key: str,partition_key: str):
     try:
-        return settings_service.delete_item(entity_name=entity_name)
+        return settings_service.delete_bot_settings(partition_key=partition_key,row_key=row_key)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
