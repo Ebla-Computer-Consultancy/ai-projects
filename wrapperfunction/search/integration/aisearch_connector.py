@@ -3,7 +3,6 @@ import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexerClient
-
 from wrapperfunction.search.model.indexer_model import IndexInfo
 
 def get_search_client(search_index: str):
@@ -55,6 +54,7 @@ def search_query(
 
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
+
 
 def delete_indexed_data(index_name:str, key:str, value=None):
     # Create a search client

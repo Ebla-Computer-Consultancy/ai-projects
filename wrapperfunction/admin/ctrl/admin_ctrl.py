@@ -11,9 +11,10 @@ from wrapperfunction.core.utls.helper import pdfs_files_filter
 router = APIRouter()
 
 @router.post("/crawler/")
-def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
+def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None, main_lang="ar"):
     try:
-        return crawl_urls(urls, settings)
+        # Read the content of the file
+        return crawl_urls(urls, settings,main_lang)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -80,4 +81,3 @@ async def index_info(index_name: str):
         return search_service.index_info(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
