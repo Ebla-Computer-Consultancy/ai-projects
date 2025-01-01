@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import HTTPException, UploadFile
 import validators
+import execjs
+
 
 from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 from wrapperfunction.core import config
@@ -22,7 +24,7 @@ crawled_sites = set()
 base_url = ""
 
 
-def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
+def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings,main_lang):
     for url in urls:
         if validators.url(url.link):
             start_with = url.link.split('//')[0]
@@ -32,7 +34,7 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             base_url = start_with + '//' + domain_name
 
             allow_domains.add(domain_name)
-            orchestrator_function(url, url.settings if url.settings else settings)
+            orchestrator_function(url, url.settings if url.settings else settings,main_lang)
 
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")
@@ -42,10 +44,11 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
 def orchestrator_function(
     url: CrawlRequestUrls,
     settings: CrawlSettings,
+    main_lang= "ar"
 ):
     try:
-        data, response = crawl_site(
-            url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
+        en_data, data, response = crawl_site(
+            url.link, main_lang= main_lang, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
 
         if settings.mediaCrawling:
@@ -66,10 +69,19 @@ def orchestrator_function(
                 upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=config.SUBFOLDER_NAME+'_pdf')
                 settings.deep = False
             else:
-                site_data = {
+                if en_data is None:
+                    site_data = {
                     "url": url.link,
                     "title": get_page_title(url.link, data),
+                    "content": get_page_content(data, settings)
+                }
+                else:
+                    site_data = {
+                    "url": url.link,
+                    "title": get_page_title(url.link, data),
+                    "en_title": get_page_title(url.link, en_data),
                     "content": get_page_content(data, settings),
+                    "en_content": get_page_content(en_data, settings),
                 }
                 
 
@@ -87,7 +99,7 @@ def orchestrator_function(
         )
         crawled_sites.add(url.link)
         if settings.deep:
-            collect_urls(data, url, settings)
+            collect_urls(data, url, settings,main_lang)
 
     except Exception as error:
         raise HTTPException(
@@ -98,6 +110,7 @@ def orchestrator_function(
 
 def crawl_site(
     url: str,
+    main_lang:str,
     headers: dict,
     payload: dict,
     cookies: dict = {},
@@ -106,11 +119,65 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
+    other_response = detect_languge_by_header(url, headers, payload, cookies,main_lang)
     if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
-        return BeautifulSoup(response.text, "lxml"), response
+        return BeautifulSoup(other_response.text, "lxml"), BeautifulSoup(response.text, "lxml"), response
 
+def detect_languge_by_header(url, headers, payload, cookies, main_lang = "en"):#############
+    if main_lang == "en":
+        translateTo ='العربية'
+    else:
+        translateTo ='English'
+    
+    response = requestUrl(url, headers, payload, cookies)
+    soup = BeautifulSoup(response.text, 'lxml')
+    # Find the button tag containing the text "English"
+    button_tag = soup.find('a', text= translateTo)
+
+    # Extract the function name from the onclick attribute
+    try:
+        onclick_function = button_tag['onclick'].strip('()')
+    except:
+        onclick_function=None
+    if onclick_function is None:
+        other_url = button_tag['href']
+        if validators.url(other_url):
+            new_response = requestUrl(other_url, headers, payload, cookies)
+            return new_response
+    else:
+        # Extract the JavaScript code
+        script_tag = soup.find('script')
+        js_code = script_tag.string
+        if js_code is None:
+            try:
+                other_url = url.split('/')
+                extracted_string = re.search(r"\('([^']*)'\)", onclick_function).group(1)
+                if len(other_url)==3:
+                    other_url.append(extracted_string)
+                else:    
+                    other_url.insert(3,extracted_string)
+                other_url = "/".join(other_url)
+                if validators.url(other_url):
+                    new_response = requestUrl(other_url, headers, payload, cookies)
+                else:
+                    new_response = requestUrl(url, headers, payload, cookies)
+            except:
+                new_response = None
+        else:
+            # Create a JavaScript runtime environment
+            ctx = execjs.compile(js_code)
+            # Run the extracted function
+            new_response = ctx.call(onclick_function)
+        return new_response
+
+"""
+def detect_languge_by_cookies(ORA_WEBCENTERAPP_USER_preferredLang):
+    if ORA_WEBCENTERAPP_USER_preferredLang is not None:
+        pass #################
+    pass
+"""
 
 def requestUrl(
     url: str,
@@ -143,7 +210,7 @@ def get_page_title(link, data = None):
 
 
 # Gets all of the URLs from the webpage.
-def collect_urls(data, url, settings:CrawlSettings):
+def collect_urls(data, url, settings:CrawlSettings,main_lang):
     try:
         url_elements = data.select("a[href]")
         for url_element in url_elements:
@@ -166,7 +233,7 @@ def collect_urls(data, url, settings:CrawlSettings):
                     site_link_data.cookies = url.cookies
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
-                    orchestrator_function(site_link_data, settings)
+                    orchestrator_function(site_link_data, settings,main_lang)
 
     except Exception as error:
         raise HTTPException(
