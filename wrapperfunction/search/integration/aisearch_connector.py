@@ -3,8 +3,8 @@ import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexerClient
-
 from wrapperfunction.search.model.indexer_model import IndexInfo
+import requests
 
 def get_search_client(search_index: str):
     # Create a search client
@@ -55,6 +55,19 @@ def search_query(
 
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
+
+
+def get_indexes_name():
+    url = f"https://{config.SEARCH_ENDPOINT}.search.windows.net/indexes?api-version={config.SEARCH_API_VERSION}"
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": config.SEARCH_KEY
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        indexes = response.json()
+        index_names = [index['name'] for index in indexes['value']]
+        return {"indexes": index_names}
 
 def delete_indexed_data(index_name:str, key:str, value=None):
     # Create a search client

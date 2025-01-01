@@ -11,7 +11,7 @@ from wrapperfunction.core.utls.helper import pdfs_files_filter
 router = APIRouter()
 
 @router.post("/crawler/")
-def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
+def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None, main_lang="ar"):
     try:
         return crawl_urls(urls, settings)
     except Exception as e:
@@ -31,6 +31,20 @@ def upload_blobs(files: list[UploadFile], container_name: str, subfolder_name: s
 def get_blobs(container_name: str, subfolder_name: str = None):
     try:
         return blob_service.get_blobs_name(container_name=container_name, subfolder_name=subfolder_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/get-containers")
+def get_containers():
+    try:
+        return blob_service.get_containers_name()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/get-subfolders/{container_name}")
+def get_subfolders(container_name: str):
+    try:
+        return blob_service.get_subfolders_name(container_name=container_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -81,3 +95,9 @@ async def index_info(index_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/indexes-name")
+async def indexes_name():
+    try:
+        return search_service.indexes_name()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

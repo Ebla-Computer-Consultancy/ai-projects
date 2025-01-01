@@ -1,8 +1,10 @@
-import json
+from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client,get_blob_service_client
+from azure.storage.blob import BlobType,BlobBlock
 import urllib.parse
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-
+import json
+import os
 from azure.storage.blob import BlobBlock
 
 from wrapperfunction.core import config
@@ -14,6 +16,21 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
+
+def get_containers_name():
+    blob_service_client = get_blob_service_client()
+    containers = blob_service_client.list_containers()
+    container_names = [container.name for container in containers]
+    return {"containers": container_names}
+
+def get_subfolders_name(container_name):
+    _ , blob_list = get_container_client(container_name = container_name)
+    subfolders = set()
+    for blob in blob_list:
+        subfolder = os.path.dirname(blob.name)
+        if subfolder:
+            subfolders.add(subfolder)
+    return {"subfolders": list(subfolders)}
 
 def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
     for file in files:
