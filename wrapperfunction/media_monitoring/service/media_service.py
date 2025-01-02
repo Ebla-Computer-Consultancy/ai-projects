@@ -17,6 +17,7 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
+from wrapperfunction.core.service import settings_service
 from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
@@ -82,17 +83,10 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
         info = config.get_media_info()
         index_info = aisearch_connector.get_index_info(info["index_name"])
         indexer_name = index_info.indexer_name
-        index_name = index_info.index_name
         search_indexer_client = get_search_indexer_client()
         status = search_indexer_client.get_indexer_status(indexer_name)
         search_indexer_client.run_indexer(indexer_name)
-        # Apply Skills
-        thread = threading.Thread(
-            target=monitor_indexer,
-            args=(search_indexer_client, indexer_name, index_name),
-            daemon=True
-        )
-        thread.start()
+        
         print(f"URL's:{urls} | Topics:{settings.topics} crawled successfully")
         # Return Response
         return ServiceReturn(
@@ -178,7 +172,16 @@ def is_valid_date(date_str):
         return True
     except ValueError:
         return False
-    
+
+def get_crawling_status():
+    try:
+        entity_settings = settings_service.get_settings_by_entity(config.ENTITY_NAME)[0]
+        media_settings = entity_settings.get("media_settings", None)
+        urls = media_settings.get("crawling_urls", [])
+        return urls
+    except Exception as e:
+        raise Exception(f"{str(e)}")
+
 async def sentiment_skill(values: list):
     results = []
     for record in values:
