@@ -24,7 +24,7 @@ crawled_sites = set()
 base_url = ""
 
 
-def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings,main_lang):
+def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     for url in urls:
         if validators.url(url.link):
             start_with = url.link.split('//')[0]
@@ -34,7 +34,7 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings,main_lang):
             base_url = start_with + '//' + domain_name
 
             allow_domains.add(domain_name)
-            orchestrator_function(url, url.settings if url.settings else settings,main_lang)
+            orchestrator_function(url, url.settings if url.settings else settings)
 
         else:
             raise HTTPException(status_code=400, detail="The URL was invalid.")
@@ -44,11 +44,10 @@ def crawl_urls(urls: list[CrawlRequestUrls], settings: CrawlSettings,main_lang):
 def orchestrator_function(
     url: CrawlRequestUrls,
     settings: CrawlSettings,
-    main_lang= "ar"
 ):
     try:
         en_data, data, response = crawl_site(
-            url.link, main_lang= main_lang, cookies=url.cookies, headers=url.headers, payload=url.payload
+            url.link, main_lang= url.settings, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
 
         if settings.mediaCrawling:
@@ -99,7 +98,7 @@ def orchestrator_function(
         )
         crawled_sites.add(url.link)
         if settings.deep:
-            collect_urls(data, url, settings,main_lang)
+            collect_urls(data, url, settings)
 
     except Exception as error:
         raise HTTPException(
@@ -119,13 +118,19 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
-    other_response = detect_languge_by_header(url, headers, payload, cookies,main_lang)
+    other_response = detect_languge_by_header(url, headers, payload, cookies, main_lang)
     if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
         return BeautifulSoup(other_response.text, "lxml"), BeautifulSoup(response.text, "lxml"), response
 
-def detect_languge_by_header(url, headers, payload, cookies, main_lang = "en"):#############
+def detect_languge_by_header(
+        url: str,
+        headers: str,
+        payload: str,
+        cookies: dict,
+        main_lang: str= "en"):
+    
     if main_lang == "en":
         translateTo ='العربية'
     else:
@@ -172,13 +177,6 @@ def detect_languge_by_header(url, headers, payload, cookies, main_lang = "en"):#
             new_response = ctx.call(onclick_function)
         return new_response
 
-"""
-def detect_languge_by_cookies(ORA_WEBCENTERAPP_USER_preferredLang):
-    if ORA_WEBCENTERAPP_USER_preferredLang is not None:
-        pass #################
-    pass
-"""
-
 def requestUrl(
     url: str,
     headers: dict,
@@ -210,7 +208,7 @@ def get_page_title(link, data = None):
 
 
 # Gets all of the URLs from the webpage.
-def collect_urls(data, url, settings:CrawlSettings,main_lang):
+def collect_urls(data, url, settings:CrawlSettings):
     try:
         url_elements = data.select("a[href]")
         for url_element in url_elements:
@@ -233,7 +231,7 @@ def collect_urls(data, url, settings:CrawlSettings,main_lang):
                     site_link_data.cookies = url.cookies
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
-                    orchestrator_function(site_link_data, settings,main_lang)
+                    orchestrator_function(site_link_data, settings)
 
     except Exception as error:
         raise HTTPException(
