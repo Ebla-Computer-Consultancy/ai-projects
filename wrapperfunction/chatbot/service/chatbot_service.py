@@ -17,7 +17,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         chatbot_settings = config.load_chatbot_settings(bot_name)
 
         if chatbot_settings.enable_history:
-            save_user_message(
+            chat_history_service.save_user_message(
                 chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
             )
             # Get response from OpenAI ChatGPT
@@ -38,22 +38,6 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
     except Exception as error:
         return {"error": True, "message": str(error)}
-def save_user_message(chat_payload, conversation_id, bot_name, client_details, chat_history_with_system):
-    user_message_entity = chat_history_service.set_message(
-        conversation_id=conversation_id,
-        content=chat_history_with_system["chat_history"][-1]["content"],
-        role=Roles.User.value,
-    )
-
-    chat_history_service.add_messages_to_history(
-        chat_payload=chat_payload,
-        conversation_id=conversation_id,
-        bot_name=bot_name,
-        user_message_entity=user_message_entity,
-        client_ip=client_details["client_ip"],
-        forwarded_ip=client_details["forwarded_ip"],
-        device_info=json.dumps(client_details["device_info"]),
-    )
 
 def process_chatbot_response(results, conversation_id, chat_payload, bot_name):
     context = chat_history_service.set_context(results)
