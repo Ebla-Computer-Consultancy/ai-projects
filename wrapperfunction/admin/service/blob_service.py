@@ -1,5 +1,5 @@
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client,get_blob_service_client
-from azure.storage.blob import BlobType,BlobBlock
+from azure.storage.blob import BlobBlock
 import urllib.parse
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse

@@ -1,5 +1,4 @@
 import json
-
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.core import config

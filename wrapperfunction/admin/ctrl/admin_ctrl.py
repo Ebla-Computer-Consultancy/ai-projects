@@ -11,7 +11,7 @@ from wrapperfunction.core.utls.helper import pdfs_files_filter
 router = APIRouter()
 
 @router.post("/crawler/")
-def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None, main_lang="ar"):
+def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
     try:
         return crawl_urls(urls, settings)
     except Exception as e:
