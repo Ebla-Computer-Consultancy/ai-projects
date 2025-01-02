@@ -1,6 +1,7 @@
 import json
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+import requests
 from wrapperfunction.core import config
 import wrapperfunction.search.integration.aisearch_connector as aisearchconnector
 from wrapperfunction.search.model.search_criterial import searchCriteria
@@ -73,4 +74,3 @@ def update_index(index_name: str, data):
         return aisearchconnector.update_index(index_name,data)
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"{str(e)}")
-

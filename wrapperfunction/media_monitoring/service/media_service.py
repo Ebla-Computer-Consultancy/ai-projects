@@ -66,10 +66,8 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             settings
         )
         # Indexer
-        info = config.get_media_info()
-        index_info = aisearch_connector.get_index_info(info["index_name"])
-        indexer_name = index_info.indexer_name
-        index_name = index_info.index_name
+        indexer_name = "rera-media-indexer"
+        index_name = "rera-media"
         search_indexer_client = get_search_indexer_client()
         search_indexer_client.run_indexer(indexer_name)
         status = search_indexer_client.get_indexer_status(indexer_name)
