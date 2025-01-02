@@ -1,6 +1,7 @@
 import json
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+import requests
 from wrapperfunction.core import config
 import wrapperfunction.search.integration.aisearch_connector as aisearchconnector
 from wrapperfunction.search.model.search_criterial import searchCriteria
@@ -67,3 +68,18 @@ def indexes_name():
         return aisearchconnector.get_indexes_name()
     except:
         raise HTTPException(status_code=404, detail="index not found")
+    
+def update_index(index_name: str, data):
+    url = f"https://reraaisearch01.search.windows.net/indexes/{index_name}/docs/index?api-version={config.SEARCH_API_VERSION}"
+    body = {"value":data}
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": config.SEARCH_KEY  
+    }
+    
+    res = requests.post(url=url,data=json.dumps(body, ensure_ascii=False),headers=headers)
+    if res.ok:
+        return res
+    else:
+        return HTTPException(status_code=res.status_code, detail=str(res))
+
