@@ -99,45 +99,54 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
         print(f"Error while monitoring indexer: {str(e)}")
 
 def apply_skills_on_index(index_name: str):
-    results = search_query(search_text="*",search_index=index_name)
-    for index in results["rs"]:
-        chunk = index["chunk"]
-        if chunk is not None:
-            if index["language"] is None:
-                detected_language = textanalytics_connector.detect_language(messages=[chunk])
-                index["language"] = detected_language[tak.LANGUAGE_ISO6391_NAME.value]
+    try:
+        start_time = time.time()
+        results = search_query(search_text="*",search_index=index_name)
+        docs = 0
+        for index in results["rs"]:
+            chunk = index["chunk"]
+            if chunk is not None:
+                if index["language"] is None:
+                    detected_language = textanalytics_connector.detect_language(messages=[chunk])
+                    index["language"] = detected_language[tak.LANGUAGE_ISO6391_NAME.value]
+                    
+                if index["sentiment"] is None:
+                    sentiment = textanalytics_connector.analyze_sentiment(messages=[chunk])
+                    index["sentiment"] = sentiment
                 
-            if index["sentiment"] is None:
-                sentiment = textanalytics_connector.analyze_sentiment(messages=[chunk])
-                index["sentiment"] = sentiment
-            
-            if index["keyphrases"] is None:
-                key_phrases = textanalytics_connector.extract_key_phrases(messages=[chunk],language=index["language"])
-                index["keyphrases"] = key_phrases
-            
-            if len(index["people"]) == 0 and len(index["organizations"]) == 0 and len(index["locations"]) == 0:
-                entities = textanalytics_connector.entity_recognition(messages=[chunk],language=index["language"])
-                index["people"] = entities[tak.PERSON.value]
-                index["organizations"] = entities[tak.ORGANIZATION.value]
-                index["locations"] = entities[tak.LOCATION.value]
-        # Image Analytics
-        if len(index["image_urls"]) > 0:
-            if index["image_read"] is None and index["image_caption"] is None and len(index["image_tags"]) == 0:
-                img_read=""
-                tags = []
-                caption = ""
-                for url in index["image_urls"]:
-                    analyzed_image = imageanalytics_connector.analyze_image_from_url(img_url=url)
-                    if len(analyzed_image["readResult"]["blocks"]) > 0:
-                        for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
-                            img_read += f"{line['text']}\n"
-                    tags.append([tags["name"] for tags in analyzed_image["tagsResult"]["values"]])
-                    caption += f'\n\n{analyzed_image["captionResult"]["text"]}'
-                index["image_read"] = img_read
-                index["image_tags"] = tags
-                index["image_caption"] = caption
-    print("maping finished")            
-    update_index(index_name=index_name, data=results["rs"])           
+                if index["keyphrases"] is None:
+                    key_phrases = textanalytics_connector.extract_key_phrases(messages=[chunk],language=index["language"])
+                    index["keyphrases"] = key_phrases
+                
+                if len(index["people"]) == 0 and len(index["organizations"]) == 0 and len(index["locations"]) == 0:
+                    entities = textanalytics_connector.entity_recognition(messages=[chunk],language=index["language"])
+                    index["people"] = entities[tak.PERSON.value]
+                    index["organizations"] = entities[tak.ORGANIZATION.value]
+                    index["locations"] = entities[tak.LOCATION.value]
+            # Image Analytics
+            if len(index["image_urls"]) > 0:
+                if index["image_read"] is None and index["image_caption"] is None and len(index["image_tags"]) == 0:
+                    img_read=""
+                    tags = []
+                    caption = ""
+                    for url in index["image_urls"]:
+                        analyzed_image = imageanalytics_connector.analyze_image_from_url(img_url=url)
+                        if len(analyzed_image["readResult"]["blocks"]) > 0:
+                            for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
+                                img_read += f"{line['text']}\n"
+                        tags.append([tags["name"] for tags in analyzed_image["tagsResult"]["values"]])
+                        caption += f'\n\n{analyzed_image["captionResult"]["text"]}'
+                    index["image_read"] = img_read
+                    index["image_tags"] = tags
+                    index["image_caption"] = caption
+            print(f"{docs}/{len(results["rs"])}...")
+        print("maping finished")            
+        update_index(index_name=index_name, data=results["rs"])
+        end_time = time.time()
+        print(f"Total time: {end_time - start_time:.5f} sec")
+    except Exception as e:
+        update_index(index_name=index_name, data=results["rs"])
+        print(f"Error While Aplyying Skills: {str(e)}")       
             
 
 async def sentiment_skill(values: list):
