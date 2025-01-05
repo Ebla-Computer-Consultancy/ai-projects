@@ -22,3 +22,6 @@ lxml
 azure-ai-vision-imageanalysis==1.0.0b2
 validators
 user_agents
+passlib==1.7.4
+pyjwt
+bcrypt==4.2.1
