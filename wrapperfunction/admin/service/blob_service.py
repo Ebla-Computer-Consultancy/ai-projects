@@ -1,9 +1,11 @@
-import json
+from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client,get_blob_service_client
+from azure.storage.blob import BlobBlock
 import urllib.parse
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-
-from azure.storage.blob import BlobType,BlobBlock
+import json
+import os
+from azure.storage.blob import BlobBlock
 
 from wrapperfunction.core import config
 from wrapperfunction.admin.model.crawl_settings import IndexingType
@@ -14,6 +16,21 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
+
+def get_containers_name():
+    blob_service_client = get_blob_service_client()
+    containers = blob_service_client.list_containers()
+    container_names = [container.name for container in containers]
+    return {"containers": container_names}
+
+def get_subfolders_name(container_name):
+    _ , blob_list = get_container_client(container_name = container_name)
+    subfolders = set()
+    for blob in blob_list:
+        subfolder = os.path.dirname(blob.name)
+        if subfolder:
+            subfolders.add(subfolder)
+    return {"subfolders": list(subfolders)}
 
 def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
     for file in files:
@@ -44,12 +61,10 @@ def append_blob(
     metadata_2=None,
     metadata_3: IndexingType = IndexingType.CRAWLED.value,
     metadata_4=None,
-):
+):       
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
-    if metadata_3 == IndexingType.CRAWLED.value or metadata_3 == IndexingType.GENERATED.value:
-        blob_client.upload_blob(blob, blob_type=BlobType.AppendBlob, overwrite=True)
-    else:
-        blob_client.upload_blob(blob, overwrite=True)
+    blob_client.upload_blob(blob, overwrite=True)
+    
 
     blob_metadata = blob_client.get_blob_properties().metadata or {}
     if metadata_2 is not None:
@@ -133,7 +148,7 @@ def delete_blobs(
         else:
             blob_client.delete_blob()
 
-def upload_files_to_blob(files: list,container_name :str, subfolder_name="pdfdata"):
+def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
         # Get the container client
         container_client, _ =  get_container_client(container_name = container_name,subfolder_name = subfolder_name)    
         for file in files:

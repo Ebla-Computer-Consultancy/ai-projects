@@ -34,6 +34,20 @@ def get_blobs(container_name: str, subfolder_name: str = None):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-containers")
+def get_containers():
+    try:
+        return blob_service.get_containers_name()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/get-subfolders/{container_name}")
+def get_subfolders(container_name: str):
+    try:
+        return blob_service.get_subfolders_name(container_name=container_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/delete-subfolder")
 async def delete_subfolder(container_name: str, subfolder_name: str):
     try:
@@ -81,3 +95,9 @@ async def index_info(index_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/indexes-name")
+async def indexes_name():
+    try:
+        return search_service.indexes_name()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

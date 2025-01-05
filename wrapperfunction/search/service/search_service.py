@@ -1,5 +1,4 @@
 import json
-
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from wrapperfunction.core import config
@@ -63,3 +62,8 @@ def index_info(index_name: str):
     except:
         raise HTTPException(status_code=404, detail="index not found")
 
+def indexes_name():
+    try:
+        return aisearchconnector.get_indexes_name()
+    except:
+        raise HTTPException(status_code=404, detail="index not found")

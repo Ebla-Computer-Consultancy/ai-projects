@@ -4,7 +4,7 @@ from azure.data.tables import TableServiceClient
 from wrapperfunction.chat_history.model.Generic_Table_Client import GenericTableClient
 
 
-table_service_client = TableServiceClient.from_connection_string(conn_str=config.CONNECTION_STRING)
+table_service_client = TableServiceClient.from_connection_string(conn_str=config.COSMOS_CONNECTION_STRING)
 
 
 async def add_entity(table_name: str, entity: Dict[str, Any]):
