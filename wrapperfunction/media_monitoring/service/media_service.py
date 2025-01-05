@@ -60,10 +60,10 @@ async def generate_report(search_text: str):
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
         # Crawling
-        # crawl_urls(
-        #     urls,
-        #     settings
-        # )
+        crawl_urls(
+            urls,
+            settings
+        )
         # Indexer
         info = config.get_media_info()
         index_info = aisearch_connector.get_index_info(info["index_name"])
