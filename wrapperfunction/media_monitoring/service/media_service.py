@@ -146,6 +146,7 @@ def apply_skills_on_index(index_name: str):
                     index["image_read"] = img_read
                     index["image_tags"] = tags
                     index["image_caption"] = caption
+            docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
         update_index(index_name=index_name, data=results["rs"])
         end_time = time.time()
