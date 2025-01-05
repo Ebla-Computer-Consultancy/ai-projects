@@ -279,6 +279,11 @@
     "الغرافة": "الغَرَّافة"
   },
   "media_settings":{
+    "info":{
+        "index_name":"rera-media",
+        "reports_container_name": "rera-media-reports",
+        "container_name": "rera-media"
+    },
     "web_urls":
         [
             "https://www.amlakqatar.qa/",

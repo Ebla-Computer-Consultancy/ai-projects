@@ -215,4 +215,11 @@ def get_sas_token(blob_url:str):
     try:
         return blob_service.generate_blob_sas_url(blob_url=blob_url)
     except Exception as e:    
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))      
+
+@router.post("/update-index/{index_name}")
+async def update_index(index_name: str, data:List[dict]):
+    try:
+        return search_service.update_index(index_name, data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

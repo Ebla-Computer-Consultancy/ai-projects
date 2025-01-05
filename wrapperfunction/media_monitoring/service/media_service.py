@@ -14,9 +14,12 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
+from wrapperfunction.media_monitoring.integration.media_connector import get_media_info
+from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
 from azure.search.documents.indexes import SearchIndexerClient
+from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
 from wrapperfunction.search.service.search_service import update_index
 
 async def generate_report(search_text: str):
@@ -33,13 +36,14 @@ async def generate_report(search_text: str):
         )
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
+        info = get_media_info()
         append_blob(blob=chat_res["message"]["content"],
                     metadata_3=IndexingType.GENERATED.value,
                     folder_name=config.SUBFOLDER_NAME,
-                    container_name= "rera-media-reports",
+                    container_name= info["reports_container_name"],
                     blob_name=f"{report_file_name}.txt")
         
-        sas_url = generate_blob_sas_url(container_name= "rera-media-reports",
+        sas_url = generate_blob_sas_url(container_name= info["reports_container_name"],
                                             blob_name=f"{config.SUBFOLDER_NAME}/{report_file_name}.txt")
         # Push the file to the Azure container
         return ServiceReturn(
@@ -57,13 +61,15 @@ async def generate_report(search_text: str):
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
         # Crawling
-        crawl_urls(
-            urls,
-            settings
-        )
+        # crawl_urls(
+        #     urls,
+        #     settings
+        # )
         # Indexer
-        indexer_name = "rera-media-indexer"
-        index_name = "rera-media"
+        info = get_media_info()
+        index_info = aisearch_connector.get_index_info(info["index_name"])
+        indexer_name = index_info.indexer_name
+        index_name = index_info.index_name
         search_indexer_client = get_search_indexer_client()
         search_indexer_client.run_indexer(indexer_name)
         status = search_indexer_client.get_indexer_status(indexer_name)
@@ -90,13 +96,14 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
             status = indexer_client.get_indexer_status(indexer_name)
             print(f"Checking status: {status.last_result.status}")
             
-            if status.last_result.status != "inProgress":
+            if status.last_result.status != IndexerLastRunStatus.IN_PROGRESS.value:
                 apply_skills_on_index(index_name)
                 break
             time.sleep(10)
             retries += 1
     except Exception as e:
         print(f"Error while monitoring indexer: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error while monitoring indexer: {str(e)}")
 
 def apply_skills_on_index(index_name: str):
     try:
@@ -139,14 +146,14 @@ def apply_skills_on_index(index_name: str):
                     index["image_read"] = img_read
                     index["image_tags"] = tags
                     index["image_caption"] = caption
-            print(f"{docs}/{len(results["rs"])}...")
-        print("maping finished")            
+            print(f"{docs}/{len(results['rs'])}...")            
         update_index(index_name=index_name, data=results["rs"])
         end_time = time.time()
         print(f"Total time: {end_time - start_time:.5f} sec")
     except Exception as e:
         update_index(index_name=index_name, data=results["rs"])
-        print(f"Error While Aplyying Skills: {str(e)}")       
+        print(f"Error While Applying Skills: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error while monitoring indexer: {str(e)}")     
             
 
 async def sentiment_skill(values: list):

@@ -70,16 +70,8 @@ def indexes_name():
         raise HTTPException(status_code=404, detail="index not found")
     
 def update_index(index_name: str, data):
-    url = f"https://reraaisearch01.search.windows.net/indexes/{index_name}/docs/index?api-version={config.SEARCH_API_VERSION}"
-    body = {"value":data}
-    headers = {
-        "Content-Type": "application/json",
-        "api-key": config.SEARCH_KEY  
-    }
-    
-    res = requests.post(url=url,data=json.dumps(body, ensure_ascii=False),headers=headers)
-    if res.ok:
-        return res
-    else:
-        return HTTPException(status_code=res.status_code, detail=str(res))
+    try:
+        return aisearchconnector.update_index(index_name,data)
+    except:
+        raise HTTPException(status_code=404, detail="index not found")
 
