@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 import json
 import os
 from azure.storage.blob import BlobBlock
-
 from wrapperfunction.core import config
 from wrapperfunction.admin.model.crawl_settings import IndexingType
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client

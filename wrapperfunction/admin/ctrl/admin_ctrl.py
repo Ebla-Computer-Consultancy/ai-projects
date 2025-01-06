@@ -13,6 +13,7 @@ router = APIRouter()
 @router.post("/crawler/")
 def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
     try:
+        # Read the content of the file
         return crawl_urls(urls, settings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
