@@ -1,5 +1,7 @@
 import re
+from fastapi import Request
 from num2words import num2words
+from user_agents import parse
 import wrapperfunction.core.config as config
 
 
@@ -66,3 +68,19 @@ def pdfs_files_filter(files):
         else:
             json_files.append(file)
     return pdf_files, json_files
+
+def extract_client_details(request: Request) -> dict:
+    client_ip = request.client.host if request.client else "Unknown"
+    forwarded_ip = request.headers.get("X-Forwarded-For", "Unknown")
+    user_agent = request.headers.get("User-Agent", "")
+    user_agent_parsed = parse(user_agent)
+    device_info = {
+        "browser": user_agent_parsed.browser.family,
+        "os": user_agent_parsed.os.family,
+        "device_type": user_agent_parsed.device.family,
+    }
+    return {
+        "client_ip": client_ip,
+        "forwarded_ip": forwarded_ip,
+        "device_info": device_info,
+    }  

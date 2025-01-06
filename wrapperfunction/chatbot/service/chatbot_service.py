@@ -8,76 +8,43 @@ from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
+from wrapperfunction.core.utls.helper import extract_client_details
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
-        client_details = chat_history_service.extract_client_details(request)
+        client_details = extract_client_details(request)
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
         chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
         chatbot_settings = config.load_chatbot_settings(bot_name)
 
         if chatbot_settings.enable_history:
-            chat_history_service.save_user_message(
-                chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
+            chat_history_service.save_history(
+                Roles.User.value,chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
             )
-            # Get response from OpenAI ChatGPT
-            results = openaiconnector.chat_completion(
-                chatbot_settings, chat_history_with_system["chat_history"]
+
+        # Get response from OpenAI ChatGPT
+        results = openaiconnector.chat_completion(
+            chatbot_settings, chat_history_with_system["chat_history"]
+        )
+
+        if chatbot_settings.enable_history:
+            chat_history_service.save_history(
+                Roles.Assistant.value,results, conversation_id, chat_payload, bot_name
             )
-            process_chatbot_response(
-                results, conversation_id, chat_payload, bot_name
-            )
-        else:
-            # Get response from OpenAI ChatGPT
-            results = openaiconnector.chat_completion(
-                chatbot_settings, chat_history_with_system["chat_history"]
-            )
+        if chat_payload.stream_id is not None and results["message"]["content"] is not None:
+            is_ar = is_arabic(results["message"]["content"][:30])
+            # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
+            asyncio.create_task(
+                avatar_connector.render_text_async(
+                    chat_payload.stream_id, results["message"]["content"], is_ar
+                )
+            )            
 
         results["message"]["conversation_id"] = conversation_id
         return results
 
     except Exception as error:
         return {"error": True, "message": str(error)}
-
-def process_chatbot_response(results, conversation_id, chat_payload, bot_name):
-    context = chat_history_service.set_context(results)
-    tools_message_entity = None
-    assistant_message_entity = None
-
-    if results["message"].get("tool_calls"):
-        tools_message_entity = chat_history_service.set_message(
-            conversation_id=conversation_id,
-            role=Roles.Tool.value,
-            tool_calls=results["message"]["tool_calls"],
-            context=context,
-            completion_tokens=results["usage"]["completion_tokens"],
-            prompt_tokens=results["usage"]["prompt_tokens"],
-            total_tokens=results["usage"]["total_tokens"],
-        )
-    else:
-        assistant_message_entity = chat_history_service.set_message(
-            conversation_id=conversation_id,
-            content=results["message"]["content"],
-            role=Roles.Assistant.value,
-            context=context,
-            completion_tokens=results["usage"]["completion_tokens"],
-            prompt_tokens=results["usage"]["prompt_tokens"],
-            total_tokens=results["usage"]["total_tokens"],
-        )
-
-    chat_history_service.add_messages_to_history(
-        chat_payload=chat_payload,
-        conversation_id=conversation_id,
-        assistant_message_entity=assistant_message_entity,
-        bot_name=bot_name,
-        tools_message_entity=tools_message_entity,
-    )
-
-    if chat_payload.stream_id is not None and results["message"].get("content"):
-        is_ar = is_arabic(results["message"]["content"][:30])
-        asyncio.create_task(
-            avatar_connector.render_text_async(chat_payload.stream_id, results["message"]["content"], is_ar)
-        )
 
 
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
