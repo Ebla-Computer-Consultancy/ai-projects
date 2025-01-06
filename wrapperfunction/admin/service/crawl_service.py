@@ -47,7 +47,7 @@ def orchestrator_function(
 ):
     try:
         en_data, data, response = crawl_site(
-            url.link, main_lang= url.settings, cookies=url.cookies, headers=url.headers, payload=url.payload
+            url.link, main_lang= url.settings.main_lang, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
 
         if settings.mediaCrawling:
@@ -77,9 +77,9 @@ def orchestrator_function(
                 else:
                     site_data = {
                     "url": url.link,
-                    "title": get_page_title(url.link, data),
+                    "ar_title": get_page_title(url.link, data),
                     "en_title": get_page_title(url.link, en_data),
-                    "content": get_page_content(data, settings),
+                    "ar_content": get_page_content(data, settings),
                     "en_content": get_page_content(en_data, settings),
                 }
                 
@@ -118,13 +118,14 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
-    other_response = detect_languge_by_header(url, headers, payload, cookies, main_lang)
+    other_response = detect_languge_by_header(response, url, headers, payload, cookies, main_lang)
     if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
         return BeautifulSoup(other_response.text, "lxml"), BeautifulSoup(response.text, "lxml"), response
 
 def detect_languge_by_header(
+        response,
         url: str,
         headers: str,
         payload: str,
@@ -135,8 +136,7 @@ def detect_languge_by_header(
         translateTo ='العربية'
     else:
         translateTo ='English'
-    
-    response = requestUrl(url, headers, payload, cookies)
+
     soup = BeautifulSoup(response.text, 'lxml')
     # Find the button tag containing the text "English"
     button_tag = soup.find('a', text= translateTo)
