@@ -236,7 +236,7 @@ def set_message(conversation_id, role, content=None, tool_calls=None, context=No
         for tool_call in tool_calls
     ]
 
-def add_messages_to_history(
+async def add_messages_to_history(
     chat_payload,
     conversation_id,
     bot_name,
@@ -248,13 +248,13 @@ def add_messages_to_history(
     device_info=None,
 ):
     if tools_message_entity:
-        handle_tool_messages(chat_payload, conversation_id, user_message_entity, tools_message_entity)
+        await handle_tool_messages(chat_payload, conversation_id, user_message_entity, tools_message_entity)
     else:
-        handle_user_or_assistant_messages(
+        await handle_user_or_assistant_messages(
             chat_payload, conversation_id, bot_name, user_message_entity, assistant_message_entity, client_ip, forwarded_ip, device_info
         )
 
-async def save_history(
+def save_history(
     role, chat_payload, conversation_id, bot_name, client_details=None, chat_history_with_system=None, results=None
 ):
     if role == Roles.User.value:
@@ -311,26 +311,26 @@ async def save_history(
                 tools_message_entity=tools_message_entity,
             )
         )
-def create_and_add_message(chat_payload, conversation_id, user_message_entity, bot_name=None, client_ip=None, forwarded_ip=None, device_info=None):
+async def create_and_add_message(chat_payload, conversation_id, user_message_entity, bot_name=None, client_ip=None, forwarded_ip=None, device_info=None):
 
     conv_entity = set_conversation_entity(
         chat_payload, conversation_id, user_message_entity, bot_name, client_ip, forwarded_ip, device_info
     )
-    add_message_to_Entity(user_message_entity=user_message_entity, conv_entity=conv_entity)
+    await add_message_to_Entity(user_message_entity=user_message_entity, conv_entity=conv_entity)
 
-def handle_tool_messages(
+async def handle_tool_messages(
     chat_payload, 
     conversation_id, 
     user_message_entity, 
     tools_message_entity
 ):
     if not chat_payload.conversation_id and user_message_entity:
-        create_and_add_message(chat_payload, conversation_id, user_message_entity)
+         await create_and_add_message(chat_payload, conversation_id, user_message_entity)
     else:
         for tool_message in tools_message_entity:
-            add_message_to_Entity(user_message_entity=user_message_entity, assistant_message_entity=tool_message)
+            await add_message_to_Entity(user_message_entity=user_message_entity, assistant_message_entity=tool_message)
 
-def handle_user_or_assistant_messages(
+async def handle_user_or_assistant_messages(
     chat_payload, 
     conversation_id, 
     bot_name, 
@@ -341,7 +341,7 @@ def handle_user_or_assistant_messages(
     device_info
 ):
     if not chat_payload.conversation_id and user_message_entity:
-        create_and_add_message(
+       await create_and_add_message(
             chat_payload, 
             conversation_id, 
             user_message_entity, 
@@ -351,7 +351,7 @@ def handle_user_or_assistant_messages(
             device_info
         )
     else:
-        add_message_to_Entity(user_message_entity=user_message_entity, assistant_message_entity=assistant_message_entity)
+       await add_message_to_Entity(user_message_entity=user_message_entity, assistant_message_entity=assistant_message_entity)
 
 def set_conversation_entity(chat_payload, conversation_id, user_message_entity, bot_name=None, client_ip=None, forwarded_ip=None, device_info=None):
     user_id = chat_payload.user_id or str(uuid.uuid4())
@@ -366,10 +366,10 @@ def set_conversation_entity(chat_payload, conversation_id, user_message_entity, 
         device_info=device_info,
     )
 
-def add_message_to_Entity(user_message_entity=None, assistant_message_entity=None, conv_entity=None):
+async def add_message_to_Entity(user_message_entity=None, assistant_message_entity=None, conv_entity=None):
     if conv_entity and user_message_entity:
-        add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
+       await add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
     else:
-        add_entity(
-            message_entity=user_message_entity, assistant_entity=assistant_message_entity
+       await add_entity(
+             message_entity=user_message_entity, assistant_entity=assistant_message_entity
         )

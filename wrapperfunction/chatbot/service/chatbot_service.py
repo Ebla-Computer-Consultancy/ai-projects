@@ -29,7 +29,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                Roles.Assistant.value,results, conversation_id, chat_payload, bot_name
+                role=Roles.Assistant.value,results=results, conversation_id=conversation_id, chat_payload=chat_payload, bot_name=bot_name
             )
         if chat_payload.stream_id is not None and results["message"]["content"] is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
