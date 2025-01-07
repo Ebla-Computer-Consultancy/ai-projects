@@ -142,4 +142,4 @@ def update_index(index_name: str, data):
     if res.ok:
         return res
     else:
-        return HTTPException(status_code=res.status_code, detail=str(res))
+        return HTTPException(status_code=res.status_code, detail=str(res.content))

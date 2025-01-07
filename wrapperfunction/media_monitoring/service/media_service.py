@@ -1,3 +1,4 @@
+import json
 import threading
 import time
 from fastapi import HTTPException
@@ -144,7 +145,7 @@ def apply_skills_on_index(index_name: str):
                         tags.append([tags["name"] for tags in analyzed_image["tagsResult"]["values"]])
                         caption += f'\n\n{analyzed_image["captionResult"]["text"]}'
                     index["image_read"] = img_read
-                    index["image_tags"] = tags
+                    index["image_tags"] = json.dumps(tags, ensure_ascii=False)
                     index["image_caption"] = caption
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            

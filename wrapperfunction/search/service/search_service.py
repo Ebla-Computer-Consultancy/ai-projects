@@ -72,6 +72,6 @@ def indexes_name():
 def update_index(index_name: str, data):
     try:
         return aisearchconnector.update_index(index_name,data)
-    except:
-        raise HTTPException(status_code=404, detail="index not found")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"{str(e)}")
 
