@@ -4,16 +4,21 @@ from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPerm
 
 connect_str = config.STORAGE_CONNECTION
 
+
+def get_blob_service_client():
+    return BlobServiceClient.from_connection_string(connect_str)
+
 def get_blob_client(container_name:str, blob_name: str):
-    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+    blob_service_client = get_blob_service_client()
     return blob_service_client.get_blob_client(container=container_name, blob=blob_name)
 
 def get_container_client(
     container_name:str,
-    subfolder_name:str
+    subfolder_name:str=None
+    
 ):
     # Create the BlobServiceClient object
-    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+    blob_service_client = get_blob_service_client()
     # Get the container client
     container_client = blob_service_client.get_container_client(container_name)
     if subfolder_name is not None:
