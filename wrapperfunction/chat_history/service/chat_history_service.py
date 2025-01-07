@@ -1,11 +1,10 @@
 import asyncio
 import json
 from typing import Optional
-from urllib.request import Request
 import uuid
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from wrapperfunction.chat_history.model.message_entity import (
     MessageEntity,
     MessagePropertyName,
@@ -153,7 +152,6 @@ async def add_message(chat_payload: ChatPayload, bot_name: str, request: Request
         if not chat_payload.conversation_id:
             title = chat_payload.messages[0].content[:20].strip()
             client_details = extract_client_details(request)
-            
             message_entity = MessageEntity(chat_payload.messages[0].content, conv_id, Roles.User.value, "")
             conv_entity = ConversationEntity(user_id, conv_id, bot_name, title,client_ip=client_details["client_ip"],forwarded_ip=client_details["forwarded_ip"],device_info=json.dumps(client_details["device_info"]))
             await add_entity(message_entity, None, conv_entity)  
@@ -164,7 +162,7 @@ async def add_message(chat_payload: ChatPayload, bot_name: str, request: Request
             status=StatusCode.SUCCESS, message="message added successfully", data=conv_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-async def upload_documents(files, bot_name, conversation_id: Optional[str] = None):
+async def upload_documents(files, bot_name,  request: Request,conversation_id: Optional[str] = None ):
     try:
         content = ""
         for file in files:
@@ -172,10 +170,12 @@ async def upload_documents(files, bot_name, conversation_id: Optional[str] = Non
             content += extracted_text
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
+            print(f"conversation_id: {conversation_id}")
             title = content[:20].strip()
 
             user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
-            conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title)
+            client_details = extract_client_details(request)
+            conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title,client_ip=client_details["client_ip"],forwarded_ip=client_details["forwarded_ip"],device_info=json.dumps(client_details["device_info"]))
             await add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
         else:
             user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)

@@ -10,5 +10,5 @@ router = APIRouter()
 async def chat(request: Request,bot_name: str,message_payload: ChatPayload):
     return await chatbotservice.chat(bot_name,message_payload,request)
 @router.post("/upload_documents/")
-async def upload(files:List[UploadFile],bot_name,conversation_id: Optional[str] = None):
-    return await upload_documents(files,bot_name,conversation_id)
+async def upload(files:List[UploadFile],request: Request,bot_name,conversation_id: Optional[str] = None):
+    return await upload_documents(files,bot_name,request,conversation_id)
