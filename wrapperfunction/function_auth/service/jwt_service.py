@@ -71,4 +71,4 @@ def get_token_from_header(authorization: str = Header(...)):
     if authorization.startswith("Bearer "):
         return authorization[7:]
     else:
-        raise HTTPException(status_code=400, detail="Invalid token format")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")

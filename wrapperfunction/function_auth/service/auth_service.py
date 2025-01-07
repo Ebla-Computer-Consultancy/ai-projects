@@ -1,5 +1,5 @@
 from typing import Tuple
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from ldap3 import NTLM, Connection, Server
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User, Permission
@@ -16,7 +16,7 @@ def get_jwt(username: str, password: str):
         jwt_service.update_refresh_token(token=tokens[1], user=user[1])
         return {"permissions": user[0].permissions,"access_token":tokens[0],"refresh_token":tokens[1]}
     except Exception as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     
 def test_ldap_connection(username: str, password: str):
     try:
@@ -31,9 +31,9 @@ def test_ldap_connection(username: str, password: str):
         if conn.bind():
             return conn
         else:
-            raise HTTPException(status_code=401,detail="Unauthorized: User Not Found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
     except Exception as e:
-        raise HTTPException(status_code=401,detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 def get_user(username, password) -> Tuple[User, dict]:
     try:
@@ -42,7 +42,8 @@ def get_user(username, password) -> Tuple[User, dict]:
             user_permissions = get_user_permissions(user[0]["user-id"])
             user_permissions = [
                     Permission(
-                        name=permission_data["name"],
+                        en_name=permission_data["en_name"],
+                        ar_name=permission_data["ar_name"],
                         key=permission_data["key"]
                     )
                     for permission in user_permissions
@@ -50,9 +51,9 @@ def get_user(username, password) -> Tuple[User, dict]:
                 ]  
             return User(username=username,enc_password=hash_password(password),permissions=user_permissions),user[0]
         else: 
-            raise HTTPException(status_code=404, detail="User Not Found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
     except Exception as e:
-        raise HTTPException(status_code=404, detail="User Not Found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         
 def get_user_permissions(user_id):
     return table_service.get_user_permissions(user_id)
@@ -60,20 +61,20 @@ def get_user_permissions(user_id):
 def set_permission(url: str) -> str:
     if "interactive" in str(url):
         return PermissionTypes.INTERACTIVE_CHAT.value
-    elif "search" in url:
+    elif "search" in str(url):
         return PermissionTypes.SEARCH.value
-    elif "chatbot" in url:
+    elif "chatbot" in str(url):
         return PermissionTypes.CHATBOT.value
-    elif "media" in url:
+    elif "media" in str(url):
         return PermissionTypes.MEDIA.value
-    elif "avatar" in url:
+    elif "avatar" in str(url):
         return PermissionTypes.AVATAR.value
-    elif "speech" in url:
+    elif "speech" in str(url):
         return PermissionTypes.SPEECH.value
-    elif "document-intelligence" in url:
+    elif "document-intelligence" in str(url):
         return PermissionTypes.DOCUMENT_INTELLIGENCE.value
-    elif "chat-history" in url:
+    elif "chat-history" in str(url):
         return PermissionTypes.CHAT_HISTORY.value
     else:
-        raise HTTPException(status_code=400, detail="Permission not found for the given URL")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Required Permissions not found")
 

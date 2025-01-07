@@ -17,7 +17,7 @@ class User:
         self.permissions= permissions
     
     def dict_permissions(self):
-        return [{"name":permission.get_permission_name(),"key":permission.get_permission_key()} for permission in self.permissions]    
+        return [{"name":permission.get_permission_en_name(),"key":permission.get_permission_key()} for permission in self.permissions]    
     
     def to_dict(self):
         return {
