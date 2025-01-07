@@ -1,11 +1,12 @@
 from fastapi import HTTPException, Request
-from wrapperfunction.chat_history.service import chat_history_service as db
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.chatbot.service import chatbot_service
+from wrapperfunction.core import config
 from wrapperfunction.core.config import ENTITY_SETTINGS
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.interactive_chat.model import interactive_model
 from wrapperfunction.chatbot.model.chat_message import ChatMessage, Roles
+import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
 
 async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPayload, request: Request):
@@ -18,7 +19,7 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
                                             start_date=form.start_date,
                                             end_date=form.end_date,
                                             comments=form.comments).to_dict()
-        result = await db.add_form(v_form)
+        result = await add_form(v_form)
         if result is None:
             result = f"Form Submitted Successfully, form data:{v_form}"
         final_message = await generate_final_response("form filled Successfully", chat_payload, request)
@@ -37,7 +38,7 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
 
 async def approve_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
+        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfully"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -56,7 +57,7 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
 
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
+        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Rejected Successfully"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -74,7 +75,7 @@ async def disapprove_action(arguments:interactive_model.Status, chat_payload: Ch
 
 async def pending_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = db.update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
+        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
         if result is None:
             result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfully"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -95,7 +96,7 @@ async def getForm_action(arguments: interactive_model.GetForm, chat_payload: Cha
         print(f'Argument-Type:{type(arguments)}')
         print(f'Argument:{arguments}')
         
-        result = db.get_vacations_filter_by(arguments.column_name,arguments.value)
+        result = get_vacations_filter_by(arguments.column_name,arguments.value)
         if len(result) == 0: 
             result = f"No forms found for {arguments.column_name}:{arguments.value}"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -113,7 +114,7 @@ async def getForm_action(arguments: interactive_model.GetForm, chat_payload: Cha
 
 async def getAllForms_action(chat_payload: ChatPayload, request: Request):
     try:
-        result = db.get_all_vacations()
+        result = get_all_vacations()
         if len(result) == 0: 
             result = f"No forms found"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -149,3 +150,34 @@ def try_parse_int(value):
         return int(value)
     except ValueError:
         return value
+
+def get_all_vacations():
+    try:
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+def get_vacations_filter_by(column_name,value):
+    try:
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE,f"{column_name} eq {value}")
+        return res
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
+
+def update_Status(employee_ID: str, status: int):
+    try:
+        forms = get_vacations_filter_by("Employee_ID",employee_ID)
+        if forms:
+            for form in forms:
+                
+                form.update({"Status":status,"Comments":f"{interactive_model.FormStatus(status).name} by Manager"})
+                db_connector.update_entity(config.COSMOS_VACATION_TABLE, form)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def add_form(form: dict):
+    try:
+        await db_connector.add_entity(config.COSMOS_VACATION_TABLE,form)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
