@@ -2,6 +2,8 @@ import asyncio
 import json
 from typing import Optional
 import uuid
+from wrapperfunction.chat_history.model.question_entity import QuestionEntity
+from wrapperfunction.chat_history.model.question_model import Question
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
 from fastapi import HTTPException, Request
@@ -373,3 +375,61 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
        await add_entity(
              message_entity=user_message_entity, assistant_entity=assistant_message_entity
         )
+
+
+def get_question_data(question_id: str):
+    try:
+        filter = f"QuestionId eq '{question_id}'"
+        return db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter)[0]
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to retrieve questions: {str(e)}"
+        )
+async def add_questions(questions: list[Question]):
+    try:
+        for question in questions:
+            entity = QuestionEntity(question=question.question)
+            await db_connector.add_entity(config.COSMOS_FAQ_TABLE, entity.to_dict())
+        return ServiceReturn(
+            status=StatusCode.SUCCESS,
+            message="Questions added successfully."
+        ).to_dict()
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to add questions: {str(e)}"
+        )
+
+def delete_questions(question_id: str):
+    try:
+        question = get_question_data(question_id)
+        if question:
+            db_connector.delete_entity(config.COSMOS_FAQ_TABLE, question)
+            return ServiceReturn(
+                status=StatusCode.SUCCESS,
+                message="Question deleted successfully."
+            )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def update_question(question_id: str, updated_data: Question):
+    try:
+        question = get_question_data(question_id)
+        if question:
+            question.update(updated_data)
+            db_connector.update_entity(config.COSMOS_FAQ_TABLE, question)
+            return ServiceReturn(
+            status=StatusCode.SUCCESS,
+            message="Question updated successfully.").to_dict()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+def get_questions():
+    try:
+        return db_connector.get_entities(config.COSMOS_FAQ_TABLE)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to retrieve questions: {str(e)}"
+        )
+       

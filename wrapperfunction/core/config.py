@@ -38,6 +38,8 @@ AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+COSMOS_FAQ_TABLE=os.getenv("COSMOS_FAQ_TABLE")
+
 
 def load_entity_settings():
     file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
