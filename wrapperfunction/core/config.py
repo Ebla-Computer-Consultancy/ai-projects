@@ -41,10 +41,10 @@ COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
 
 def load_entity_settings():
-    file_path = os.path.join(os.path.dirname(__file__), f"settings/{ENTITY_NAME}.json")
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as file:
-            return json.load(file)
+    from wrapperfunction.core.service import settings_service 
+    settings = settings_service.get_settings_by_entity(ENTITY_NAME)
+    if len(settings) > 0:
+        return settings[0]
     else:
         return {}
 
@@ -62,11 +62,13 @@ def load_chatbot_settings(bot_name: str):
             top_p = custom_settings_data.get("top_p", 0.95)
             tools = custom_settings_data.get("tools",None)
             enable_history = chatbot_obj.get("enable_history", True)
+            display_in_chat = chatbot_obj.get("display_in_chat", True)
             custom_settings = CustomSettings(temperature=temperature,
                                             top_p=top_p,
                                             max_tokens=max_tokens,
                                             tools=tools,
                                             max_history_length=max_history_length,
+                                            display_in_chat=display_in_chat
                                         )
             chatbot = ChatbotSetting(
 

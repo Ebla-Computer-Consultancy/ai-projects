@@ -117,13 +117,6 @@ async def get_setting(entity_name: str):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
 
-@router.get("/settings/{entity_name}/{bot_name}")
-async def get_setting_by_botname(entity_name: str, bot_name: str):
-    try:
-        return settings_service.get_chatbot_settings_by_entity(entity_name= entity_name, chatbot_name=bot_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
-
 @router.post("/settings")
 async def update_setting(entity: Dict[str, Any]):
     try:
