@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.function_auth.service import auth_service
-from wrapperfunction.function_auth.model.func_auth_model import LoginRequest, User
-from wrapperfunction.function_auth.service import table_service
+from wrapperfunction.function_auth.model.func_auth_model import LoginRequest
 
 router = APIRouter()
 
