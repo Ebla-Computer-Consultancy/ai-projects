@@ -51,6 +51,7 @@ COSMOS_AUTH_PERMISSION_TABLE=os.getenv("COSMOS_AUTH_PERMISSION_TABLE")
 COSMOS_AUTH_USER_PER_TABLE=os.getenv("COSMOS_AUTH_USER_PER_TABLE")
 JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
+BASE_URL=os.getenv("BASE_URL")
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
