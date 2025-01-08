@@ -14,22 +14,16 @@ async def login(body: LoginRequest):
     except Exception as e:
         raise e
 
+@router.post("/update-refresh-token")
+async def update_refresh_token(token: str = Depends(jwt_service.get_token_from_header)):
+    try:
+        return auth_service.update_refresh_token(token=token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")    
+
 async def hasAuthority(request: Request, token: str = Depends(jwt_service.get_token_from_header)):
     try:
-        permission = auth_service.set_permission(request.url)
-        payloads = jwt_service.decode_jwt(token)
-        user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
-        if payloads["token_type"] == "refresh":
-            if len(table_service.get_user_by_token(token=token, username=user.username)) < 1:
-                raise HTTPException(status_code=401, detail=f"Invalid refresh_token")
-        have_permission = False
-        for per in user.permissions:
-            if per["name"] == permission:
-                have_permission = True
-                break
-        if not have_permission:    
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"User don't have required permission to access this endpoint")
-        
+        auth_service.hasAnyAuthority(request=request, token=token)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")
     

@@ -1,5 +1,5 @@
 from typing import Tuple
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from ldap3 import NTLM, Connection, Server
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User, Permission
@@ -8,6 +8,7 @@ from wrapperfunction.function_auth.service import table_service
 from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.function_auth.service.password_service import hash_password
 
+### AUTHENTICATION
 def get_jwt(username: str, password: str):
     try:
         user = get_user(username, password)
@@ -57,6 +58,42 @@ def get_user(username, password) -> Tuple[User, dict]:
         
 def get_user_permissions(user_id):
     return table_service.get_user_permissions(user_id)
+
+def update_refresh_token(token: str):
+    try:
+        payloads = jwt_service.decode_jwt(token)
+        user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
+        if payloads["token_type"] == "refresh":
+            entity_user = table_service.get_user_by_token(token=token, username=user.username)
+            if len(entity_user) < 1:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid refresh_token")
+            new_refresh_token = jwt_service.generate_refresh_token(user=user)
+            jwt_service.update_refresh_token(token=new_refresh_token,user=entity_user[0])
+            return {"refresh_token":new_refresh_token}
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Cun't update using access_token")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{str(e)}")
+
+### AUTHORIZATION
+def hasAnyAuthority(request: Request, token: str):
+    try:
+        permission = set_permission(request.url)
+        payloads = jwt_service.decode_jwt(token)
+        user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
+        if payloads["token_type"] == "refresh":
+            if len(table_service.get_user_by_token(token=token, username=user.username)) < 1:
+                raise HTTPException(status_code=401, detail=f"Invalid refresh_token")
+        have_permission = False
+        for per in user.permissions:
+            if per["name"] == permission:
+                have_permission = True
+                break
+        if not have_permission:    
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"User don't have required permission to access this endpoint")
+        
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{str(e)}") 
 
 def set_permission(url: str) -> str:
     if "interactive" in str(url):

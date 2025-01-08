@@ -52,7 +52,7 @@ def generate_refresh_token(user: User) -> str:
         )
     return refresh_token
 
-def update_refresh_token(token: str = None, user: User = None):
+def update_refresh_token(token: str = None, user: dict = None):
     if token is None:
         token = generate_refresh_token(user)
     table_service.update_refresh_token(user, token)
@@ -63,9 +63,9 @@ def decode_jwt(token: str) -> User:
         payload = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Token has expired")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 def get_token_from_header(authorization: str = Header(...)):
     if authorization.startswith("Bearer "):
