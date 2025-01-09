@@ -13,16 +13,16 @@ async def chat(request: Request,bot_name: str,message_payload: ChatPayload):
     return await chatbotservice.chat(bot_name,message_payload,request)
 
 @router.post("/chat/{bot_name}/{third_user_type}/{action}")
-async def action_investigation(bot_name: str,action:int, third_user_type:int ,message_payload: ChatPayload):
+async def action_investigation(bot_name: str,action:int, third_user_type:int ,message_payload: ChatPayload, request: Request):
     try:
         if action == ThirdUserAction.START.value:
-            return await chatbotservice.start_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload)
+            return await chatbotservice.start_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload,request=request)
         elif action == ThirdUserAction.END.value:
-            return await chatbotservice.end_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload)
+            return await chatbotservice.end_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload,request=request)
         elif action == ThirdUserAction.CONTINUE.value:
-            return await chatbotservice.continue_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload)
+            return await chatbotservice.continue_three_users_conv(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload,request=request)
         elif action == ThirdUserAction.REPEAT.value:
-            return await chatbotservice.repeat_question(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload)
+            return await chatbotservice.repeat_question(bot_name=bot_name, third_user_type=third_user_type, chat_payload=message_payload,request=request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error While applying action: {action} is not a valid Action: {str(e)}")
 

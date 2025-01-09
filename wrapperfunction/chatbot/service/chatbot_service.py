@@ -9,25 +9,37 @@ from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
+from wrapperfunction.core.model.entity_setting import ChatbotSetting
 from wrapperfunction.core.utls.helper import extract_client_details
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
-        client_details = extract_client_details(request)
-        conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
-        chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
-        chatbot_settings = config.load_chatbot_settings(bot_name)
-
-        if chatbot_settings.enable_history:
-            chat_history_service.save_history(
-                Roles.User.value,chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
-            )
+        chatbot_settings, chat_history_with_system, conversation_id = before_response_setup(bot_name, chat_payload, request)
 
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion(
-            chatbot_settings, chat_history_with_system["chat_history"]
+            chatbot_settings, chat_history_with_system
         )
 
+        results = after_response_setup(results,bot_name, chatbot_settings,conversation_id, chat_payload)
+        return results
+
+    except Exception as error:
+        return {"error": True, "message": str(error)}
+
+def before_response_setup(bot_name: str, chat_payload: ChatPayload, request: Request):
+            client_details = extract_client_details(request)
+            conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
+            chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
+            chatbot_settings = config.load_chatbot_settings(bot_name)
+
+            if chatbot_settings.enable_history:
+                chat_history_service.save_history(
+                    Roles.User.value,chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
+                )
+            return chatbot_settings,chat_history_with_system["chat_history"], conversation_id
+        
+def after_response_setup(results, bot_name: str, chatbot_settings: ChatbotSetting,conversation_id: str, chat_payload:ChatPayload):
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
                 role=Roles.Assistant.value,results=results, conversation_id=conversation_id, chat_payload=chat_payload, bot_name=bot_name
@@ -43,10 +55,6 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         results["message"]["conversation_id"] = conversation_id
         return results
-
-    except Exception as error:
-        return {"error": True, "message": str(error)}
-
 
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
     try:
@@ -114,24 +122,22 @@ def is_arabic(text):
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 
 
-async def start_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int):
+async def start_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int, request: Request):
     try:
-        
-        conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
-        chatbot_settings = config.load_chatbot_settings(bot_name)
-        chat_history = [{"role":"system","content":chatbot_settings.system_message},{"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: " + chat_payload.messages[-1].content + " Note: Respone with the languege you used to talk with in the conversation"}]
+        chatbot_settings, chat_history_with_system, conversation_id = before_response_setup(bot_name, chat_payload, request)
+        chat_history = [{"role":"system","content":chatbot_settings.system_message},{"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: " + chat_payload.messages[-1].content + " Note: Response with the language you used to talk with in the conversation"}]
         
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history=chat_history
         )
 
-        return await setup_conversation(bot_name=bot_name,chat_payload=chat_payload,conversation_id=conversation_id,results=results)
+        return after_response_setup(results,bot_name, chatbot_settings,conversation_id, chat_payload)
 
     except Exception as error:
         return json.dumps({"error": True, "message": f"Error while starting three user conversation: {str(error)}"})
 
-async def end_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int):
+async def end_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int, request: Request):
     try:
         if chat_payload.conversation_id:
             chat_history_with_system_message = prepare_chat_history_with_system_message(
@@ -142,22 +148,23 @@ async def end_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_us
             chatbot_settings = config.load_chatbot_settings(bot_name)
             chat_history = chat_history_with_system_message["chat_history"]
             third_user_history = prepare_third_user_chat_history(chat_payload)
-            third_user_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Convesation is over. Note: Respone with the languege you used to talk with in the conversation"})
+            third_user_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Conversation is over. Note: Response with the language you used to talk with in the conversation"})
             full_history = list(chat_history) + third_user_history
             # Get response from OpenAI ChatGPT
             results = openaiconnector.chat_completion(
                 chatbot_settings, chat_history=full_history
             )
             
-            return await setup_conversation(bot_name=bot_name,chat_payload=chat_payload,conversation_id=conversation_id,results=results)
+            return after_response_setup(results,bot_name, chatbot_settings,conversation_id, chat_payload)
         else:
-            return json.dumps({"error": True, "message": f"Error while ending three user conversation: conversation_id is requird to end the conversation"})
+            return json.dumps({"error": True, "message": f"Error while ending three user conversation: conversation_id is require to end the conversation"})
 
     except Exception as error:
         return json.dumps({"error": True, "message": f"Error while ending three user conversation: {str(error)}"})
 
-async def continue_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int):
+async def continue_three_users_conv(bot_name:str, chat_payload: ChatPayload, third_user_type: int, request: Request):
     try:
+        client_details = extract_client_details(request)
         if chat_payload.conversation_id:
             chat_history_with_system_message = prepare_chat_history_with_system_message(
             chat_payload, bot_name
@@ -166,21 +173,22 @@ async def continue_three_users_conv(bot_name:str, chat_payload: ChatPayload, thi
             conversation_id = chat_payload.conversation_id
             chatbot_settings = config.load_chatbot_settings(bot_name)
             chat_history = chat_history_with_system_message["chat_history"]
-            chat_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Continue. Note: Respone with the languege you used to talk with in the conversation"})
+            chat_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Continue. Note: Response with the language you used to talk with in the conversation"})
             # Get response from OpenAI ChatGPT
             results = openaiconnector.chat_completion(
                 chatbot_settings, chat_history=chat_history
             )
             
-            return await setup_conversation(bot_name=bot_name,chat_payload=chat_payload,conversation_id=conversation_id,results=results)
+            return after_response_setup(results,bot_name, chatbot_settings,conversation_id, chat_payload)
         else:
-            return json.dumps({"error": True, "message": f"Error while Completeing three user conversation: conversation_id is requird to end the conversation"})
+            return json.dumps({"error": True, "message": f"Error while Completing three user conversation: conversation_id is required to continue the conversation"})
 
     except Exception as error:
-        return json.dumps({"error": True, "message": f"Error while Completeing three user conversation: {str(error)}"})
+        return json.dumps({"error": True, "message": f"Error while Completing three user conversation: {str(error)}"})
 
-async def repeat_question(bot_name:str, chat_payload: ChatPayload, third_user_type: int):
+async def repeat_question(bot_name:str, chat_payload: ChatPayload, third_user_type: int, request: Request):
     try:
+        client_details = extract_client_details(request)
         if chat_payload.conversation_id:
             chat_history_with_system_message = prepare_chat_history_with_system_message(
             chat_payload, bot_name
@@ -189,72 +197,21 @@ async def repeat_question(bot_name:str, chat_payload: ChatPayload, third_user_ty
             conversation_id = chat_payload.conversation_id
             chatbot_settings = config.load_chatbot_settings(bot_name)
             chat_history = chat_history_with_system_message["chat_history"]
-            chat_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Ask this question Again ({chat_payload.messages[-1].content}). Note: Respone with the languege you used to talk with in the conversation"})
+            chat_history.append({"role":"user","content":f"{ThirdUserTypes(third_user_type).name}: Ask this question Again ({chat_payload.messages[-1].content}). Note: Response with the language you used to talk with in the conversation"})
             # Get response from OpenAI ChatGPT
             results = openaiconnector.chat_completion(
                 chatbot_settings, chat_history=chat_history
             )
             
-            return await setup_conversation(bot_name=bot_name,chat_payload=chat_payload,conversation_id=conversation_id,results=results)
+            return after_response_setup(results,bot_name, chatbot_settings,conversation_id, chat_payload)
         else:
-            return json.dumps({"error": True, "message": f"Error while Repeeting question: conversation_id is requird to end the conversation"})
+            return json.dumps({"error": True, "message": f"Error while Repeating question: conversation_id is required to repeat"})
 
     except Exception as error:
-        return json.dumps({"error": True, "message": f"Error while Repeeting question: {str(error)}"})
+        return json.dumps({"error": True, "message": f"Error while Repeating question: {str(error)}"})
     
 def prepare_third_user_chat_history(chat_payload: ChatPayload):
     third_user_history = []
     for msg in chat_payload.messages:
         third_user_history.append({"role": msg.role,"content":msg.content})
-    return third_user_history
-         
-async def setup_conversation(bot_name:str,results, conversation_id:str, chat_payload: ChatPayload):
-        context = chat_history_service.set_context(results)
-
-        # Set user message
-        user_message_entity = chat_history_service.set_message(
-            conversation_id=conversation_id,
-            content=chat_payload.messages[-1].content,
-            role=Roles.User.value,
-            context=context,
-        )
-        # Set assistant or Tool message
-        tools_message_entity = None
-        assistant_message_entity = None
-        if results["message"]["tool_calls"]:
-            tools_message_entity = chat_history_service.set_message(
-                conversation_id=conversation_id,
-                role=Roles.Tool.value,
-                tool_calls=results["message"]["tool_calls"],
-                context=context,
-            )
-        else:
-            assistant_message_entity = chat_history_service.set_message(
-                conversation_id=conversation_id,
-                content=results["message"]["content"],
-                role=Roles.Assistant.value,
-                context=context,
-            )
-
-        # Add Messages
-        chat_history_service.add_messages_to_history(
-            chat_payload=chat_payload,
-            conversation_id=conversation_id,
-            user_message_entity=user_message_entity,
-            assistant_message_entity=assistant_message_entity,
-            bot_name=bot_name,
-            tools_message_entity=tools_message_entity,
-        )
-
-        if chat_payload.stream_id is not None and results["message"]["content"] is not None:
-            is_ar = is_arabic(results["message"]["content"][:30])
-            # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
-
-            asyncio.create_task(
-                avatar_connector.render_text_async(
-                    chat_payload.stream_id, results["message"]["content"], is_ar
-                )
-            )
-
-        results["message"]["conversation_id"] = conversation_id
-        return results  
+    return third_user_history 
