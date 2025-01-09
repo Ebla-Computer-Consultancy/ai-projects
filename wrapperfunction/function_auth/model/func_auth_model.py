@@ -12,7 +12,7 @@ class User:
     def __init__(self, username: str,
     enc_password: str,
     permissions: List[Permission],
-    never_expire: bool):
+    never_expire: bool = False):
         self.username= username
         self.enc_password= enc_password
         self.permissions= permissions
