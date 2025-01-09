@@ -11,10 +11,12 @@ class LoginRequest(BaseModel):
 class User:
     def __init__(self, username: str,
     enc_password: str,
-    permissions: List[Permission]):
+    permissions: List[Permission],
+    never_expire: bool):
         self.username= username
         self.enc_password= enc_password
         self.permissions= permissions
+        self.never_expire= never_expire
     
     def dict_permissions(self):
         return [permission.to_dict() if not isinstance(permission, dict) else permission for permission in self.permissions]    
@@ -23,7 +25,8 @@ class User:
         return {
             "username":self.username,
             "enc_password": self.enc_password,
-            "permissions":self.dict_permissions()
+            "permissions":self.dict_permissions(),
+            "never_expire":self.never_expire
         }        
         
     

@@ -1,13 +1,21 @@
 from wrapperfunction.function_auth.model.permission_enum import PermissionTypes
 from wrapperfunction.function_auth.service import table_service
 class Permission:
-    def __init__(self, key: str,
-    en_name: str, ar_name, type: str):
+    def __init__(self, id: str,
+    en_name: str, ar_name, key: str):
         
-        self.__key = key
+        self.__id = id
         self.__en_name = en_name
         self.__ar_name = ar_name
-        self.__type = type
+        self.__key = key
+        
+    def to_dict(self):
+        return {
+            "id":self.__id,
+            "en_name":self.__en_name,
+            "ar_name":self.__ar_name,
+            "key":self.__key
+        }
         
     def get_permission_key(self):
         return self.__key
@@ -18,45 +26,5 @@ class Permission:
     def get_permission_ar_name(self):
         return self.__ar_name
     
-    def get_permission_type(self):
-        return self.__type
-
-class ChatbotPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.CHATBOT.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-    
-class InteractivePermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.INTERACTIVE_CHAT.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-
-class MediaPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.MEDIA.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-        
-class SearchPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.SEARCH.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-        
-class SpeechPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.SPEECH.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-        
-class AvatarPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.AVATAR.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-        
-class DocumentIntelligencePermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.DOCUMENT_INTELLIGENCE.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
-        
-class ChathistoryPermission(Permission):
-    def __init__(self):
-        res = table_service.get_permission_by_name(name=PermissionTypes.CHAT_HISTORY.value)[0]
-        super().__init__(res["key"], res["en_name"], res["ar_name"], res["type"])
+    def get_permission_id(self):
+        return self.__id

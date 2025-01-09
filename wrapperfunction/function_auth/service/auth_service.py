@@ -43,14 +43,15 @@ def get_user(username, password) -> Tuple[User, dict]:
             user_permissions = get_user_permissions(user[0]["user-id"])
             user_permissions = [
                     Permission(
+                        id=permission_data["key"],
                         en_name=permission_data["en_name"],
                         ar_name=permission_data["ar_name"],
-                        key=permission_data["key"]
+                        key=permission_data["name"]
                     )
                     for permission in user_permissions
                     if (permission_data := table_service.get_permission_by_key(permission["permission"])[0])
                 ]  
-            return User(username=username,enc_password=hash_password(password),permissions=user_permissions),user[0]
+            return User(username=username,enc_password=hash_password(password),permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
         else: 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
     except Exception as e:
@@ -76,42 +77,25 @@ def update_refresh_token(token: str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{str(e)}")
 
 ### AUTHORIZATION
-def hasAnyAuthority(request: Request, token: str):
+def hasAnyAuthority(request: Request, token: str, permission: str):
     try:
-        permission = set_permission(request.url)
         payloads = jwt_service.decode_jwt(token)
         user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
             if len(table_service.get_user_by_token(token=token, username=user.username)) < 1:
-                raise HTTPException(status_code=401, detail=f"Invalid refresh_token")
+                raise Exception(f"Invalid refresh_token")
         have_permission = False
-        for per in user.permissions:
-            if per["name"] == permission:
+        for user_per in user.permissions:
+            if permission == user_per["key"]:
+                have_permission = True
+                break
+            if PermissionTypes[user_per["key"]].value == request.url:
                 have_permission = True
                 break
         if not have_permission:    
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"User don't have required permission to access this endpoint")
-        
+            raise Exception(f"User don't have required permission to access this endpoint")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{str(e)}") 
+        raise Exception(f"{str(e)}") 
 
-def set_permission(url: str) -> str:
-    if "interactive" in str(url):
-        return PermissionTypes.INTERACTIVE_CHAT.value
-    elif "search" in str(url):
-        return PermissionTypes.SEARCH.value
-    elif "chatbot" in str(url):
-        return PermissionTypes.CHATBOT.value
-    elif "media" in str(url):
-        return PermissionTypes.MEDIA.value
-    elif "avatar" in str(url):
-        return PermissionTypes.AVATAR.value
-    elif "speech" in str(url):
-        return PermissionTypes.SPEECH.value
-    elif "document-intelligence" in str(url):
-        return PermissionTypes.DOCUMENT_INTELLIGENCE.value
-    elif "chat-history" in str(url):
-        return PermissionTypes.CHAT_HISTORY.value
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Required Permissions not found")
+   
 

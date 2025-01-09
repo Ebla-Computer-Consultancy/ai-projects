@@ -5,6 +5,7 @@ from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.core.service import settings_service
+from wrapperfunction.function_auth.service import table_service
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
@@ -103,7 +104,8 @@ async def indexes_name():
         return search_service.indexes_name()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))@router.get("/settings")
-    
+
+@router.get("/settings")    
 async def get_all_settings():
     try:
         return settings_service.get_all_settings()
@@ -137,6 +139,21 @@ async def delete_setting(row_key: str,partition_key: str):
         return settings_service.delete_bot_settings(partition_key=partition_key,row_key=row_key)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/add-permission-to-user")
+async def add_permission(username: str, permission_id: str):
+    try:
+        return await table_service.add_permission_to_user(username=username,per_id=permission_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/add-permission-to-table")
+async def add_permission(key: str, en_name: str, ar_name:str):
+    try:
+        return await table_service.add_permission_to_table(key,en_name,ar_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/sas-token") 
 def get_sas_token(blob_url:str):
     try:
