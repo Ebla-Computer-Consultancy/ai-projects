@@ -12,7 +12,7 @@ from wrapperfunction.function_auth.service import table_service
 def generate_jwt_tokens(user: User) -> Tuple[str, str]:
     try:
         if user.never_expire:
-            now = now = datetime.utcnow()
+            now = datetime.utcnow()
             access_token = generate_access_token(user, time=now + timedelta(weeks=210))
             refresh_token = generate_refresh_token(user, time=now + timedelta(weeks=521))
         else:
