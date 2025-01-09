@@ -13,7 +13,6 @@ from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctr
 from wrapperfunction.chat_history.ctrl import chat_history_ctrl
 from wrapperfunction.media_monitoring.ctrl import media_ctrl
 
-# app = FastAPI(dependencies=[Depends(test_ldap_connection)])
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
