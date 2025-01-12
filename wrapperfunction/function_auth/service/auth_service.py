@@ -3,6 +3,7 @@ from fastapi import HTTPException, Request, status
 from ldap3 import NTLM, Connection, Server
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User, Permission
+from wrapperfunction.function_auth.model.permission_enum import LevelTwo
 from wrapperfunction.function_auth.model.permissions_model import PermissionTypes
 from wrapperfunction.function_auth.service import table_service
 from wrapperfunction.function_auth.service import jwt_service
@@ -46,7 +47,8 @@ def get_user(username, password) -> Tuple[User, dict]:
                         id=permission_data["key"],
                         en_name=permission_data["en_name"],
                         ar_name=permission_data["ar_name"],
-                        key=permission_data["name"]
+                        key=permission_data["name"],
+                        level_two=permission["level_two"]
                     )
                     for permission in user_permissions
                     if (permission_data := table_service.get_permission_by_key(permission["permission"])[0])
@@ -86,16 +88,31 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
                 raise Exception(f"Invalid refresh_token")
         have_permission = False
         for user_per in user.permissions:
+            # if user have the routes permission
             if permission == user_per["key"]:
                 have_permission = True
                 break
+            # if user have the level one permission
             if PermissionTypes[user_per["key"]].value == request.url:
                 have_permission = True
                 break
+            # if user have the level two permission
+            if permission in LevelTwo.LEVEL_TWO.value:
+                if level_two_authorization(user,request):
+                    have_permission = True
+                    break  
         if not have_permission:    
-            raise Exception(f"User don't have required permission to access this endpoint")
+            raise Exception(f"User '{user.username}' don't have the required permission to access this endpoint")
     except Exception as e:
         raise Exception(f"{str(e)}") 
 
-   
-
+def level_two_authorization(user: User, request: Request):
+    for user_per in user.permissions:
+        if user_per["level_two"] is not "":
+            per = PermissionTypes[user_per["key"]].value.format(level_two=user_per["level_two"])
+            if isinstance(per, str) and per == request.url:
+                return True
+    return False 
+            
+        
+        
