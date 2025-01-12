@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from dotenv import load_dotenv
@@ -39,21 +40,31 @@ AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
+DEFAULT_ENTITY_SETTINGS=os.getenv("DEFAULT_ENTITY_SETTINGS")
 
 def load_entity_settings():
-    from wrapperfunction.core.service import settings_service 
+    from wrapperfunction.core.service import settings_service
     settings = settings_service.get_settings_by_entity(ENTITY_NAME)
     if len(settings) > 0:
         return settings[0]
     else:
-        return {}
+        file_path = os.path.join(os.path.dirname(__file__), f"settings/{DEFAULT_ENTITY_SETTINGS}.json")
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as file:
+                entity = json.load(file)
+                asyncio.create_task(
+                    settings_service.add_setting(entity=entity)
+                )      
+                return entity
 
 ENTITY_SETTINGS = load_entity_settings()
 AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
 
 
 def load_chatbot_settings(bot_name: str):
-    for chatbot_obj in ENTITY_SETTINGS.get("chatbots", []):
+    chatbots_settings = ENTITY_SETTINGS.get("chatbots", [])
+    chatbots = chatbots_settings if isinstance(chatbots_settings,list) else json.loads(chatbots_settings)
+    for chatbot_obj in chatbots:
         if chatbot_obj["name"] == bot_name:
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
