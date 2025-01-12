@@ -1,7 +1,7 @@
 {
     "chatbots": [
         {
-            "name":"default",
+            "name":"website",
             "index_name":null,
             "custom_settings":{
                 "temperature":0.1
