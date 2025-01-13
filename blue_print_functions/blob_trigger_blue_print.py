@@ -3,6 +3,7 @@ import azure.functions as func
 import pandas as pd
 from io import BytesIO
 
+from wrapperfunction.core import config
 from wrapperfunction.core.config import BLOB_CONTAINER_NAME
 
 bp = func.Blueprint()
@@ -13,8 +14,8 @@ bp = func.Blueprint()
 # second decorator defines the trigger
 @bp.blob_trigger(
     arg_name="obj",
-    path=f"links",
-    connection=BLOB_CONTAINER_NAME,
+    path=f"{config.BLOB_CONTAINER_NAME}",
+    connection="AzureWebJobsStorage",
 )
 def custom_blob_trigger_function(obj: func.InputStream):
     logging.info("Python blob trigger function processed a request.")
