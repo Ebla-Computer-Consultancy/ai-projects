@@ -131,7 +131,7 @@ def render_video(video_id: str):
     )
     if response.status_code != 200:
         raise HTTPException(
-            status_code=response.status_code, detail="Failed to render video"
+            status_code=response.status_code, detail=response.reason
         )
     video = response.json()
     return ServiceReturn(
@@ -145,7 +145,7 @@ def retrieve_video(video_id: str):
     )
     if response.status_code != 200:
         raise HTTPException(
-            status_code=response.status_code, detail="Failed to retrieve video"
+            status_code=response.status_code, detail=response.reason
         )
     video = response.text
     return ServiceReturn(
@@ -158,7 +158,7 @@ def list_videos(page: int=1, limit:int=50, with_deleted:bool= False):
                         )
     if response.status_code != 200:
         raise HTTPException(
-            status_code=response.status_code, detail="Failed to list videos"
+            status_code=response.status_code, detail=response.reason
         )
     list_of_videos = response.json()
     videos = list_of_videos["videos"]
@@ -173,7 +173,7 @@ def delete_video(video_id: str):
     )
     if response.status_code != 200:
         raise HTTPException(
-            status_code=response.status_code, detail="Failed to delete video"
+            status_code=response.status_code, detail=response.reason
         )
     return ServiceReturn(
         status=StatusCode.SUCCESS, message=f"The video with ID: '{video_id}' has successfully Deleted"
