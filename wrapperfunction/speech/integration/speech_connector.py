@@ -62,7 +62,5 @@ def get_speech_token():
         )
         response.raise_for_status()
         return JSONResponse(content={"token": response.text, "region": speech_region})
-    except requests.exceptions.RequestException:
-        raise HTTPException(
-            status_code=401, detail="There was an error authorizing your speech key."
-        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
