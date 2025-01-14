@@ -38,7 +38,18 @@ def get_conversation_data(conversation_id):
         return res[0]
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
-
+    
+def get_FAQ():
+    try:
+        res = db_connector.get_entities(config.FAQ_TABLE_NAME)
+        filtered_res = sorted(
+            [{"ActualQuestion": item["ActualQuestion"], "TotalCount": item["TotalCount"]} for item in res],
+            key=lambda x: x["TotalCount"],
+            reverse=True
+        )
+        return filtered_res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 def get_messages(conversation_id):
     try:

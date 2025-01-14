@@ -29,6 +29,9 @@ def add_feedback(conv_id: str, feedback: int):
 @router.get("/bot-names/")
 def get_bot_name():
     return history_service.get_bot_name()
+@router.get("/FAQ/")
+def get_bot_name():
+    return history_service.get_FAQ()
 
 @router.post("/add-message/")
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
