@@ -1,8 +1,6 @@
 import json
-from typing import Any, Dict
 import uuid
 from fastapi import HTTPException
-from wrapperfunction.chat_history.model.Generic_Table_Client import GenericTableClient
 from wrapperfunction.core import config
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
