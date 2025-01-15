@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
@@ -137,3 +137,9 @@ async def delete_setting(row_key: str,partition_key: str):
         return settings_service.delete_bot_settings(partition_key=partition_key,row_key=row_key)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+@router.get("/sas-token") 
+def get_sas_token(blob_url:str):
+    try:
+        return blob_service.generate_blob_sas_url(blob_url=blob_url)
+    except Exception as e:    
+        raise HTTPException(status_code=500, detail=str(e))      
