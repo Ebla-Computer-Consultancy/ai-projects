@@ -11,26 +11,28 @@ from wrapperfunction.function_auth.service import table_service
 # Function to create JWT tokens
 def generate_jwt_tokens(user: User) -> Tuple[str, str]:
     try:
+        now = datetime.utcnow()
+        access_time = timedelta(minutes=config.ENTITY_SETTINGS["access_token_valid_time"])
+        refresh_time = timedelta(minutes=config.ENTITY_SETTINGS["refresh_token_valid_time"])
+        
         if user.never_expire:
-            now = datetime.utcnow()
-            access_token = generate_access_token(user, time=now + timedelta(weeks=210))
-            refresh_token = generate_refresh_token(user, time=now + timedelta(weeks=521))
-        else:
-            access_token = generate_access_token(user)
-            refresh_token = generate_refresh_token(user)
+            access_time = timedelta(weeks=210)
+            refresh_time = timedelta(weeks=521)
+
+        access_token = generate_access_token(user, now + access_time)
+        refresh_token = generate_refresh_token(user, now + refresh_time)
+        
         return access_token, refresh_token
     except Exception as e:
-        raise Exception("Error While Generating Tokens")
+        raise Exception(f"Error While Generating Tokens: {str(e)}")
 
-def generate_access_token(user: User, time: datetime = None) -> str:
-    now = datetime.utcnow()
-    # Create Access Token (1-hour expiration)
+def generate_access_token(user: User, time: datetime) -> str:
     access_token = jwt.encode(
             payload = {
+                "id": user.id,
                 "name": user.username,
                 "permissions": user.dict_permissions(),
-                "enc_password": user.enc_password, 
-                "exp": now + timedelta(hours=1) if time is None else time,
+                "exp": time,
                 "token_type": "access"
             },
             key = config.JWT_SECRET_KEY,
@@ -38,14 +40,12 @@ def generate_access_token(user: User, time: datetime = None) -> str:
         )
     return access_token
 
-def generate_refresh_token(user: User, time: datetime = None) -> str:
-    now = datetime.utcnow()
-    # Create Refresh Token (24-hours expiration)
+def generate_refresh_token(user: User, time: datetime) -> str:
     refresh_token = jwt.encode(
             payload = {
+                "id": user.id,
                 "name": user.username,
-                "permissions": user.dict_permissions(),
-                "enc_password": user.enc_password, 
+                "permissions": user.dict_permissions(), 
                 "exp": now + timedelta(hours=24) if time is None else time,
                 "token_type": "refresh"
             },

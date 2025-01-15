@@ -9,12 +9,11 @@ class LoginRequest(BaseModel):
 
 
 class User:
-    def __init__(self, username: str,
-    enc_password: str,
+    def __init__(self,id: str, username: str,
     permissions: List[Permission],
     never_expire: bool = False):
+        self.id = id
         self.username= username
-        self.enc_password= enc_password
         self.permissions= permissions
         self.never_expire= never_expire
     
@@ -23,8 +22,8 @@ class User:
     
     def to_dict(self):
         return {
+            "id":self.id,
             "username":self.username,
-            "enc_password": self.enc_password,
             "permissions":self.dict_permissions(),
             "never_expire":self.never_expire
         }        

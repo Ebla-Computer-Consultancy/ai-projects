@@ -3,16 +3,13 @@ from fastapi import HTTPException, Request, status
 from ldap3 import NTLM, Connection, Server
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User, Permission
-from wrapperfunction.function_auth.model.permission_enum import LevelTwo
-from wrapperfunction.function_auth.model.permissions_model import PermissionTypes
 from wrapperfunction.function_auth.service import table_service
 from wrapperfunction.function_auth.service import jwt_service
-from wrapperfunction.function_auth.service.password_service import hash_password
 
 ### AUTHENTICATION
 def get_jwt(username: str, password: str):
     try:
-        user = get_user(username, password)
+        user = get_user(username)
         conn = test_ldap_connection(username=username, password=password)
         tokens = jwt_service.generate_jwt_tokens(user=user[0])
         jwt_service.update_refresh_token(token=tokens[1], user=user[1])
@@ -37,23 +34,23 @@ def test_ldap_connection(username: str, password: str):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-def get_user(username, password) -> Tuple[User, dict]:
+def get_user(username) -> Tuple[User, dict]:
     try:
-        user = table_service.get_user(username)
+        user = table_service.get_user_by_name(username)
         if len(user) > 0:
-            user_permissions = get_user_permissions(user[0]["user-id"])
+            user_permissions = get_user_permissions(user[0]["_id"])
             user_permissions = [
                     Permission(
-                        id=permission_data["key"],
+                        id=permission_data["_id"],
                         en_name=permission_data["en_name"],
                         ar_name=permission_data["ar_name"],
-                        key=permission_data["name"],
-                        level_two=permission["level_two"]
+                        key=permission_data["key"],
+                        url=permission_data["url"]
                     )
                     for permission in user_permissions
-                    if (permission_data := table_service.get_permission_by_key(permission["permission"])[0])
+                    if (permission_data := table_service.get_permission_by_id(permission["permission_id"])[0])
                 ]  
-            return User(username=username,enc_password=hash_password(password),permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
+            return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
         else: 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
     except Exception as e:
@@ -65,9 +62,9 @@ def get_user_permissions(user_id):
 def update_refresh_token(token: str):
     try:
         payloads = jwt_service.decode_jwt(token)
-        user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
+        user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            entity_user = table_service.get_user_by_token(token=token, username=user.username)
+            entity_user = table_service.get_user_by_token(token=token, user_id=user.id)
             if len(entity_user) < 1:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid refresh_token")
             new_refresh_token = jwt_service.generate_refresh_token(user=user)
@@ -82,9 +79,9 @@ def update_refresh_token(token: str):
 def hasAnyAuthority(request: Request, token: str, permission: str):
     try:
         payloads = jwt_service.decode_jwt(token)
-        user = User(username=payloads["name"],enc_password=payloads["enc_password"],permissions=payloads["permissions"])
+        user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            if len(table_service.get_user_by_token(token=token, username=user.username)) < 1:
+            if len(table_service.get_user_by_token(token=token, user_id=user.username)) < 1:
                 raise Exception(f"Invalid refresh_token")
         have_permission = False
         for user_per in user.permissions:
@@ -93,26 +90,13 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
                 have_permission = True
                 break
             # if user have the level one permission
-            if PermissionTypes[user_per["key"]].value == request.url:
+            if user_per["url"] in str(request.url):
                 have_permission = True
-                break
-            # if user have the level two permission
-            if permission in LevelTwo.LEVEL_TWO.value:
-                if level_two_authorization(user,request):
-                    have_permission = True
-                    break  
+                break 
         if not have_permission:    
             raise Exception(f"User '{user.username}' don't have the required permission to access this endpoint")
     except Exception as e:
         raise Exception(f"{str(e)}") 
-
-def level_two_authorization(user: User, request: Request):
-    for user_per in user.permissions:
-        if user_per["level_two"] is not "":
-            per = PermissionTypes[user_per["key"]].value.format(level_two=user_per["level_two"])
-            if isinstance(per, str) and per == request.url:
-                return True
-    return False 
             
         
         

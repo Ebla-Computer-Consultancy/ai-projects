@@ -134,37 +134,72 @@ async def add_setting(body: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
 @router.delete("/settings")
-async def delete_setting(row_key: str,partition_key: str):
+async def delete_setting(body: Dict[str, Any]):
     try:
-        return settings_service.delete_bot_settings(partition_key=partition_key,row_key=row_key)
+        return settings_service.delete_bot_settings(entity=body)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
-@router.put("/add-permission-to-user")
-async def add_permission_to_user(username: str, permission_id: str, level_two: str = None):
+@router.post("/permissions/assign")
+async def add_permission_to_user(user_id: str, permission_id: str):
     try:
-        return await table_service.add_permission_to_user(username=username,per_id=permission_id, level_two=level_two)
+        return await table_service.add_permission_to_user(user_id=user_id,per_id=permission_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/add-permission-to-table")
-async def add_permission_to_table(key: str, en_name: str, ar_name:str):
+@router.delete("/permissions/remove")
+async def remove_user_permission(user_id: str, permission_id: str):
     try:
-        return await table_service.add_permission_to_table(key,en_name,ar_name)
+        return table_service.remove_user_permission(user_id=user_id, per_id=permission_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/permissions")
+async def get_all_permissions():
+    try:
+        return table_service.get_permissions()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/get-all-permissions")
-async def add_permission():
+@router.get("/permissions/{id}")
+async def get_permission(id: str):
     try:
-        return await table_service.get_permissions()
+        return table_service.get_permission_by_id(id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/get-all-users")
+@router.get("/users")
 async def get_all_users():
     try:
         return table_service.get_users()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/users/{id}")
+async def get_user(id: str):
+    try:
+        return table_service.get_user_by_id(id=id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/users")
+async def add_user(username: str):
+    try:
+        return await table_service.add_user(username=username)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/users")
+async def update_user(flied: str, value: str, user_id: str):
+    try:
+        return table_service.update_user(flied= flied, value = value, user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/users")
+async def delete_user(user_id: str):
+    try:
+        return table_service.delete_user(user_id=user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -173,4 +208,4 @@ def get_sas_token(blob_url:str):
     try:
         return blob_service.generate_blob_sas_url(blob_url=blob_url)
     except Exception as e:    
-        raise HTTPException(status_code=500, detail=str(e))     
+        raise HTTPException(status_code=500, detail=str(e))    

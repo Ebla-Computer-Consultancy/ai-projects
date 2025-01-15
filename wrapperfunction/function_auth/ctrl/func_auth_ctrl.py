@@ -14,7 +14,7 @@ def login(body: OAuth2PasswordRequestForm = Depends()):
     except Exception as e:
         raise e
 
-@router.post("/update-refresh-token")
+@router.get("/refresh-token")
 async def update_refresh_token(token: str = Depends(jwt_service.get_token_from_header)):
     try:
         return auth_service.update_refresh_token(token=token)

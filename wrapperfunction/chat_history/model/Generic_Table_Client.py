@@ -29,8 +29,8 @@ class GenericTableClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
-    def delete_entity(self,partition_key, row_key: str) -> None:
+    def delete_entity(self,entity: Dict[str, Any]) -> None:
         try:
-            self.table_client.delete_entity(partition_key=partition_key,row_key=row_key)
+            self.table_client.delete_entity(entity)
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))

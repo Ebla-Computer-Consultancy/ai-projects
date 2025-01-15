@@ -5,37 +5,51 @@ import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connec
 from wrapperfunction.core import config
 
 
-def get_user(username):
+def get_user_by_name(username):
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"username eq '{username}'",conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"username eq '{username}'")
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-def get_user_by_token(token, username):
+def get_user_by_id(id):
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"refresh_token eq '{token}' and username eq '{username}'",conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"_id eq '{id}'")
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+def get_user_by_token(token, user_id):
+    try:
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"refresh_token eq '{token}' and _id eq '{user_id}'")
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_user_permissions(user_id):
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_PER_TABLE,f"user eq '{user_id}'",conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_PER_TABLE,f"user_id eq '{user_id}'")
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-def get_permission_by_key(key):
+def get_user_permission(user_id, per_id):
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"key eq '{key}'",conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_PER_TABLE,f"user_id eq '{user_id}' and permission_id eq '{per_id}'")
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+def get_permission_by_id(id):
+    try:
+        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"_id eq '{id}'")
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
-def get_permission_by_name(name):
+def get_permission_by_key(key):
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"name eq '{name}'",conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"name eq '{key}'")
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -43,58 +57,86 @@ def get_permission_by_name(name):
 def update_refresh_token(entity, token):
     try:
         entity["refresh_token"] = token
-        res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE,entity,conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE,entity)
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-async def add_permission_to_user(username, per_id, level_two: str = None):
+async def add_permission_to_user(user_id, per_id):
     try:
-        user = get_user(username)
-        per = get_permission_by_key(per_id)
+        user = get_user_by_id(user_id)
+        per = get_permission_by_id(per_id)
         entity = {
             "PartitionKey":str(uuid.uuid4()),
             "RowKey":str(uuid.uuid4()),
-            "user":user[0]["user-id"],
-            "permission":per_id,
-            "level_two": level_two
+            "user_id":str(user_id),
+            "permission_id":str(per_id),
+            
         }
-        res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity,conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
-        return res
-    except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-async def add_permission_to_table(name, en, ar):
-    try:
-        key = 0
-        while True:
-            k = str(random.randint(60, 500))
-            if len(get_permission_by_key(key=k)) == 0:
-               key = k
-               break 
-        entity = {
-            "PartitionKey":str(uuid.uuid4()),
-            "RowKey":str(uuid.uuid4()),
-            "key": key,
-            "name":name,
-            "en_name":en,
-            "ar_name":ar
-        }
-        res = await db_connector.add_entity(config.COSMOS_AUTH_PERMISSION_TABLE,entity=entity,conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity)
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_permissions():
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE)
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_users():
     try:
-        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,conn_str=config.COSMOS_AUTH_CONNECTION_STRING)
+        res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+def update_user(flied: str, value: str, user_id: str):
+    try:
+        if value.lower() == "false":
+            value = False
+        elif value.lower() == "true":
+            value = True
+        user = get_user_by_id(user_id)[0]
+        user[flied] = value
+        res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE, entity=user)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+async def add_user(username):
+    try:
+        id = random.randint(2,100)
+        users = get_users()
+        for user in users:
+            if str(id) == user["_id"]:
+                id = random.randint(2,100)
+        entity = {
+            "PartitionKey":str(uuid.uuid4()),
+            "RowKey":str(uuid.uuid4()),
+            "_id":str(id),
+            "username":username,
+            "never_expire": False,
+            "refresh_token": ""
+        }
+        res = await db_connector.add_entity(config.COSMOS_AUTH_USER_TABLE,entity)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+def remove_user_permission(user_id,per_id):
+    try:
+        entity = get_user_permission(user_id,per_id)
+        res =  db_connector.delete_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity[0])
+        return res
+    except Exception as e:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+def delete_user(user_id):
+    try:
+        entity = get_user_by_id(user_id)
+        res =  db_connector.delete_entity(config.COSMOS_AUTH_USER_TABLE,entity[0])
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
