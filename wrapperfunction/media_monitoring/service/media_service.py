@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from wrapperfunction.admin.integration import imageanalytics_connector
 from wrapperfunction.admin.integration import textanalytics_connector
-from wrapperfunction.admin.integration.blob_storage_integration import generate_blob_sas_url
+from wrapperfunction.admin.service.blob_service import generate_blob_sas_url
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings, IndexingType
 from wrapperfunction.admin.service.blob_service import append_blob

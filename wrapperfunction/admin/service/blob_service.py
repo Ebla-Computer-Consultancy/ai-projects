@@ -1,3 +1,7 @@
+import datetime
+from typing import Optional
+from azure.storage.blob._models import BlobSasPermissions
+from azure.storage.blob._shared_access_signature import generate_blob_sas
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client,get_blob_service_client
 from azure.storage.blob import BlobBlock
 import urllib.parse
@@ -193,3 +197,37 @@ def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name
                     metadata_3= IndexingType.NOT_CRAWLED.value,
                     metadata_4= "pdf")
         print(f"Uploaded OCR results for {filename} to Azure Storage.")
+
+def generate_sas_token(blob_url: str = None, container_name: str = None, blob_name: str = None,account_name: str = None, expiration_minutes: int = 60):
+    try:
+        if blob_url:
+            parsed_url = urllib.parse.urlparse(blob_url)
+            account_name = parsed_url.netloc.split('.')[0]
+            path_parts = parsed_url.path.lstrip('/').split('/', 1)
+            container_name = path_parts[0]
+            blob_name = urllib.parse.unquote(path_parts[1])
+        expiry_time = (datetime.datetime.utcnow() + datetime.timedelta(minutes=expiration_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        sas_token = generate_blob_sas(
+            account_name=account_name,
+            account_key=config.STORAGE_ACCOUNT_KEY,
+            container_name=container_name,
+            blob_name=blob_name,
+            permission=BlobSasPermissions(read=True),
+            expiry=expiry_time
+        )
+        return sas_token
+
+    except Exception as e:
+        return f"Error generating SAS URL: {str(e)}"
+
+def generate_blob_sas_url(container_name: str, blob_name: str, expiration_minutes: Optional[int] =60):
+    try:
+        blob_service_client = get_blob_client(container_name, blob_name)
+        sas_token = generate_sas_token(blob_url=None, container_name=container_name, blob_name=blob_name, account_name=blob_service_client.account_name, expiration_minutes=expiration_minutes)
+        blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+        return blob_url
+    except Exception as e:
+        return(f"Error generating SAS URL: {str(e)}")        
+
+
+
