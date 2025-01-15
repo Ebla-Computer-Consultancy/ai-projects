@@ -3,7 +3,7 @@ from fastapi import HTTPException, Request, status
 from ldap3 import NTLM, Connection, Server
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User, Permission
-from wrapperfunction.function_auth.service import table_service
+from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.function_auth.service import jwt_service
 
 ### AUTHENTICATION
@@ -36,7 +36,7 @@ def test_ldap_connection(username: str, password: str):
 
 def get_user(username) -> Tuple[User, dict]:
     try:
-        user = table_service.get_user_by_name(username)
+        user = auth_db_service.get_user_by_name(username)
         if len(user) > 0:
             user_permissions = get_user_permissions(user[0]["_id"])
             user_permissions = [
@@ -48,7 +48,7 @@ def get_user(username) -> Tuple[User, dict]:
                         url=permission_data["url"]
                     )
                     for permission in user_permissions
-                    if (permission_data := table_service.get_permission_by_id(permission["permission_id"])[0])
+                    if (permission_data := auth_db_service.get_permission_by_id(permission["permission_id"])[0])
                 ]  
             return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
         else: 
@@ -57,14 +57,14 @@ def get_user(username) -> Tuple[User, dict]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         
 def get_user_permissions(user_id):
-    return table_service.get_user_permissions(user_id)
+    return auth_db_service.get_user_permissions(user_id)
 
 def update_refresh_token(token: str):
     try:
         payloads = jwt_service.decode_jwt(token)
         user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            entity_user = table_service.get_user_by_token(token=token, user_id=user.id)
+            entity_user = auth_db_service.get_user_by_token(token=token, user_id=user.id)
             if len(entity_user) < 1:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid refresh_token")
             new_refresh_token = jwt_service.generate_refresh_token(user=user)
@@ -81,7 +81,7 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
         payloads = jwt_service.decode_jwt(token)
         user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            if len(table_service.get_user_by_token(token=token, user_id=user.username)) < 1:
+            if len(auth_db_service.get_user_by_token(token=token, user_id=user.username)) < 1:
                 raise Exception(f"Invalid refresh_token")
         have_permission = False
         for user_per in user.permissions:

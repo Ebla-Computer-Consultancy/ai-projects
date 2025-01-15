@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User
-from wrapperfunction.function_auth.service import table_service
+from wrapperfunction.function_auth.service import auth_db_service
 
 
 # Function to create JWT tokens
@@ -57,7 +57,7 @@ def generate_refresh_token(user: User, time: datetime) -> str:
 def update_refresh_token(token: str = None, user: dict = None):
     if token is None:
         token = generate_refresh_token(user)
-    table_service.update_refresh_token(user, token)
+    auth_db_service.update_refresh_token(user, token)
     
 # Function to decode and verify JWT tokens
 def decode_jwt(token: str) -> User:

@@ -5,7 +5,7 @@ from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.core.service import settings_service
-from wrapperfunction.function_auth.service import table_service
+from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
@@ -143,63 +143,63 @@ async def delete_setting(body: Dict[str, Any]):
 @router.post("/permissions/assign")
 async def add_permission_to_user(user_id: str, permission_id: str):
     try:
-        return await table_service.add_permission_to_user(user_id=user_id,per_id=permission_id)
+        return await auth_db_service.add_permission_to_user(user_id=user_id,per_id=permission_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/permissions/remove")
 async def remove_user_permission(user_id: str, permission_id: str):
     try:
-        return table_service.remove_user_permission(user_id=user_id, per_id=permission_id)
+        return auth_db_service.remove_user_permission(user_id=user_id, per_id=permission_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/permissions")
 async def get_all_permissions():
     try:
-        return table_service.get_permissions()
+        return auth_db_service.get_permissions()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/permissions/{id}")
 async def get_permission(id: str):
     try:
-        return table_service.get_permission_by_id(id=id)
+        return auth_db_service.get_permission_by_id(id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/users")
 async def get_all_users():
     try:
-        return table_service.get_users()
+        return auth_db_service.get_users()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/users/{id}")
 async def get_user(id: str):
     try:
-        return table_service.get_user_by_id(id=id)
+        return auth_db_service.get_user_by_id(id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/users")
 async def add_user(username: str):
     try:
-        return await table_service.add_user(username=username)
+        return await auth_db_service.add_user(username=username)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/users")
 async def update_user(flied: str, value: str, user_id: str):
     try:
-        return table_service.update_user(flied= flied, value = value, user_id=user_id)
+        return auth_db_service.update_user(flied= flied, value = value, user_id=user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/users")
 async def delete_user(user_id: str):
     try:
-        return table_service.delete_user(user_id=user_id)
+        return auth_db_service.delete_user(user_id=user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
