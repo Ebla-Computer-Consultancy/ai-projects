@@ -30,7 +30,7 @@ class GenericTableClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
-    def delete_entity(self,entity: Dict[str, generic]) -> None:
+    def delete_entity(self,entity: Dict[str, Any]) -> None:
         try:
             self.table_client.delete_entity(entity)
         except Exception as e:
