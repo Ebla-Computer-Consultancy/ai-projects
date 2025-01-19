@@ -64,6 +64,8 @@ def load_entity_settings():
         if os.path.exists(file_path):
             with open(file_path, "r", encoding="utf-8") as file:
                 entity = json.load(file)
+                chatbot = entity.get("chatbots", [])
+                chatbot[0]["index_name"] = ENTITY_NAME
                 entity["entity_name"] = ENTITY_NAME
                 asyncio.create_task(
                     settings_service.add_setting(entity=entity)
