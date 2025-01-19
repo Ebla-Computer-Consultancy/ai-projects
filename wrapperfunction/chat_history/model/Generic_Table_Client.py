@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any
 from fastapi import HTTPException
 from azure.data.tables import  TableServiceClient,UpdateMode
+from numpy import generic
 class GenericTableClient:
     def __init__(self, table_name: str,table_service_client:TableServiceClient):
         table_service_client.create_table_if_not_exists(table_name=table_name)
@@ -29,7 +30,7 @@ class GenericTableClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
-    def delete_entity(self,entity: Dict[str, Any]) -> None:
+    def delete_entity(self,entity: Dict[str, generic]) -> None:
         try:
             self.table_client.delete_entity(entity)
         except Exception as e:

@@ -140,63 +140,63 @@ async def delete_setting(body: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
-@router.post("/permissions/assign")
+@router.post("/permission/assign")
 async def add_permission_to_user(user_id: str, permission_id: str):
     try:
         return await auth_db_service.add_permission_to_user(user_id=user_id,per_id=permission_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/permissions/remove")
+@router.delete("/permission/remove")
 async def remove_user_permission(user_id: str, permission_id: str):
     try:
         return auth_db_service.remove_user_permission(user_id=user_id, per_id=permission_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/permissions")
+@router.get("/permission")
 async def get_all_permissions():
     try:
         return auth_db_service.get_permissions()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions/{id}")
+@router.get("/permission/{id}")
 async def get_permission(id: str):
     try:
         return auth_db_service.get_permission_by_id(id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/users")
+@router.get("/user")
 async def get_all_users():
     try:
         return auth_db_service.get_users()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/users/{id}")
+@router.get("/user/{id}")
 async def get_user(id: str):
     try:
         return auth_db_service.get_user_by_id(id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/users")
+@router.post("/user")
 async def add_user(username: str):
     try:
         return await auth_db_service.add_user(username=username)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/users")
-async def update_user(flied: str, value: str, user_id: str):
+@router.put("/user")
+async def update_user(user: dict):
     try:
-        return auth_db_service.update_user(flied= flied, value = value, user_id=user_id)
+        return auth_db_service.update_user(user=user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/users")
+@router.delete("/user")
 async def delete_user(user_id: str):
     try:
         return auth_db_service.delete_user(user_id=user_id)

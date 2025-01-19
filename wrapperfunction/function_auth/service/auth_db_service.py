@@ -8,6 +8,8 @@ from wrapperfunction.core import config
 def get_user_by_name(username):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"username eq '{username}'")
+        for user in res:
+            del user["refresh_token"]
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -15,6 +17,8 @@ def get_user_by_name(username):
 def get_user_by_id(id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"_id eq '{id}'")
+        for user in res:
+            del user["refresh_token"]
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -22,6 +26,8 @@ def get_user_by_id(id):
 def get_user_by_token(token, user_id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"refresh_token eq '{token}' and _id eq '{user_id}'")
+        for user in res:
+            del user["refresh_token"]
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -64,17 +70,18 @@ def update_refresh_token(entity, token):
 
 async def add_permission_to_user(user_id, per_id):
     try:
-        user = get_user_by_id(user_id)
-        per = get_permission_by_id(per_id)
-        entity = {
-            "PartitionKey":str(uuid.uuid4()),
-            "RowKey":str(uuid.uuid4()),
-            "user_id":str(user_id),
-            "permission_id":str(per_id),
-            
-        }
-        res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity)
-        return res
+        if len(get_user_by_id(user_id)) > 0 and len(get_permission_by_id(per_id)) > 0:
+            entity = {
+                "PartitionKey":str(uuid.uuid4()),
+                "RowKey":str(uuid.uuid4()),
+                "user_id":str(user_id),
+                "permission_id":str(per_id),
+                
+            }
+            res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity)
+            return res
+        else:
+            raise Exception("User/Permission Not Found")
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -88,18 +95,14 @@ def get_permissions():
 def get_users():
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE)
+        for user in res:
+            del user["refresh_token"]
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-def update_user(flied: str, value: str, user_id: str):
-    try:
-        if value.lower() == "false":
-            value = False
-        elif value.lower() == "true":
-            value = True
-        user = get_user_by_id(user_id)[0]
-        user[flied] = value
+def update_user(user):
+    try:        
         res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE, entity=user)
         return res
     except Exception as e:
@@ -107,11 +110,14 @@ def update_user(flied: str, value: str, user_id: str):
 
 async def add_user(username):
     try:
-        id = random.randint(2,100)
+        id = 0 
         users = get_users()
-        for user in users:
-            if str(id) == user["_id"]:
-                id = random.randint(2,100)
+        if len(users) > 0:
+            max_id = int(user[0]["_id"])
+            for user in users:
+                if max_id < int(user["_id"]):
+                    max_id = int(user["_id"])
+            id = max_id + 1
         entity = {
             "PartitionKey":str(uuid.uuid4()),
             "RowKey":str(uuid.uuid4()),

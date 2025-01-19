@@ -1,4 +1,6 @@
 from typing import Optional, Dict, Any
+
+from numpy import generic
 from wrapperfunction.core import config
 from azure.data.tables import TableServiceClient
 from wrapperfunction.chat_history.model.Generic_Table_Client import GenericTableClient
@@ -19,7 +21,7 @@ def update_entity(table_name: str, entity: Dict[str, Any]):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     return generic_table_client.update_entity(entity)
 
-def delete_entity(table_name: str, entity: Dict[str, Any]):
+def delete_entity(table_name: str, entity: Dict[str, generic]):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     return generic_table_client.delete_entity(entity)
   
