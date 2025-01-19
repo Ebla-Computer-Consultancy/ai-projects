@@ -23,7 +23,7 @@ def get_user_by_id(id):
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-def get_user_by_token(token, user_id):
+def get_user_by_refresh_token(token, user_id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"refresh_token eq '{token}' and _id eq '{user_id}'")
         for user in res:

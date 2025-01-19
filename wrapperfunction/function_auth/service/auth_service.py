@@ -71,7 +71,7 @@ def update_refresh_token(token: str):
         payloads = jwt_service.decode_jwt(token)
         user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            entity_user = auth_db_service.get_user_by_token(token=token, user_id=user.id)
+            entity_user = auth_db_service.get_user_by_refresh_token(token=token, user_id=user.id)
             if len(entity_user) < 1:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid refresh_token")
             new_refresh_token = jwt_service.generate_refresh_token(user=user)
@@ -88,7 +88,7 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
         payloads = jwt_service.decode_jwt(token)
         user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
         if payloads["token_type"] == "refresh":
-            if len(auth_db_service.get_user_by_token(token=token, user_id=user.username)) < 1:
+            if len(auth_db_service.get_user_by_refresh_token(token=token, user_id=user.username)) < 1:
                 raise Exception(f"Invalid refresh_token")
         have_permission = False
         for user_per in user.permissions:
