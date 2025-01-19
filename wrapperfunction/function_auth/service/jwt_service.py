@@ -73,7 +73,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.BASE_URL}/api/v1/user/lo
 def get_token_from_header(authorization: str = Depends(oauth2_scheme)):
     if authorization.startswith("Bearer "):
         return authorization[7:]
-    if authorization is not None or authorization is not "unknown":
+    if authorization != None or authorization != "unknown":
         return authorization
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")
