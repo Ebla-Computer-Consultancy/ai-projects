@@ -10,7 +10,7 @@ from wrapperfunction.function_auth.service import jwt_service
 def authenticate_user(username: str, password: str):
     try:
         user = get_user(username)
-        if test_ldap_connection(username=username, password=password):
+        if test_ldap_connection(username=username, password=password)[0]:
             tokens = jwt_service.generate_jwt_tokens(user=user[0])
             jwt_service.update_refresh_token(token=tokens[1], user=user[1])
             return {
@@ -33,9 +33,9 @@ def test_ldap_connection(username: str, password: str):
         )
         
         if conn.bind():
-            return True
+            return True, conn
         else:
-            return False
+            return False, conn
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
