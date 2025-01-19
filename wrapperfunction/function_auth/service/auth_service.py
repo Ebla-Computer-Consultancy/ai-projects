@@ -44,16 +44,18 @@ def get_user(username) -> Tuple[User, dict]:
         user = auth_db_service.get_user_by_name(username)
         if len(user) > 0:
             user_permissions = get_user_permissions(user[0]["_id"])
+            all_permissions = auth_db_service.get_permissions()
+            user_per_id = [per["permission_id"] for per in user_permissions]
             user_permissions = [
                     Permission(
-                        id=permission_data["_id"],
-                        en_name=permission_data["en_name"],
-                        ar_name=permission_data["ar_name"],
-                        key=permission_data["key"],
-                        url=permission_data["url"]
+                        id=permission["_id"],
+                        en_name=permission["en_name"],
+                        ar_name=permission["ar_name"],
+                        key=permission["key"],
+                        url=permission["url"]
                     )
-                    for permission in user_permissions
-                    if (permission_data := auth_db_service.get_permission_by_id(permission["permission_id"])[0])
+                    for permission in all_permissions
+                    if (permission["_id"] in user_per_id)
                 ]  
             return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
         else: 
