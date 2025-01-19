@@ -134,7 +134,7 @@ async def add_setting(body: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
 @router.delete("/settings")
-async def delete_setting(body: Dict[str, Any]):
+async def delete_setting(body: dict):
     try:
         return settings_service.delete_bot_settings(entity=body)
     except Exception as e:
