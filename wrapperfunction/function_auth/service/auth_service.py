@@ -35,7 +35,7 @@ def test_ldap_connection(username: str, password: str):
         if conn.bind():
             return True
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
+            return False
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
