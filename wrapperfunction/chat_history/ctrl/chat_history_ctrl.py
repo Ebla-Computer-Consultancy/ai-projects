@@ -47,5 +47,5 @@ def delete_questions(question_id: str):
 def update_questions(question_id: str,updated_data: Question):
     return  history_service.update_question(question_id,updated_data)
 @router.get("/get-questions/")
-def get_questions():
-    return history_service.get_questions()
+def get_questions(bot_name: Optional[str] = None):
+    return history_service.get_questions(bot_name)

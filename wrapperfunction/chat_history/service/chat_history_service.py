@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Optional
 import uuid
-from wrapperfunction.chat_history.model.question_entity import QuestionEntity
+from wrapperfunction.chat_history.model.question_entity import QuestionEntity, QuestionPropertyName
 from wrapperfunction.chat_history.model.question_model import Question
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
@@ -389,7 +389,7 @@ def get_question_data(question_id: str):
 async def add_questions(questions: list[Question]):
     try:
         for question in questions:
-            entity = QuestionEntity(question=question.question)
+            entity = QuestionEntity(question=question.question, bot_name=question.bot_name)
             await db_connector.add_entity(config.COSMOS_FAQ_TABLE, entity.to_dict())
         return ServiceReturn(
             status=StatusCode.SUCCESS,
@@ -424,12 +424,13 @@ def update_question(question_id: str, updated_data: Question):
             message="Question updated successfully.").to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-def get_questions():
+def get_questions(bot_name: Optional[str] = None):
     try:
-        return db_connector.get_entities(config.COSMOS_FAQ_TABLE)
+        filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
+        res=db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter_condition)
+        filtered_res = sorted(({QuestionPropertyName.ACTUAL_QUESTION.value: item[QuestionPropertyName.ACTUAL_QUESTION.value],QuestionPropertyName.TOTAL_COUNT.value: item[QuestionPropertyName.TOTAL_COUNT.value],}for item in res),key=lambda x: x[QuestionPropertyName.TOTAL_COUNT.value],reverse=True)
+        return filtered_res
     except Exception as e:
         raise HTTPException(
             status_code=400,
-            detail=f"Failed to retrieve questions: {str(e)}"
-        )
-       
+            detail=f"Failed to retrieve questions: {str(e)}")  
