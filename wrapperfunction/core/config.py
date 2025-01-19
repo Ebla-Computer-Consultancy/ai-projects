@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 
 # Load environment variables from .env file
@@ -120,3 +121,14 @@ def load_chatbot_settings(bot_name: str):
         custom_settings=None,
         enable_history=True
     )
+
+def get_media_info() -> dict:
+    try:
+        media_settings = ENTITY_SETTINGS.get("media_settings",{})
+        info = media_settings.get("info",{}) if len(media_settings) > 0 else None
+        if info is not None and len(info) > 0: 
+            return info
+        else:
+            raise HTTPException(status_code=500, detail="There is no media setting info provided")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="There is no media setting info provided")

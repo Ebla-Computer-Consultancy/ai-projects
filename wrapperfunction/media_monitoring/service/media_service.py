@@ -15,7 +15,6 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
-from wrapperfunction.media_monitoring.integration.media_connector import get_media_info
 from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
@@ -37,7 +36,7 @@ async def generate_report(search_text: str):
         )
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
         report_file_name = search_text.replace(" ","_")
-        info = get_media_info()
+        info = config.get_media_info()
         append_blob(blob=chat_res["message"]["content"],
                     metadata_3=IndexingType.GENERATED.value,
                     folder_name=config.SUBFOLDER_NAME,
@@ -67,7 +66,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             settings
         )
         # Indexer
-        info = get_media_info()
+        info = config.get_media_info()
         index_info = aisearch_connector.get_index_info(info["index_name"])
         indexer_name = index_info.indexer_name
         index_name = index_info.index_name
