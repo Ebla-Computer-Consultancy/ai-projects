@@ -7,13 +7,16 @@ from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.function_auth.service import jwt_service
 
 ### AUTHENTICATION
-def get_jwt(username: str, password: str):
+def authenticate_user(username: str, password: str):
     try:
         user = get_user(username)
         if test_ldap_connection(username=username, password=password):
             tokens = jwt_service.generate_jwt_tokens(user=user[0])
             jwt_service.update_refresh_token(token=tokens[1], user=user[1])
-            return {"permissions": user[0].permissions,"access_token":tokens[0],"refresh_token":tokens[1]}
+            return {
+                "permissions": user[0].permissions,
+                "access_token":tokens[0],
+                "refresh_token":tokens[1]}
         else:
             raise Exception("User Not Found")
     except Exception as e:

@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/login")
 def login(body: OAuth2PasswordRequestForm = Depends()):
     try:
-        response = auth_service.get_jwt(username=body.username, password=body.password)
+        response = auth_service.authenticate_user(username=body.username, password=body.password)
         return response 
     except Exception as e:
         raise e
