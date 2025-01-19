@@ -46,7 +46,7 @@ def generate_refresh_token(user: User, time: datetime) -> str:
                 "id": user.id,
                 "name": user.username,
                 "permissions": user.dict_permissions(), 
-                "exp": now + timedelta(hours=24) if time is None else time,
+                "exp": time,
                 "token_type": "refresh"
             },
             key = config.JWT_SECRET_KEY,
