@@ -154,7 +154,7 @@ async def remove_user_permission(user_id: str, permission_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/permission")
+@router.get("/permissions")
 async def get_all_permissions():
     try:
         return auth_db_service.get_permissions()
@@ -168,7 +168,7 @@ async def get_permission(id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/user")
+@router.get("/users")
 async def get_all_users():
     try:
         return auth_db_service.get_users()
