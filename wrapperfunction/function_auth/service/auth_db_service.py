@@ -113,7 +113,7 @@ async def add_user(username):
         id = 0 
         users = get_users()
         if len(users) > 0:
-            max_id = int(user[0]["_id"])
+            max_id = int(users[0]["_id"])
             for user in users:
                 if max_id < int(user["_id"]):
                     max_id = int(user["_id"])
