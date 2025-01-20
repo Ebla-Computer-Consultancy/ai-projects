@@ -1,4 +1,3 @@
-import random
 import uuid
 from fastapi import HTTPException, status
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
