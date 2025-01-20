@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
@@ -141,16 +141,16 @@ async def delete_setting(body: dict):
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
 @router.post("/permission/assign")
-async def add_permission_to_user(user_id: str, permission_id: str):
+async def add_permission_to_user(user_id: str, permissions_ids: List[str]):
     try:
-        return await auth_db_service.add_permission_to_user(user_id=user_id,per_id=permission_id)
+        return await auth_db_service.add_permission_to_user(user_id=user_id, per_ids=permissions_ids)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/permission/remove")
-async def remove_user_permission(user_id: str, permission_id: str):
+async def remove_user_permission(user_id: str, permissions_ids: List[str]):
     try:
-        return auth_db_service.remove_user_permission(user_id=user_id, per_id=permission_id)
+        return auth_db_service.remove_user_permission(user_id=user_id, per_ids=permissions_ids)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -179,6 +179,13 @@ async def get_all_users():
 async def get_user(id: str):
     try:
         return auth_db_service.get_user_by_id(id=id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/user/{id}/permissions")
+async def get_user_permissions(id: str):
+    try:
+        return auth_db_service.get_user_permissions_full(user_id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
