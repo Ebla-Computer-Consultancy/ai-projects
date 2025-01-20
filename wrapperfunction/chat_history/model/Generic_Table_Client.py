@@ -28,8 +28,10 @@ class GenericTableClient:
             self.table_client.update_entity(entity, mode=UpdateMode.MERGE)
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
-    def delete_entity(self, entity: Dict[str, Any]) -> None:
+
+    
+    def delete_entity(self,entity: Dict[str, Any]) -> None:
         try:
-            self.table_client.delete_entity(entity)
+            self.table_client.delete_entity(entity=entity)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))    
+

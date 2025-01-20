@@ -14,9 +14,11 @@ async def add_entity(table_name: str, entity: Dict[str, Any]):
 def get_entities(table_name: str, filter_expression: Optional[str] = None):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     return generic_table_client.get_entities(filter_expression)
+
 def update_entity(table_name: str, entity: Dict[str, Any]):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     return generic_table_client.update_entity(entity)
+
 def delete_entity(table_name: str, entity: Dict[str, Any]):
     generic_table_client = GenericTableClient(table_name,table_service_client)
     return generic_table_client.delete_entity(entity)
