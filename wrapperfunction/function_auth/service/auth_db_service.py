@@ -45,7 +45,7 @@ def get_user_permission(user_id, per_id):
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-def get_user_permissions_full(user_id):
+def get_full_user_permissions_info(user_id):
     try:
         res = []
         user_permissions = get_user_permissions(user_id)

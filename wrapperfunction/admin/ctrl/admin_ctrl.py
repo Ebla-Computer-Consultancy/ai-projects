@@ -185,7 +185,7 @@ async def get_user(id: str):
 @router.get("/user/{id}/permissions")
 async def get_user_permissions(id: str):
     try:
-        return auth_db_service.get_user_permissions_full(user_id=id)
+        return auth_db_service.get_full_user_permissions_info(user_id=id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
