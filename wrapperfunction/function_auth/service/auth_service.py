@@ -18,7 +18,7 @@ def authenticate_user(username: str, password: str):
                 "access_token":tokens[0],
                 "refresh_token":tokens[1]}
         else:
-            raise Exception("User Not Found")
+            raise Exception("LDAP: Connection Filed. User Not Found in AD")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     
@@ -37,7 +37,7 @@ def test_ldap_connection(username: str, password: str):
         else:
             return False, conn
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise Exception(f'LDAP: {str(e)}')
 
 def get_user(username) -> Tuple[User, dict]:
     try:
@@ -59,9 +59,9 @@ def get_user(username) -> Tuple[User, dict]:
                 ]  
             return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
         else: 
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not Found")
+            raise Exception("User Not Found")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise Exception(f"{str(e)}")
         
 def get_user_permissions(user_id):
     return auth_db_service.get_user_permissions(user_id)
