@@ -1,10 +1,11 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException, UploadFile
 from wrapperfunction.admin.model.crawl_model import CrawlRequestUrls
 from wrapperfunction.admin.model.crawl_settings import CrawlSettings
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.core.service import settings_service
+from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
@@ -103,7 +104,8 @@ async def indexes_name():
         return search_service.indexes_name()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))@router.get("/settings")
-    
+
+@router.get("/settings")    
 async def get_all_settings():
     try:
         return settings_service.get_all_settings()
@@ -132,14 +134,85 @@ async def add_setting(body: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
 @router.delete("/settings")
-async def delete_setting(row_key: str,partition_key: str):
+async def delete_setting(body: dict):
     try:
-        return settings_service.delete_bot_settings(partition_key=partition_key,row_key=row_key)
+        return settings_service.delete_bot_settings(entity=body)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.post("/permission/assign")
+async def add_permission_to_user(user_id: str, permissions_ids: List[str]):
+    try:
+        return await auth_db_service.add_permission_to_user(user_id=user_id, per_ids=permissions_ids)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/permission/remove")
+async def remove_user_permission(user_id: str, permissions_ids: List[str]):
+    try:
+        return auth_db_service.remove_user_permission(user_id=user_id, per_ids=permissions_ids)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/permissions")
+async def get_all_permissions():
+    try:
+        return auth_db_service.get_permissions()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/permission/{id}")
+async def get_permission(id: str):
+    try:
+        return auth_db_service.get_permission_by_id(id=id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/users")
+async def get_all_users():
+    try:
+        return auth_db_service.get_users()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/user/{id}")
+async def get_user(id: str):
+    try:
+        return auth_db_service.get_user_by_id(id=id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/user/{id}/permissions")
+async def get_user_permissions(id: str):
+    try:
+        return auth_db_service.get_full_user_permissions_info(user_id=id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/user")
+async def add_user(username: str):
+    try:
+        return await auth_db_service.add_user(username=username)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/user")
+async def update_user(user: dict):
+    try:
+        return auth_db_service.update_user(user=user)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/user")
+async def delete_user(user_id: str):
+    try:
+        return auth_db_service.delete_user(user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/sas-token") 
 def get_sas_token(blob_url:str):
     try:
         return blob_service.generate_blob_sas_url(blob_url=blob_url)
     except Exception as e:    
-        raise HTTPException(status_code=500, detail=str(e))      
+        raise HTTPException(status_code=500, detail=str(e))    
