@@ -57,7 +57,19 @@ async def generate_report(search_text: str):
         ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+def prepare_tags_exp(tags: list):
+    if tags is not None:
+        return " or ".join(filter(None, [f"keyphrases/any(tag: tag eq '{tag}') or locations/any(tag: tag eq '{tag}') or organizations/any(tag: tag eq '{tag}')" for tag in tags]))
+    return None
+def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
+    index_exp = f"index_date ge {index_date_from} and index_date le {index_date_to}" if index_date_from and index_date_to else ""
+    news_exp = f"news_date ge {news_date_from} and news_date le {news_date_to}" if news_date_from and news_date_to else ""
+    return " and ".join(filter(None, [index_exp, news_exp]))
 
+def concat_exp(date_exp,tag_exp):
+    return " and ".join(filter(None, [date_exp, tag_exp]))
+   
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
         # Crawling
