@@ -142,4 +142,5 @@ def update_index(index_name: str, data):
     if res.ok:
         return res
     else:
+        print(f"Error While updating '{index_name}' Index: {str(res.content)}")
         return HTTPException(status_code=res.status_code, detail=str(res.content))
