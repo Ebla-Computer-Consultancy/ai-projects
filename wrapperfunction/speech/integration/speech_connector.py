@@ -3,7 +3,8 @@ from fastapi.responses import JSONResponse
 import requests
 import azure.cognitiveservices.speech as speechsdk
 import wrapperfunction.core.config as config
-
+from azure.identity import ClientSecretCredential
+from azure.core.credentials import AccessToken
 
 def transcribe_audio_file(audio_stream: str):
     speech_config = speechsdk.SpeechConfig(
@@ -36,7 +37,6 @@ def transcribe_audio_file(audio_stream: str):
             return f"Transcription canceled: {cancellation_details.reason}. Error details: {cancellation_details.error_details}"
         return f"Transcription canceled: {cancellation_details.reason}"
 
-
 def get_speech_token():
     speech_key = config.SPEECH_SERVICE_KEY
     speech_region = config.SPEECH_SERVICE_REGION
@@ -66,3 +66,16 @@ def get_speech_token():
         raise HTTPException(
             status_code=401, detail="There was an error authorizing your speech key."
         )
+
+def get_speech_entra_access_token():
+    speech_region = config.SPEECH_SERVICE_REGION
+    tenant_id = config.TENANT_ID
+    client_id = config.CLIENT_ID
+    client_secret = config.CLIENT_SECRET_VALUE
+    
+    try:
+        credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+        token: AccessToken = credential.get_token("https://cognitiveservices.azure.com/.default")
+        return {"token": token.token, "region": speech_region}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

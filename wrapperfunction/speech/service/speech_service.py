@@ -54,9 +54,5 @@ async def fast_file(file: bytes):
 def get_speech_token():
     return speech_connector.get_speech_token()
 
-
-def get_speech_endpoint_and_key():
-    return {
-        "SERVICE_ENDPOINT": config.SPEECH_SERVICE_ENDPOINT,
-        "SERVICE_KEY": config.SPEECH_SERVICE_KEY,
-    }
+def get_speech_authorization_access_token():
+    return speech_connector.get_speech_entra_access_token()
