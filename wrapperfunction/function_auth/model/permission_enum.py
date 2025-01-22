@@ -1,0 +1,13 @@
+from enum import Enum
+
+class PermissionTypes(Enum):
+    
+    ADMIN = "ADMIN"
+    MEDIA = "MEDIA"
+    CHATBOT = "CHATBOT"
+    INTERACTIVE_CHAT = "INTERACTIVE_CHAT"
+    AVATAR = "AVATAR"
+    SPEECH = "SPEECH"
+    CHAT_HISTORY = "CHAT_HISTORY"
+    DOCUMENT_INTELLIGENCE = "DOCUMENT_INTELLIGENCE"
+    SEARCH = "SEARCH"
