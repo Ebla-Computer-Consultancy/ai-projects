@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 class MediaRequest(BaseModel):
-    search_text: str 
-    index_date_from:
+    search_text: str
+    index_date_from: str
     index_date_to: str = None
     news_date_from: str = None
     news_date_to: str = None
