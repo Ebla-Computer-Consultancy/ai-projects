@@ -1,6 +1,7 @@
-import json
 import threading
 import time
+from typing import List
+from dateutil import parser
 from fastapi import HTTPException
 from wrapperfunction.admin.integration import imageanalytics_connector
 from wrapperfunction.admin.integration import textanalytics_connector
@@ -22,7 +23,7 @@ from azure.search.documents.indexes import SearchIndexerClient
 from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
 from wrapperfunction.search.service.search_service import update_index
 
-async def generate_report(search_text: str):
+async def generate_report(search_text: str,index_date_from,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
         
@@ -62,9 +63,11 @@ def prepare_tags_exp(tags: list):
     if tags is not None:
         return " or ".join(filter(None, [f"keyphrases/any(tag: tag eq '{tag}') or locations/any(tag: tag eq '{tag}') or organizations/any(tag: tag eq '{tag}')" for tag in tags]))
     return None
+
 def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
-    index_exp = f"index_date ge {index_date_from} and index_date le {index_date_to}" if index_date_from and index_date_to else ""
-    news_exp = f"news_date ge {news_date_from} and news_date le {news_date_to}" if news_date_from and news_date_to else ""
+    index_exp = " and ".join(filter(None, [f"index_date ge {index_date_from}" if index_date_from else None, f"index_date le {index_date_to}" if index_date_to else None]))
+    news_exp = " and ".join(filter(None, [f"news_date ge {news_date_from}" if news_date_from else None, f"news_date le {news_date_to}" if news_date_to else None]))
+  
     return " and ".join(filter(None, [index_exp, news_exp]))
 
 def concat_exp(date_exp,tag_exp):
