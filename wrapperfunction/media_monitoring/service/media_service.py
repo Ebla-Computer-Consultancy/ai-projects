@@ -1,3 +1,4 @@
+from datetime import datetime
 import threading
 import time
 from typing import List
@@ -58,20 +59,6 @@ async def generate_report(search_text: str,index_date_from,index_date_to = None,
         ).to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-def prepare_tags_exp(tags: list):
-    if tags is not None:
-        return " or ".join(filter(None, [f"keyphrases/any(tag: tag eq '{tag}') or locations/any(tag: tag eq '{tag}') or organizations/any(tag: tag eq '{tag}')" for tag in tags]))
-    return None
-
-def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
-    index_exp = " and ".join(filter(None, [f"index_date ge {index_date_from}" if index_date_from else None, f"index_date le {index_date_to}" if index_date_to else None]))
-    news_exp = " and ".join(filter(None, [f"news_date ge {news_date_from}" if news_date_from else None, f"news_date le {news_date_to}" if news_date_to else None]))
-  
-    return " and ".join(filter(None, [index_exp, news_exp]))
-
-def concat_exp(date_exp,tag_exp):
-    return " and ".join(filter(None, [date_exp, tag_exp]))
    
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
@@ -86,8 +73,8 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
         indexer_name = index_info.indexer_name
         index_name = index_info.index_name
         search_indexer_client = get_search_indexer_client()
-        search_indexer_client.run_indexer(indexer_name)
         status = search_indexer_client.get_indexer_status(indexer_name)
+        search_indexer_client.run_indexer(indexer_name)
         # Apply Skills
         thread = threading.Thread(
             target=monitor_indexer,
@@ -95,6 +82,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
             daemon=True
         )
         thread.start()
+        print(f"URL's:{urls} | Topics:{settings.topics} crawled successfully")
         # Return Response
         return ServiceReturn(
                             status=StatusCode.SUCCESS,
@@ -102,8 +90,22 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
                             data=status.last_result.status
                         ).to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(f"{str(e)}")
 
+def prepare_tags_exp(tags: list):
+    if tags is not None:
+        return " or ".join(filter(None, [f"keyphrases/any(tag: tag eq '{tag}') or locations/any(tag: tag eq '{tag}') or organizations/any(tag: tag eq '{tag}')" for tag in tags]))
+    return None
+
+def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
+    index_exp = " and ".join(filter(None, [f"index_date ge {index_date_from}" if index_date_from else None, f"index_date le {index_date_to}" if index_date_to else None]))
+    news_exp = " and ".join(filter(None, [f"news_date ge {news_date_from}" if news_date_from else None, f"news_date le {news_date_to}" if news_date_to else None]))
+  
+    return " and ".join(filter(None, [index_exp, news_exp]))
+
+def concat_exp(date_exp,tag_exp):
+    return " and ".join(filter(None, [date_exp, tag_exp]))
+      
 def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, index_name: str):
     try:
         retries = 0
