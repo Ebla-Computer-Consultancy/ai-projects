@@ -6,9 +6,9 @@ from wrapperfunction.video_indexer.model import vi_model
 router = APIRouter()
 
 @router.post("/create_vi")
-async def create_vi(resquest: vi_model.VIRequest):
+async def create_vi(request: vi_model.VIRequest):
     try:
-        return await vi_service.create_video_index(v_name=resquest.video_name,v_url=resquest.video_url)
+        return await vi_service.create_video_index(v_name=request.video_name,v_url=request.video_url)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
