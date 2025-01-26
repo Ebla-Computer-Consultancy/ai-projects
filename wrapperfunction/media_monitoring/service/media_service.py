@@ -18,7 +18,7 @@ from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
 from wrapperfunction.search.integration import aisearch_connector
-from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
+from wrapperfunction.search.integration.aisearch_connector import get_search_client, get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
 from azure.search.documents.indexes import SearchIndexerClient
 from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
@@ -125,7 +125,8 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
 def apply_skills_on_index(index_name: str):
     try:
         start_time = time.time()
-        results = search_query(search_text="*",search_index=index_name)
+        search = get_search_client(index_name)
+        results = search_query(search_text="*",search_index=index_name,k=search.get_document_count())
         docs = 0
         for index in results["rs"]:
             chunk = index["chunk"]

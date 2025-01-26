@@ -23,6 +23,7 @@ def search_query(
     search_text,
     filter_by=None,
     sort_order=None,
+    k = 50,
     page_size=1000000,
     page_number=1,
 ):
@@ -36,7 +37,7 @@ def search_query(
                     "kind": "text",
                     "text":search_text,
                     "fields": "text_vector",
-                    # "k": 10,
+                    "k": k,
                 }
             ],
             query_type="semantic",
