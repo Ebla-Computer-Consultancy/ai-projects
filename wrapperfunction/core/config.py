@@ -52,6 +52,7 @@ JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
 BASE_URL=os.getenv("BASE_URL")
 AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
+ERROR_LOG_TABLE_NAME=os.getenv("ERROR_LOG_TABLE_NAME")
 
 
 def load_entity_settings():

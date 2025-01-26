@@ -238,6 +238,12 @@
     },
     {
       "name": "qrep"
+    },
+    {
+      "name":"check_answerd",
+      "custom_settings": {
+        "temperature":0.1
+      }
     }
   ],
   "dict_AR": {
