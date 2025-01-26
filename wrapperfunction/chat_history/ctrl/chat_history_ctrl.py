@@ -35,17 +35,17 @@ def get_bot_name():
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
     return await history_service.add_message(chat_payload,bot_name,request)
   
-@router.post("/add-qustions/")
+@router.post("/qustions/")
 async def add_questions(questions: list[Question]):
     return await history_service.add_questions(questions)
 
-@router.post("/delete-questions/")
-def delete_questions(question_id: str):
-    return  history_service.delete_questions(question_id)
+@router.delete("/questions/")
+def delete_questions(rawkey: str):
+    return  history_service.delete_questions(rawkey)
 
-@router.post("/update-questions/")
-def update_questions(question_id: str,updated_data: Question):
-    return  history_service.update_question(question_id,updated_data)
-@router.get("/get-questions/")
+@router.patch("/questions/")
+def update_questions(rawkey: str,updated_data: Question):
+    return  history_service.update_question(rawkey,updated_data)
+@router.get("/questions/")
 def get_questions(bot_name: Optional[str] = None):
     return history_service.get_questions(bot_name)

@@ -377,9 +377,9 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
         )
 
 
-def get_question_data(question_id: str):
+def get_question_data(RawKEY: str):
     try:
-        filter = f"QuestionId eq '{question_id}'"
+        filter = f"{QuestionPropertyName.ROW_KEY.value} eq '{RawKEY}'"
         return db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter)[0]
     except Exception as e:
         raise HTTPException(
@@ -388,8 +388,9 @@ def get_question_data(question_id: str):
         )
 async def add_questions(questions: list[Question]):
     try:
+        print(questions)
         for question in questions:
-            entity = QuestionEntity(question=question.question, bot_name=question.bot_name)
+            entity = QuestionEntity(question=question.Question, bot_name=question.BotName, total_count=question.TotalCount)
             await db_connector.add_entity(config.COSMOS_FAQ_TABLE, entity.to_dict())
         return ServiceReturn(
             status=StatusCode.SUCCESS,
@@ -401,9 +402,9 @@ async def add_questions(questions: list[Question]):
             detail=f"Failed to add questions: {str(e)}"
         )
 
-def delete_questions(question_id: str):
+def delete_questions(RawKEY: str):
     try:
-        question = get_question_data(question_id)
+        question = get_question_data(RawKEY)
         if question:
             db_connector.delete_entity(config.COSMOS_FAQ_TABLE, question)
             return ServiceReturn(
@@ -413,9 +414,9 @@ def delete_questions(question_id: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def update_question(question_id: str, updated_data: Question):
+def update_question(RawKEY: str, updated_data: Question):
     try:
-        question = get_question_data(question_id)
+        question = get_question_data(RawKEY)
         if question:
             question.update(updated_data)
             db_connector.update_entity(config.COSMOS_FAQ_TABLE, question)
@@ -428,7 +429,7 @@ def get_questions(bot_name: Optional[str] = None):
     try:
         filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
         res=db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter_condition)
-        filtered_res = sorted(({QuestionPropertyName.ACTUAL_QUESTION.value: item[QuestionPropertyName.ACTUAL_QUESTION.value],QuestionPropertyName.TOTAL_COUNT.value: item[QuestionPropertyName.TOTAL_COUNT.value],}for item in res),key=lambda x: x[QuestionPropertyName.TOTAL_COUNT.value],reverse=True)
+        filtered_res = sorted(({QuestionPropertyName.ROW_KEY.value: item[QuestionPropertyName.ROW_KEY.value],QuestionPropertyName.ACTUAL_QUESTION.value: item[QuestionPropertyName.ACTUAL_QUESTION.value],QuestionPropertyName.TOTAL_COUNT.value: item[QuestionPropertyName.TOTAL_COUNT.value],}for item in res),key=lambda x: x[QuestionPropertyName.TOTAL_COUNT.value],reverse=True)
         return filtered_res
     except Exception as e:
         raise HTTPException(

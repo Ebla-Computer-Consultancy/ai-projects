@@ -34,4 +34,5 @@ class GenericTableClient:
         try:
             self.table_client.delete_entity(entity=entity)
         except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
