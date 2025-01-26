@@ -1,5 +1,6 @@
 import asyncio
 import json
+import traceback
 import uuid
 from fastapi import Request
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
@@ -24,7 +25,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion(
-            chatbot_settings, chat_history_with_system["chat_history"]
+            # chatbot_settings, chat_history_with_system["chat_history"]
         )
 
         if chatbot_settings.enable_history:
@@ -44,6 +45,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         return results
 
     except Exception as error:
+        await chat_history_service.log_error_to_db(bot_name=bot_name,error_message= str(error),stack_trace= traceback.format_exc(),conversation_id= conversation_id)
         return {"error": True, "message": str(error)}
 
 

@@ -2,6 +2,8 @@ import asyncio
 import json
 from typing import Optional
 import uuid
+from wrapperfunction.chat_history.model.error_entity import ErrorEntity, ErrorPropertyName
+from wrapperfunction.chatbot.integration.openai_connector import chat_completion
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.core import config
 from fastapi import HTTPException, Request
@@ -39,6 +41,12 @@ def get_conversation_data(conversation_id):
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
     
+def get_message_data(message_id):
+    try:
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f" {MessagePropertyName.MESSAGE_ID.value} eq '{message_id}'")     
+        return res[0]
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))    
 def get_FAQ():
     try:
         res = db_connector.get_entities(config.FAQ_TABLE_NAME)
@@ -51,12 +59,18 @@ def get_FAQ():
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def get_messages(conversation_id):
+def get_messages(conversation_id: Optional[str] = None, filter_condition: Optional[str] = None):
     try:
-        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME,f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'") 
+        if conversation_id:
+            conversation_filter = f"{MessagePropertyName.CONVERSATION_ID.value} eq '{conversation_id}'"
+            final_filter = f"{conversation_filter} and {filter_condition}" if filter_condition else conversation_filter
+        else:
+            final_filter = filter_condition
+        res=db_connector.get_entities(config.MESSAGE_TABLE_NAME, final_filter) if final_filter else db_connector.get_entities(config.MESSAGE_TABLE_NAME)
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
+        
 
 
 def get_user_messages(conversation_id):
@@ -68,8 +82,11 @@ def get_user_messages(conversation_id):
         return HTTPException(status_code=400, detail=str(e))
 
 
-def get_all_conversations(bot_name: Optional[str] = None):
+def get_all_conversations(bot_name: Optional[str] = None,condition:Optional[str] = None):
     try:
+        if condition:
+            res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME,condition)
+            return res
         filter_condition = f"{ConversationPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
         res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME, filter_condition)
         return res
@@ -101,30 +118,41 @@ def update_conversation(conversation_id: str, updated_data: dict):
             db_connector.update_entity(config.CONVERSATION_TABLE_NAME, conversation)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
+def update_message(updated_data: dict,message_ids: Optional[list[str]]=None,message_id: Optional[str]=None ):
+    try:
+        if message_ids:
+            for message_id in message_ids:
+                message = get_message_data(message_id)
+                if message:
+                    message.update(updated_data)
+                    db_connector.update_entity(config.MESSAGE_TABLE_NAME, message)
+        message = get_message_data(message_id)
+        if message:
+            message.update(updated_data)
+            db_connector.update_entity(config.MESSAGE_TABLE_NAME, message)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))    
 def perform_sentiment_analysis():
     try:
-        conversations = get_all_conversations()
+        conversations = get_all_conversations(condition=f"{ConversationPropertyName.SENTIMENT.value} eq 'undefined' and {ConversationPropertyName.BOT_NAME.value} ne 'interactive'")
         for conversation in conversations:
-            if conversation[ConversationPropertyName.SENTIMENT.value] == "undefined" and conversation[ConversationPropertyName.BOT_NAME.value] != "interactive":
-                conversation_id = conversation[
+            conversation_id = conversation[
                     ConversationPropertyName.CONVERSATION_ID.value
                 ]
-                if not conversation_id:
+            if not conversation_id:
                     continue
-                messages = get_user_messages(conversation_id)
-                message_texts = [
+            messages = get_user_messages(conversation_id)
+            message_texts = [
                     msg[MessagePropertyName.CONTENT.value]
                     for msg in messages
                     if MessagePropertyName.CONTENT.value in msg
                 ]
-                if not message_texts:
-                    continue
-                all_message_texts = " ".join(message_texts) + " "
-                semantic_data = text_connector.analyze_sentiment([all_message_texts])
+            if not message_texts:
+                continue
+            all_message_texts = " ".join(message_texts) + " "
+            semantic_data = text_connector.analyze_sentiment([all_message_texts])
                 
-                update_conversation(
+            update_conversation(
                     conversation_id,
                     {ConversationPropertyName.SENTIMENT.value: semantic_data},
                 )
@@ -136,11 +164,14 @@ def perform_sentiment_analysis():
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def perform_feedback_update(conversation_id: str, feedback: int):
+def perform_feedback_update(feedback: int,conversation_id: str=None,message_id: str=None):
     try:
-        update_conversation(
+        if message_id:
+            update_message(message_id=message_id,updated_data= {MessagePropertyName.FEEDBACK.value: feedback})
+        else:    
+            update_conversation(
             conversation_id, {ConversationPropertyName.FEEDBACK.value: feedback}
-        )
+            )
         return ServiceReturn(
             status=StatusCode.SUCCESS, message="feedback updated successfully"
         ).to_dict()
@@ -181,7 +212,6 @@ async def upload_documents(files, bot_name,  request: Request,conversation_id: O
             content += extracted_text
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
-            print(f"conversation_id: {conversation_id}")
             title = content[:20].strip()
 
             user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
@@ -365,6 +395,7 @@ async def handle_user_or_assistant_messages(
        await add_message_to_Entity(user_message_entity=user_message_entity, assistant_message_entity=assistant_message_entity)
 
 def set_conversation_entity(chat_payload, conversation_id, user_message_entity, bot_name=None, client_ip=None, forwarded_ip=None, device_info=None):
+    
     user_id = chat_payload.user_id or str(uuid.uuid4())
     title = user_message_entity.content[:20].strip()
     return ConversationEntity(
@@ -384,3 +415,83 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
        await add_entity(
              message_entity=user_message_entity, assistant_entity=assistant_message_entity
         )
+
+def get_question_answer_pairs():
+    try:
+        messages = get_messages(filter_condition=f"{MessagePropertyName.IS_ANSWERED.value} eq 'undefined'")
+        if isinstance(messages, HTTPException):
+            return messages.detail
+        messages = sorted(messages, key=lambda x: (x["timestamp"], x["conversation_id"]))
+        qna_pairs = []
+        current_question = None
+        for message in messages:
+            if message["role"] == Roles.User.value:
+                current_question = message
+            elif message["role"] == Roles.Assistant.value and current_question:
+                if message.get('is_answered') != "undefined":
+                    continue
+                qna_pairs.append({"question": current_question, "answer": message})
+                current_question = None
+        return qna_pairs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving Q&A pairs: {str(e)}")
+
+def CheckQuestionAnswered(question, answer):
+    try:
+        prompt = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"Question: {question}\nAnswer: {answer}\n determine if the answer provided adequately addresses the question if the answer addresses the question Reply with 'True' or 'False'."}
+        ]
+        chatbot_settings = config.load_chatbot_settings("check_answered")
+        result = chat_completion(chatbot_settings, prompt)  
+        return result["message"]["content"]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error evaluating question and answer: {str(e)}")
+
+
+
+def UpdateAnswerEntities():
+    try:
+        all_qna_pairs = get_question_answer_pairs()
+        
+        for pair in all_qna_pairs:
+            question = pair.get("question", {})
+            answer = pair.get("answer", {})
+            answer_message_id = answer.get("message_id")
+            question_message_id = question.get("message_id")
+
+            if answer_message_id:
+                is_answer = CheckQuestionAnswered(
+                    question.get("content"), 
+                    answer.get("content"), 
+                )
+                updated_data = {MessagePropertyName.IS_ANSWERED.value: is_answer}
+                update_message(updated_data, message_ids=[answer_message_id, question_message_id])
+
+        return ServiceReturn(status=StatusCode.SUCCESS, message="Answer entities updated successfully").to_dict()
+    except Exception as e:
+        return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}").to_dict()
+    
+
+
+async def log_error_to_db(
+    bot_name: str,
+    error_message: str,
+    stack_trace: str,
+    conversation_id: str):
+    try:
+        error_enitiy=ErrorEntity(bot_name,error_message,stack_trace,conversation_id)
+        await db_connector.add_entity(config.ERROR_LOG_TABLE_NAME, error_enitiy.to_dict())
+        return ServiceReturn(status=StatusCode.SUCCESS, message="Error logged successfully").to_dict()
+    except Exception as e:
+        return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}").to_dict()
+     
+def get_error_logs(conversation_id=None):
+    try:
+        if conversation_id:
+            error_logs = db_connector.get_entities(config.ERROR_LOG_TABLE_NAME, f"{ErrorPropertyName.CONVERSATION_ID.value} eq '{conversation_id}'")
+        else:
+            error_logs = db_connector.get_entities(config.ERROR_LOG_TABLE_NAME)
+        return ServiceReturn(status=StatusCode.SUCCESS, message="Error logs retrieved successfully", data=error_logs).to_dict()
+    except Exception as e:
+        return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}").to_dict()
