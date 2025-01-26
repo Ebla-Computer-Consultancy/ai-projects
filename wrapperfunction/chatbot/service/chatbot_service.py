@@ -59,7 +59,7 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
             chat_history=chat_history_with_system_message["chat_history"],
         )
         return (
-            "".join(results["message"]["content"].replace("\n", "").split()).strip(),
+            " ".join(results["message"]["content"].replace("\n", " ").split()),
         )
     except Exception as error:
         return json.dumps({"error": True, "message": str(error)})
