@@ -1,8 +1,6 @@
 import json
-from typing import Any, Dict
 import uuid
 from fastapi import HTTPException
-from wrapperfunction.chat_history.model.Generic_Table_Client import GenericTableClient
 from wrapperfunction.core import config
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
@@ -43,9 +41,9 @@ async def add_setting(entity):
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
-def delete_bot_settings(partition_key,row_key):
+def delete_bot_settings(entity):
     try:
-        res =  db_connector.delete_entity(config.COSMOS_SETTINGS_TABLE,partition_key,row_key)
+        res =  db_connector.delete_entity(config.COSMOS_SETTINGS_TABLE,entity)
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))

@@ -42,6 +42,16 @@ COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
 FAQ_TABLE_NAME=os.getenv("COSMOS_FAQ_TABLE")
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
 DEFAULT_ENTITY_SETTINGS=os.getenv("DEFAULT_ENTITY_SETTINGS")
+SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
+LDAP_SERVER=os.getenv("LDAP_SERVER")
+LDAP_DOMAIN=os.getenv("LDAP_DOMAIN")
+COSMOS_AUTH_USER_TABLE=os.getenv("COSMOS_AUTH_USER_TABLE")
+COSMOS_AUTH_PERMISSION_TABLE=os.getenv("COSMOS_AUTH_PERMISSION_TABLE")
+COSMOS_AUTH_USER_PER_TABLE=os.getenv("COSMOS_AUTH_USER_PER_TABLE")
+JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
+ALGORITHM=os.getenv("ALGORITHM")
+BASE_URL=os.getenv("BASE_URL")
+AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
 
 
 def load_entity_settings():
@@ -55,6 +65,8 @@ def load_entity_settings():
             with open(file_path, "r", encoding="utf-8") as file:
                 entity = json.load(file)
                 entity["entity_name"] = ENTITY_NAME
+                chatbot = entity.get("chatbots", [])
+                chatbot[0]["index_name"] = ENTITY_NAME
                 asyncio.create_task(
                     settings_service.add_setting(entity=entity)
                 )      
