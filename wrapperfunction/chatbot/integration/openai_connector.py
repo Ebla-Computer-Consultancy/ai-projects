@@ -2,7 +2,6 @@ import json
 from wrapperfunction.core import config
 from openai import AzureOpenAI
 from wrapperfunction.core.model.entity_setting import ChatbotSetting
-from wrapperfunction.interactive_chat.model.interactive_model import ToolCall
 
 client = AzureOpenAI(
     azure_endpoint=config.OPENAI_ENDPOINT,

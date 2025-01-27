@@ -5,12 +5,12 @@ class TextAnalyticsKEYS(Enum):
     DATETIME = "DateTime"
     IPADDRESS = "IPAddress"
     PERSON = "Person"
-    PERSONTYPE = "PersonType"
+    PERSON_TYPE = "PersonType"
     URL = "URL"
     EVENT = "Event"
     EMAIL = "Email"
     LOCATION = "Location"
-    PHONENUMBER = "PhoneNumber"
+    PHONE_NUMBER = "PhoneNumber"
     SKILL = "Skill"
     PRODUCT = "Product"
     QUANTITY = "Quantity"
@@ -19,11 +19,11 @@ class TextAnalyticsKEYS(Enum):
     LANGUAGE_NAME = "name"
     LANGUAGE_ISO6391_NAME = "iso6391_name"
     
-class TextAnalyticsCatigories:
+class TextAnalyticsCategories:
     def __init__(self, organization: list = None, dateTime: list = None, IPAddress: list = None, 
-                 person: list = None, personType: list = None, url: list = None, event: list = None, 
-                 email: list = None, location: list = None, phoneNumber: list = None, skill: list = None, 
-                 product: list = None, quantity: list = None, address: list = None, entities: list = None):
+                person: list = None, personType: list = None, url: list = None, event: list = None, 
+                email: list = None, location: list = None, phoneNumber: list = None, skill: list = None, 
+                product: list = None, quantity: list = None, address: list = None, entities: list = None):
         
         self.organization = organization if organization is not None else []
         self.dateTime = dateTime if dateTime is not None else []
@@ -39,7 +39,6 @@ class TextAnalyticsCatigories:
         self.product = product if product is not None else []
         self.quantity = quantity if quantity is not None else []
         self.address = address if address is not None else []
-        self.entities = entities if entities is not None else []
 
 
     def to_dict(self):
@@ -49,15 +48,14 @@ class TextAnalyticsCatigories:
             TextAnalyticsKEYS.DATETIME.value: self.dateTime,
             TextAnalyticsKEYS.IPADDRESS.value: self.IPAddress,
             TextAnalyticsKEYS.PERSON.value: self.person,
-            TextAnalyticsKEYS.PERSONTYPE.value: self.personType,
+            TextAnalyticsKEYS.PERSON_TYPE.value: self.personType,
             TextAnalyticsKEYS.URL.value: self.url,
             TextAnalyticsKEYS.EVENT.value: self.event,
             TextAnalyticsKEYS.EMAIL.value: self.email,
             TextAnalyticsKEYS.LOCATION.value: self.location,
-            TextAnalyticsKEYS.PHONENUMBER.value: self.phoneNumber,
+            TextAnalyticsKEYS.PHONE_NUMBER.value: self.phoneNumber,
             TextAnalyticsKEYS.SKILL.value: self.skill,
             TextAnalyticsKEYS.PRODUCT.value: self.product,
             TextAnalyticsKEYS.QUANTITY.value: self.quantity,
-            TextAnalyticsKEYS.ADDRESS.value: self.address,
-            TextAnalyticsKEYS.ENTITIES.value: self.entities
+            TextAnalyticsKEYS.ADDRESS.value: self.address
         }

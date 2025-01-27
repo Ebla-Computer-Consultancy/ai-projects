@@ -1,8 +1,8 @@
 from datetime import datetime
-import json
 from uuid import uuid4
 from enum import Enum
-from wrapperfunction.chatbot.model.chat_message import Roles
+
+from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 
 class MessagePropertyName(Enum):
     PARTITION_KEY = "PartitionKey"
@@ -13,8 +13,15 @@ class MessagePropertyName(Enum):
     ROLE = "role"
     CONTEXT = "context"
 
+    COMPLETIONTOKENS="completion_tokens"
+    PROMPTTOKENS="prompt_tokens"
+    TOTALTOKENS="total_tokens"
+
+    MessageType = "MessageType"
+
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles, context: str):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str,type:MessageType=MessageType.Message.value,completion_tokens=None,prompt_tokens=None,total_tokens=None):
+
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
         self.timestamp = datetime.now().isoformat()  
@@ -22,6 +29,12 @@ class MessageEntity:
         self.conversation_id = conversation_id
         self.role = role
         self.context = context
+        self.type = type
+        self.completion_tokens=completion_tokens
+        self.prompt_tokens=prompt_tokens
+        self.total_tokens=total_tokens
+
+
 
     def to_dict(self):
         return {
@@ -31,6 +44,14 @@ class MessageEntity:
             MessagePropertyName.CONTENT.value: self.content,
             MessagePropertyName.CONVERSATION_ID.value: self.conversation_id,
             MessagePropertyName.ROLE.value: self.role,
-            MessagePropertyName.CONTEXT.value: self.context
-        }
+            MessagePropertyName.CONTEXT.value: self.context,
+            MessagePropertyName.MessageType.value: self.type,
+            MessagePropertyName.COMPLETIONTOKENS.value: self.completion_tokens,
+            MessagePropertyName.PROMPTTOKENS.value: self.prompt_tokens,
+            MessagePropertyName.TOTALTOKENS.value: self.total_tokens
 
+                
+
+
+
+        }

@@ -14,6 +14,15 @@ Roles = Enum(
 )
 
 
+MessageType=Enum(
+    "MessageType",
+
+    {
+        "Message": "message",
+        "Document": "document",
+    },
+)
+
 
 
 class ChatMessage(BaseModel):

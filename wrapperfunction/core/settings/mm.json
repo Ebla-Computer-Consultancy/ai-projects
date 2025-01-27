@@ -6,7 +6,22 @@
       "custom_settings": {
         "temperature": 0.5
       },
-      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation."
+      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the Ministry of municipality in qatar."
+    },{
+      "name": "legal",
+      "index_name": "mm-legal",
+      "custom_settings": {
+        "temperature": 0.5
+      },
+      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to a legal documents for a Ministry of municipality in qatar."
+    },
+    {
+      "name": "customerSupport",
+      "index_name": "mm-customer-support",
+      "custom_settings": {
+        "temperature": 0.5
+      },
+      "system_message": "You are a friendly and knowledgeable assistant designed to help users with inquiries, feedback, and support related to services provided by the Ministry of municipality in qatar."
     }
   ],
   "dict_AR": {

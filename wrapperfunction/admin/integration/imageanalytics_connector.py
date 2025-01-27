@@ -1,8 +1,9 @@
 import requests
+from fastapi import HTTPException
+
+from azure.core.credentials import AzureKeyCredential
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
-from azure.core.credentials import AzureKeyCredential
-from fastapi import HTTPException
 
 from wrapperfunction.core import config
 
