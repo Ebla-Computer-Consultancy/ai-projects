@@ -46,7 +46,7 @@ def test_ldap_connection(username: str, password: str):
 
 def get_user(username) -> Tuple[User, dict]:
     try:
-        user = auth_db_service.get_user_by_name(username)
+        user = auth_db_service.get_user_by_username(username)
         if len(user) > 0:
             user_permissions = get_user_permissions(user[0]["_id"])
             all_permissions = auth_db_service.get_permissions()
