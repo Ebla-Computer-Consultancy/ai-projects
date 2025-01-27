@@ -15,7 +15,6 @@ from wrapperfunction.chat_history.model.conversation_entity import (
 )
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
-
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core.utls.helper import extract_client_details
@@ -373,3 +372,5 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
        await add_entity(
              message_entity=user_message_entity, assistant_entity=assistant_message_entity
         )
+
+
