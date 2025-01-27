@@ -1,10 +1,11 @@
+import re
 import uuid
 from fastapi import HTTPException, status
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.core import config
 
 
-def get_user_by_name(username):
+def get_user_by_username(username):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"username eq '{username}'")
         for user in res:
@@ -90,9 +91,11 @@ async def add_permission_to_user(user_id: str, per_ids: list):
                         "permission_id":str(per_id)   
                     }
                     res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity)
+                else:
+                    raise Exception("Permission Not Found")
             return res
         else:
-            raise Exception("User/Permission Not Found")
+            raise Exception("User Not Found")
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -119,26 +122,25 @@ def update_user(user):
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-async def add_user(username):
+async def add_user(username: str):
     try:
-        id = 0 
-        users = get_users()
-        if len(users) > 0:
-            max_id = int(users[0]["_id"])
-            for user in users:
-                if max_id < int(user["_id"]):
-                    max_id = int(user["_id"])
-            id = max_id + 1
-        entity = {
-            "PartitionKey":str(uuid.uuid4()),
-            "RowKey":str(uuid.uuid4()),
-            "_id":str(id),
-            "username":username,
-            "never_expire": False,
-            "refresh_token": ""
-        }
-        res = await db_connector.add_entity(config.COSMOS_AUTH_USER_TABLE,entity)
-        return res
+        if validate_username(username)[0]:
+            if get_user_by_username(username) < 1:
+                
+                entity = {
+                    "PartitionKey":str(uuid.uuid4()),
+                    "RowKey":str(uuid.uuid4()),
+                    "_id":str(uuid.uuid4()),
+                    "username":username,
+                    "never_expire": False,
+                    "refresh_token": ""
+                }
+                res = await db_connector.add_entity(config.COSMOS_AUTH_USER_TABLE,entity)
+                return res
+            else:
+                raise Exception("User Already Exist")
+        else:
+            raise Exception(f"'{username}' is not a valid username")
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -158,3 +160,30 @@ def delete_user(user_id):
         return res
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+def validate_username(username: str):
+    
+    if not username.strip():
+        return False, "Username cannot be empty."
+    if len(username) < 3 or len(username) > 50:
+        return False, "Username must be between 3 and 50 characters."
+    elif not username.isalnum():
+        return False, "Username can only contain letters and numbers."
+    return True, "Valid username."
+
+def validate_password(password: str):
+    
+    if not password.strip():
+        return False, "Password cannot be empty."
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter."
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least one digit."
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, "Password must contain at least one special character."
+    return True, "Valid password."
