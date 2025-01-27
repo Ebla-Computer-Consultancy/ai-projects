@@ -124,20 +124,13 @@ def update_user(user):
 
 async def add_user(username: str):
     try:
-        id = 0 
         if validate_username(username)[0]:
             if get_user_by_username(username) < 1:
-                users = get_users()
-                if len(users) > 0:
-                    max_id = int(users[0]["_id"])
-                    for user in users:
-                        if max_id < int(user["_id"]):
-                            max_id = int(user["_id"])
-                    id = max_id + 1
+                
                 entity = {
                     "PartitionKey":str(uuid.uuid4()),
                     "RowKey":str(uuid.uuid4()),
-                    "_id":str(id),
+                    "_id":str(uuid.uuid4()),
                     "username":username,
                     "never_expire": False,
                     "refresh_token": ""
