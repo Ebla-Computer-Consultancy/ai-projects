@@ -77,7 +77,7 @@ def update_refresh_token(token: str):
             if len(entity_user) < 1:
                 raise Exception(f"Invalid refresh_token")
             now = datetime.utcnow()
-            refresh_time = timedelta(minutes=config.ENTITY_SETTINGS["refresh_token_valid_time"])
+            refresh_time = timedelta(minutes=int(config.ENTITY_SETTINGS["refresh_token_valid_time"]))
             new_refresh_token = jwt_service.generate_refresh_token(user=user, time=now + refresh_time)
             jwt_service.update_refresh_token(token=new_refresh_token,user=entity_user[0])
             return {"refresh_token":new_refresh_token}
@@ -95,7 +95,7 @@ def get_access_token(token: str):
             if len(entity_user) < 1:
                 raise Exception(f"Invalid refresh_token")
         now = datetime.utcnow()
-        access_time = timedelta(minutes=config.ENTITY_SETTINGS["access_token_valid_time"])
+        access_time = timedelta(minutes=int(config.ENTITY_SETTINGS["access_token_valid_time"]))
         new_access_token = jwt_service.generate_access_token(user=user, time=now + access_time)
         return {"access_token":new_access_token}
     except Exception as e:
