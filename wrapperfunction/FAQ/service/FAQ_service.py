@@ -1,7 +1,8 @@
-from logging import config
+
 from typing import Optional
 from wrapperfunction.FAQ.model.question_model import Question
 from wrapperfunction.chat_history.service.chat_history_service import HTTPException, StatusCode
+from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.FAQ.model.question_entity import QuestionPropertyName, QuestionEntity
