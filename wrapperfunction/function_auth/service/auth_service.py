@@ -10,16 +10,19 @@ from wrapperfunction.function_auth.service import jwt_service
 ### AUTHENTICATION
 def authenticate_user(username: str, password: str):
     try:
-        user = get_user(username)
-        if test_ldap_connection(username=username, password=password)[0]:
-            tokens = jwt_service.generate_jwt_tokens(user=user[0])
-            jwt_service.update_refresh_token(token=tokens[1], user=user[1])
-            return {
-                "permissions": user[0].permissions,
-                "access_token":tokens[0],
-                "refresh_token":tokens[1]}
+        if auth_db_service.validate_username(username)[0] and auth_db_service.validate_password(password)[0]:
+            user = get_user(username)
+            if test_ldap_connection(username=username, password=password)[0]:
+                tokens = jwt_service.generate_jwt_tokens(user=user[0])
+                jwt_service.update_refresh_token(token=tokens[1], user=user[1])
+                return {
+                    "permissions": user[0].permissions,
+                    "access_token":tokens[0],
+                    "refresh_token":tokens[1]}
+            else:
+                raise Exception("LDAP: Connection Filed. User Not Found in AD")
         else:
-            raise Exception("LDAP: Connection Filed. User Not Found in AD")
+            raise Exception("Invalid username or password")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     
