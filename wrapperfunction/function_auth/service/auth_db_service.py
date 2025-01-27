@@ -1,3 +1,4 @@
+import re
 import uuid
 from fastapi import HTTPException, status
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
@@ -167,7 +168,6 @@ def delete_user(user_id):
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-import re
 
 def validate_username(username: str):
     
@@ -175,10 +175,6 @@ def validate_username(username: str):
         return False, "Username cannot be empty."
     if len(username) < 3 or len(username) > 50:
         return False, "Username must be between 3 and 50 characters."
-    if '@' in username:  # Check if it's an email
-        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-        if not re.match(email_regex, username):
-            return False, "Invalid email format."
     elif not username.isalnum():
         return False, "Username can only contain letters and numbers."
     return True, "Valid username."
@@ -187,7 +183,7 @@ def validate_password(password: str):
     
     if not password.strip():
         return False, "Password cannot be empty."
-    if len(password) < 8 or len(password) > 64:
+    if len(password) < 8:
         return False, "Password must be between 8 and 64 characters."
     if not re.search(r'[A-Z]', password):
         return False, "Password must contain at least one uppercase letter."
