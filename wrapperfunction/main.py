@@ -1,6 +1,7 @@
 # Fast Api
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from wrapperfunction.FAQ.ctrl import FAQ_ctrl
 from wrapperfunction.function_auth.ctrl import func_auth_ctrl
 from wrapperfunction.function_auth.model.permission_enum import PermissionTypes
 from wrapperfunction.interactive_chat.ctrl import interactive_ctrl
@@ -37,3 +38,4 @@ app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(document_intelligence_ctrl.router,prefix="/api/v1/document-intelligence",tags=["document-intelligence"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.DOCUMENT_INTELLIGENCE.value))])
 app.include_router(chat_history_ctrl.router, prefix="/api/v1/chat-history", tags=["chat-history"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.CHAT_HISTORY.value))])
 app.include_router(media_ctrl.router, prefix="/api/v1/media", tags=["media"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.MEDIA.value))])
+app.include_router(FAQ_ctrl.router, prefix="/api/v1/FAQ", tags=["FAQ"])

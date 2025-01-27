@@ -1,6 +1,5 @@
 from typing import Optional
 from fastapi import APIRouter, Request
-from wrapperfunction.chat_history.model.question_model import Question
 import wrapperfunction.chat_history.service.chat_history_service as history_service
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 
@@ -35,17 +34,3 @@ def get_bot_name():
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
     return await history_service.add_message(chat_payload,bot_name,request)
   
-@router.post("/qustions/")
-async def add_questions(questions: list[Question]):
-    return await history_service.add_questions(questions)
-
-@router.delete("/questions/")
-def delete_questions(rawkey: str):
-    return  history_service.delete_questions(rawkey)
-
-@router.patch("/questions/")
-def update_questions(rawkey: str,updated_data: Question):
-    return  history_service.update_question(rawkey,updated_data)
-@router.get("/questions/")
-def get_questions(bot_name: Optional[str] = None):
-    return history_service.get_questions(bot_name)
