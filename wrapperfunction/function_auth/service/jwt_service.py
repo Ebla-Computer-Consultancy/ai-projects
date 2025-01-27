@@ -12,8 +12,8 @@ from wrapperfunction.function_auth.service import auth_db_service
 def generate_jwt_tokens(user: User) -> Tuple[str, str]:
     try:
         now = datetime.utcnow()
-        access_time = timedelta(minutes=config.ENTITY_SETTINGS["access_token_valid_time"])
-        refresh_time = timedelta(minutes=config.ENTITY_SETTINGS["refresh_token_valid_time"])
+        access_time = timedelta(minutes=int(config.ENTITY_SETTINGS["access_token_valid_time"]))
+        refresh_time = timedelta(minutes=int(config.ENTITY_SETTINGS["refresh_token_valid_time"]))
         
         if user.never_expire:
             access_time = timedelta(weeks=210)
