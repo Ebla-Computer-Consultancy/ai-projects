@@ -203,7 +203,43 @@ def generate_blob_sas_url(container_name: str=None, blob_name: str=None,blob_url
         blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
         return blob_url
     except Exception as e:
-        return(f"Error generating SAS URL: {str(e)}")        
+        return(f"Error generating SAS URL: {str(e)}")
+            
+def upload_video_to_blob(
+    files: list[UploadFile],
+    container_name: str = config.BLOB_CONTAINER_NAME,
+    subfolder_name: str = "videos",
+):
+    container_client, _ = get_container_client(container_name=container_name, subfolder_name=subfolder_name)
+    metadata_urls = []
+
+    for file in files:
+        blob_path = f'{subfolder_name}/{file.filename}'
+        blob_client = container_client.get_blob_client(blob=blob_path)
+        chunk_size = 4 * 1024 * 1024
+        blocks = []
+        block_id = 0
+
+        while True:
+            chunk = file.file.read(chunk_size)
+            if not chunk:
+                break
+            block_id_str = f'{block_id:06d}'
+            blob_client.stage_block(block_id_str, chunk)
+            blocks.append(BlobBlock(block_id=block_id_str))
+            block_id += 1
+
+        blob_client.commit_block_list(blocks)
+        metadata_storage_path = blob_client.url
+        metadata_urls.append(metadata_storage_path)
+
+    return JSONResponse(
+        content={
+            "message": f"Video files have been uploaded successfully",
+            "metadata_urls": metadata_urls,
+        },
+        status_code=200,
+    )
 
 
 

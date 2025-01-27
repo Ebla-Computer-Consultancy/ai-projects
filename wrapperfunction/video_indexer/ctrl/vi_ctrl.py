@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-
 from wrapperfunction.video_indexer.service import vi_service
 from wrapperfunction.video_indexer.model import vi_model
 

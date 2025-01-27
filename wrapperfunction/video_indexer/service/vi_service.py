@@ -46,7 +46,7 @@ async def get_video_index(v_id: str):
           res = json.loads(res.content)
           return ServiceReturn(
                               status=StatusCode.SUCCESS,
-                              message=f"{res["name"]} Is Getten Successfuly", 
+                              message=f"{res['name']} Is Getten Successfuly", 
                               data=res
                               ).to_dict()
         else:
