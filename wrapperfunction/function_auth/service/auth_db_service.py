@@ -4,7 +4,7 @@ import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connec
 from wrapperfunction.core import config
 
 
-def get_user_by_name(username):
+def get_user_by_username(username):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_TABLE,f"username eq '{username}'")
         for user in res:
@@ -125,7 +125,7 @@ async def add_user(username: str):
     try:
         id = 0 
         if validate_username(username)[0]:
-            if get_user_by_name(username) < 1:
+            if get_user_by_username(username) < 1:
                 users = get_users()
                 if len(users) > 0:
                     max_id = int(users[0]["_id"])
@@ -144,7 +144,7 @@ async def add_user(username: str):
                 res = await db_connector.add_entity(config.COSMOS_AUTH_USER_TABLE,entity)
                 return res
             else:
-                raise Exception("User Exist")
+                raise Exception("User Already Exist")
         else:
             raise Exception(f"'{username}' is not a valid username")
     except Exception as e:
