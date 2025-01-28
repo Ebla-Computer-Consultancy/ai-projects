@@ -98,7 +98,7 @@ async def add_permission_to_user(user_id: str, per_ids: list):
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-async def update_permission_to_user(user_id: str, new_per_ids: list):
+async def update_user_permissions(user_id: str, new_per_ids: list):
     try:
         if len(get_user_by_id(user_id)) > 0:
             old_per_ids = [permission["permission_id"] for permission in get_user_permissions(user_id)]
