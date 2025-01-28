@@ -35,7 +35,7 @@ app.include_router(chatbot_ctrl.router, prefix="/api/v1/chatbot", tags=["chatbot
 app.include_router(interactive_ctrl.router, prefix="/api/v1/interactive", tags=["chatbot"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.INTERACTIVE_CHAT.value))])
 app.include_router(avatar_ctrl.router, prefix="/api/v1/avatar", tags=["avatar"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.AVATAR.value))])
 app.include_router(speech_ctrl.router, prefix="/api/v1/speech", tags=["speech"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.SPEECH.value))])
-app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.ADMIN.value))])
 app.include_router(document_intelligence_ctrl.router,prefix="/api/v1/document-intelligence",tags=["document-intelligence"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.DOCUMENT_INTELLIGENCE.value))])
 app.include_router(chat_history_ctrl.router, prefix="/api/v1/chat-history", tags=["chat-history"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.CHAT_HISTORY.value))])
 app.include_router(media_ctrl.router, prefix="/api/v1/media", tags=["media"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.MEDIA.value))])
