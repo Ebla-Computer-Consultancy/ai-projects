@@ -93,8 +93,6 @@ async def add_permission_to_user(user_id: str, per_ids: list):
             else:
                 raise Exception(f"Permission with id:'{per_id}' Not Found")
             return res
-        else:
-            raise Exception("User Not Found")
     except Exception as e:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
