@@ -140,7 +140,7 @@ async def delete_setting(body: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
-@router.post("/permission/update")
+@router.put("/permission/update")
 async def update_user_permissions(user_id: str, permissions_ids: List[str]):
     try:
         return await auth_db_service.update_user_permissions(user_id,permissions_ids)
