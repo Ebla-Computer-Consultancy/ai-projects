@@ -74,7 +74,13 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
                 conversation_id=chat_payload.conversation_id
             )
         if bot_settings.custom_settings.max_history_length > 0:
-            chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
+            if bot_name == "video-indexer" and chat_history_arr:
+                first_message = chat_history_arr[0]  
+                chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
+                if first_message not in chat_history_arr:
+                    chat_history_arr.insert(0, first_message) 
+            else:
+                chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
         
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)

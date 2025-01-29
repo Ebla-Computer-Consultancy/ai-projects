@@ -101,24 +101,66 @@ async def create_video_index(v_name: str, v_url: str,request: Request):
 
 
 
-async def get_video_index(v_id: str):
+async def get_video_index(v_id: str, request: Request):
     try:
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{v_id}/Index?accessToken=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJWZXJzaW9uIjoiMi4wLjAuMCIsIktleVZlcnNpb24iOiIxNGIwZDg4NTU0OTE0YjkwYjBkYjEwM2M0NmRkYTNkNiIsIkFjY291bnRJZCI6ImE2ZmRiZWNmLTAxMDEtNDEzYy1iMjA4LTk5ZTg5ZjRjOWI3NyIsIkFjY291bnRUeXBlIjoiQXJtIiwiUGVybWlzc2lvbiI6IkNvbnRyaWJ1dG9yIiwiRXh0ZXJuYWxVc2VySWQiOiJGMjhBRUM0REM1NDA0Q0IwQkY3Q0UxOEQ5MUY1REUzMSIsIlVzZXJUeXBlIjoiTWljcm9zb2Z0Q29ycEFhZCIsIklzc3VlckxvY2F0aW9uIjoid2VzdGV1cm9wZSIsIm5iZiI6MTczODA2MzEyNCwiZXhwIjoxNzM4MDY3MDI0LCJpc3MiOiJodHRwczovL2FwaS52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly9hcGkudmlkZW9pbmRleGVyLmFpLyJ9.VARcCoiuqMdWOKipJ0_df3sMPTShWxKd2gNiys4vl5h9Lf7PjaLgNjBo7KezvbAhfoN3WhsXORO3vOvupfoZ5BZ-kJ594gcqwirctkX7zV3rBkPMZWZCrp5hVlc43OEx14Yt3S3uiU5P_Ns8MK4_h8VqDtFUpRapQPepzVMRNZUymwzu2DegUa8Hd7FnJOkOCg1rWi5F23ulYegr7rrD8hOXqXphNKRf2Tz4QNrOke2dfzrcQA-0lhB_fOFP1EjmPg_JA_KJ2JjH2g7QPN3dpRcSTxkcZYBe3q0OpjKhzoTK84zFZE-YvIeBhXfhBjqqkPosXHfJN-dPXtNbJYKidw"
+        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{v_id}/Index"
+        
+        # Get the access token dynamically
+        access_token = get_access_token()["data"]
+
         headers = {
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
         }
+
+        params = {"accessToken": access_token}
+
+        res = requests.get(url=url, headers=headers, params=params)
         
-        res = requests.get(url=url,headers=headers)
         if res.ok:
-          res = json.loads(res.content)
-          return ServiceReturn(
-                              status=StatusCode.SUCCESS,
-                              message=f"{res['name']} Is Getten Successfuly", 
-                              data=res
-                              ).to_dict()
+            res_data = res.json()
+            indexing_state = res_data.get("state")
+
+            if indexing_state == "Processed":
+                client_details = extract_client_details(request)
+                conversation_id = str(uuid.uuid4())
+
+                conv_entity = ConversationEntity(
+                    user_id=str(uuid.uuid4()),
+                    conversation_id=conversation_id,
+                    bot_name="video-indexer",
+                    title="",
+                    client_ip=client_details["client_ip"],
+                    forwarded_ip=client_details["forwarded_ip"],
+                    device_info=json.dumps(client_details["device_info"]),
+                )
+
+                message_entity = MessageEntity(
+                    content=json.dumps(res_data),
+                    conversation_id=conversation_id,
+                    role=Roles.User.value,
+                    context="",
+                    type=MessageType.Video.value,
+                )
+
+                await add_entity(message_entity=message_entity, conv_entity=conv_entity)
+
+                return ServiceReturn(
+                    status=StatusCode.SUCCESS,
+                    message=f"Video '{res_data['name']}' retrieved and chat started successfully.",
+                    data={
+                        "conversation_id": conversation_id,"bot_name": "video-indexer"}
+                ).to_dict()
+            elif indexing_state in ["Failed", "Error"]:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Video indexing failed: {indexing_state}"
+                )
         else:
-          raise HTTPException(status_code=500, detail=res.content)
+            raise HTTPException(
+                status_code=res.status_code,
+                detail=res.json()
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -145,32 +187,59 @@ async def reindex_video(v_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def get_all_video():
+async def get_all_videos():
     try:
         url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
         headers = {
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
         }
-        print(get_access_token()["data"])
-        params = {
-          
-          "accessToken":get_access_token()["data"]
-        }
-        res = requests.get(url=url,headers=headers,params=params)
+
+        access_token = get_access_token()["data"]
+        params = {"accessToken": access_token}
+
+        res = requests.get(url=url, headers=headers, params=params)
         if res.ok:
-          res = json.loads(res.content)
-          return ServiceReturn(
-                              status=StatusCode.SUCCESS,
-                              message=f"Videos Is Getten Successfuly", 
-                              data={"videos_id":[{"name":v["name"],"id":v["id"]} for v in res["results"]],
-                                    "videos_data": res["results"]}
-                              ).to_dict()
+            res_data = json.loads(res.content)
+
+            videos = []
+            for v in res_data["results"]:
+                video_id = v["id"]
+                video_name = v["name"]
+                thumbnail_url = get_video_thumbnail(video_id, access_token)
+
+                videos.append({"name": video_name, "id": video_id, "thumbnail_url": thumbnail_url})
+
+            return {
+                "status": "SUCCESS",
+                "message": "Videos retrieved successfully",
+                "data": {"videos": videos}
+            }
         else:
-          raise HTTPException(status_code=500, detail=res.content)
+            raise HTTPException(status_code=500, detail=res.content)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_video_thumbnail(video_id, access_token):
+    try:
+        metadata_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
+        params = {"accessToken": access_token}
+        res = requests.get(metadata_url, params=params)
+
+        if res.ok:
+            metadata = res.json()
+            thumbnail_id = metadata.get("summarizedInsights", {}).get("thumbnailId")
+
+            if thumbnail_id:
+                return f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/{thumbnail_id}?accessToken={access_token}"
+            else:
+                return None
+        else:
+            return None
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def get_azure_token() -> str:
@@ -204,7 +273,6 @@ def get_access_token() -> Dict:
 
         # Make the POST request to the API
         response = requests.post(url=url, headers=headers, json=body)
-        print(response)
 
         # Raise an exception if the response status code indicates an error
         response.raise_for_status()
@@ -278,10 +346,11 @@ async def upload_video(video_file: UploadFile, request: Request):
 
                     if indexing_state == "Processed":
                         client_details = extract_client_details(request)
+                        conversation_id = str(uuid.uuid4())
 
                         conv_entity = ConversationEntity(
                 user_id=str(uuid.uuid4()),
-            conversation_id=video_id,
+            conversation_id=conversation_id,
             bot_name="video-indexer",
             title="",
             client_ip=client_details["client_ip"],
@@ -290,7 +359,7 @@ async def upload_video(video_file: UploadFile, request: Request):
         )
                         message_entity = MessageEntity(
             content=status_data,
-            conversation_id=video_id,
+            conversation_id=conversation_id,
             role=Roles.User.value,
             context="",
             type=MessageType.Video.value,
@@ -301,7 +370,7 @@ async def upload_video(video_file: UploadFile, request: Request):
                         return ServiceReturn(
                             status=StatusCode.SUCCESS,
                             message=f"Video '{video_file.filename}' uploaded and indexed successfully.",
-                            data={"video_id": video_id, "details": status_data}
+                            data={"conversation_id": conversation_id,"bot_name": "video-indexer"}
                         ).to_dict()
                     elif indexing_state in ["Failed", "Error"]:
                         raise HTTPException(

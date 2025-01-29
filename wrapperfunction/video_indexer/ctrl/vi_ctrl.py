@@ -13,9 +13,9 @@ async def create_vi(virequest: vi_model.VIRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/get_vi")
-async def get_vi(vid: str):
+async def get_vi(vid: str, request: Request):
     try:
-        return await vi_service.get_video_index(v_id= vid)
+        return await vi_service.get_video_index(v_id= vid, request= request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -29,7 +29,7 @@ async def reindex_v(request: vi_model.VIRequest):
 @router.get("/get_all_videos")
 async def get_all_vi():
     try:
-        return await vi_service.get_all_video()
+        return await vi_service.get_all_videos()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
