@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 import uuid
 from fastapi import HTTPException,Request,UploadFile
 import httpx
@@ -9,6 +10,7 @@ from wrapperfunction.chat_history.model.message_entity import MessageEntity, Mes
 from wrapperfunction.chat_history.service.chat_history_service import add_entity
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
+from azure.identity import ClientSecretCredential
 
 import httpx
 import asyncio
@@ -127,7 +129,7 @@ async def reindex_video(v_id: str):
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
         }
-        accessToken = "get_AccessToken()"
+        accessToken = get_access_token()["data"]
         params = {
           "accessToken":accessToken["data"]["accessToken"]
         }
@@ -150,10 +152,10 @@ async def get_all_video():
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
         }
-        # accessToken = get_AccessToken()
+        print(get_access_token()["data"])
         params = {
           
-          "accessToken":"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJWZXJzaW9uIjoiMi4wLjAuMCIsIktleVZlcnNpb24iOiIxNGIwZDg4NTU0OTE0YjkwYjBkYjEwM2M0NmRkYTNkNiIsIkFjY291bnRJZCI6ImE2ZmRiZWNmLTAxMDEtNDEzYy1iMjA4LTk5ZTg5ZjRjOWI3NyIsIkFjY291bnRUeXBlIjoiQXJtIiwiUGVybWlzc2lvbiI6IkNvbnRyaWJ1dG9yIiwiRXh0ZXJuYWxVc2VySWQiOiJGMjhBRUM0REM1NDA0Q0IwQkY3Q0UxOEQ5MUY1REUzMSIsIlVzZXJUeXBlIjoiTWljcm9zb2Z0Q29ycEFhZCIsIklzc3VlckxvY2F0aW9uIjoid2VzdGV1cm9wZSIsIm5iZiI6MTczODA1NTIyMCwiZXhwIjoxNzM4MDU5MTIwLCJpc3MiOiJodHRwczovL2FwaS52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly9hcGkudmlkZW9pbmRleGVyLmFpLyJ9.lpUEVgyjgo0jZwA0SlpHI_hpIcn5aY3FOynydc6KDk1QjOXezKXljD19erC6hf1YoD5_g0WvR_bOzH62XazDI_qI2iTk5MtDkhhBlIuAwdEYh_K9nEPxHMsYxBpdFKkMyVfM5VY7thwvL-hIcBCqyrjwbErlQAPQWK8pWBjS7sB3K_Ce2zVFaCc1FUD43ab5Vfozy9GILPaWkO_J-2eSTMAQCXcvrl4zXwahy54LSWqgedC5Pnd05NbOvp2Jv4uoPG6CVFWLmBQbJSPbjAyeCbpE6EbDn0Y82g7v1EZh_7a6WcabVBSQ6a3fBQnzcokbBDSDZz6kgej3wMxKPX3R_Q"
+          "accessToken":get_access_token()["data"]
         }
         res = requests.get(url=url,headers=headers,params=params)
         if res.ok:
@@ -170,58 +172,65 @@ async def get_all_video():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 def get_azure_token() -> str:
-    url = f"https://login.microsoftonline.com/{config.TENANT_ID}/oauth2/v2.0/token"
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    data = {
-        "grant_type": "client_credentials",
-        "client_id": config.CLIENT_ID,
-        "client_secret": config.CLIENT_SECRET_VALUE,
-        "scope": "https://management.azure.com/.default",
-    }
+
     try:
-        response = requests.post(url, headers=headers, data=data)
+    # Authenticate with Azure AD
+        credential = ClientSecretCredential(tenant_id=config.TENANT_ID, client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET_VALUE)
+        token = credential.get_token("https://management.azure.com/.default").token
+
+        return token
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    
+def get_access_token() -> Dict:
+    try:
+        # Define the URL for generating the access token
+        token = get_azure_token()
+        url = "https://management.azure.com/subscriptions/fcd1f0ed-84c0-4a06-a4bd-a74a51026856/resourceGroups/RERA-RG-WE/providers/Microsoft.VideoIndexer/accounts/rerawe-vi-01/generateAccessToken?api-version=2024-01-01"
+
+        # Prepare headers and body as per the Microsoft API documentation
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+            
+        }
+        body = {
+            "permissionType": "Contributor",
+            "scope": "Account",
+        }
+
+        # Make the POST request to the API
+        response = requests.post(url=url, headers=headers, json=body)
+        print(response)
+
+        # Raise an exception if the response status code indicates an error
         response.raise_for_status()
-        return response.json().get("access_token")
+
+        # Parse the JSON response to extract the access token
+        access_token = response.json().get("accessToken")
+
+        # Return the result in a standard format
+        return {
+            "status": "SUCCESS",
+            "message": "Access token generated successfully",
+            "data": access_token,
+        }
     except requests.RequestException as e:
+        # Extract the status code and error details for the exception
         status_code = e.response.status_code if e.response else 500
-        detail = e.response.content.decode("utf-8") if e.response else str(e)
+        detail = e.response.json() if e.response else str(e)
+
+        # Raise an HTTPException with detailed error information
         raise HTTPException(
             status_code=status_code,
-            detail=f"Failed to get token: {detail}",
+            detail={
+                "error": "Failed to generate Video Indexer token",
+                "details": detail,
+            },
         )
-
-# Function to get Video Indexer Access Token
-# def get_access_token() -> ServiceReturn:
-#     try:
-#         # Get Azure Bearer Token
-#         token = get_azure_token()
-#         url = f"https://management.azure.com/subscriptions/fcd1f0ed-84c0-4a06-a4bd-a74a51026856/resourceGroups/RERA-RG-WE/providers/Microsoft.VideoIndexer/accounts/rerawe-vi-01/generateAccessToken?api-version=2024-01-01"
-
-#         headers = {
-#             "Authorization": f"Bearer {token",
-#             "Content-Type": "application/json",
-#             "Ocp-Apim-Subscription-Key": f"{config.VIDEO_INDEXER_ACCOUNT_ID}",
-#         }
-
-#         response = requests.post(url=url, headers=headers)
-#         response.raise_for_status()
-#         access_token = response.json().get("accessToken")
-
-#         return ServiceReturn(
-#             status=StatusCode.SUCCESS,
-#             message="Access token generated successfully",
-#             data=access_token,
-#         ).to_dict()
-#     except requests.RequestException as e:
-#         status_code = e.response.status_code if e.response else 500
-#         detail = e.response.content.decode("utf-8") if e.response else str(e)
-#         raise HTTPException(
-#             status_code=status_code,
-#             detail=f"Failed to generate Video Indexer token: {detail}",
-#         )
 
 async def upload_video(video_file: UploadFile, request: Request):
     try:
@@ -231,7 +240,7 @@ async def upload_video(video_file: UploadFile, request: Request):
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY,
         }
 
-        access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IllUY2VPNUlKeXlxUjZqekRTNWlBYnBlNDJKdyIsImtpZCI6IllUY2VPNUlKeXlxUjZqekRTNWlBYnBlNDJKdyJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvOTkxNjkxYTItZGRmYS00ZDRiLTk5ZWEtMzc3OWI2MzRhNDMwLyIsImlhdCI6MTczODA3ODE1NiwibmJmIjoxNzM4MDc4MTU2LCJleHAiOjE3MzgwODIwNTYsImFpbyI6ImsyUmdZTmc2MCt2YzNLaXdXZWVZSndycEhWc2tEZ0E9IiwiYXBwaWQiOiJiMjFmYjFmYS02ZDJmLTRmYzktYmVmNS04ZjZhZTAwYTg1NTIiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC85OTE2OTFhMi1kZGZhLTRkNGItOTllYS0zNzc5YjYzNGE0MzAvIiwiaWR0eXAiOiJhcHAiLCJvaWQiOiJjNTcwMTIwNy1kYWMxLTRhYTgtYmFiYi1iZjE4YTc4NTJkZmYiLCJyaCI6IjEuQVVnQW9wRVdtZnJkUzAyWjZqZDV0alNrTUVaSWYza0F1dGRQdWtQYXdmajJNQk1MQVFCSUFBLiIsInN1YiI6ImM1NzAxMjA3LWRhYzEtNGFhOC1iYWJiLWJmMThhNzg1MmRmZiIsInRpZCI6Ijk5MTY5MWEyLWRkZmEtNGQ0Yi05OWVhLTM3NzliNjM0YTQzMCIsInV0aSI6Ii1JSm55YlRUNTBLZ0dGdHdYSmxVQUEiLCJ2ZXIiOiIxLjAiLCJ4bXNfaWRyZWwiOiI3IDMwIiwieG1zX3RjZHQiOjE1ODM4MzcyOTJ9.KUEKI7-QQDK_CC5LDQwU8CQEbDkQPnjME9ZLF2dxgXC6EkVhLldU8881ugKmeuNv8H4KrBW375YIWv49CsS6dZiapWiO4FDT2STwawfH8WpI77n4cJDz0jSMlioe4gIe7SwSlRKrLqhlivsZyiVsOdJYkBMZoyHpoq5qLrhuO_HUq4MVAwo1QjcTZehfvYQ9iOs7uTgSSg_u1bemOdCTSOW_E0Kn09WmIroBsuH2AMttAvtDTZ0K0012PJ72CbNZWfQFX4BUERrIGonGpALJarzmzMNZ8QdV6qkYe4vDv_DVgSuVDc2yvFuRGu_o7Z_gbQ6zC8JebwFQ_sX0WvrCMw"
+        access_token = get_access_token()["data"]
 
         # Prepare the query parameters
         params = {

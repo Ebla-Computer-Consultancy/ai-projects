@@ -33,11 +33,11 @@ async def get_all_vi():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @router.get("/get_token")
-# async def get_token():
-#     try:
-#         return vi_service.get_access_token()
-#     except Exception as e:
+@router.get("/get_token")
+async def get_token():
+    try:
+        return vi_service.get_access_token()
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/upload_video")
 async def upload_video(file: UploadFile,request: Request):
