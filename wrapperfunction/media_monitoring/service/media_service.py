@@ -165,7 +165,7 @@ def is_valid_date(date_str):
     try:
         parser.parse(date_str)
         return True
-    except (ValueError, TypeError):
+    except Exception:
         return False
 
 async def sentiment_skill(values: list):
