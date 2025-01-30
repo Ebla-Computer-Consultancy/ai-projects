@@ -18,7 +18,7 @@ from wrapperfunction.core.model import customskill_model
 from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
 from wrapperfunction.search.integration import aisearch_connector
-from wrapperfunction.search.integration.aisearch_connector import get_search_client, get_search_indexer_client, search_query
+from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
 from azure.search.documents.indexes import SearchIndexerClient
 from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
@@ -27,8 +27,15 @@ from wrapperfunction.search.service.search_service import update_index
 async def generate_report(search_text: str,index_date_from,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
-        
+        # Prepare Filter Expression
+        filter_exp = concat_exp(
+            prepare_dates_exp(index_date_from,index_date_to,news_date_from,news_date_to),
+            prepare_tags_exp(tags)
+            )
+        # Load Chatbot Settings      
         chat_settings = config.load_chatbot_settings(bot_name="media")
+        chat_settings.custom_settings.filter = filter_exp
+        # Setup History 
         chat_history = [{"role": "system", "content": chat_settings.system_message}]
         chat_history.append({"role": "user", "content": str(user_message)})
 
@@ -36,18 +43,22 @@ async def generate_report(search_text: str,index_date_from,index_date_to = None,
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
+        # Collect All references urls
         ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
+        # Rename the report
         report_file_name = search_text.replace(" ","_")
+        # Get media storage info info 
         info = config.get_media_info()
+        # Push the file to the Azure container
         append_blob(blob=chat_res["message"]["content"],
                     metadata_3=IndexingType.GENERATED.value,
                     folder_name=config.SUBFOLDER_NAME,
                     container_name= info["reports_container_name"],
                     blob_name=f"{report_file_name}.txt")
         
+        # Generate SAS url for the report file
         sas_url = generate_blob_sas_url(container_name= info["reports_container_name"],
                                             blob_name=f"{config.SUBFOLDER_NAME}/{report_file_name}.txt")
-        # Push the file to the Azure container
         return ServiceReturn(
             status=StatusCode.CREATED,
             message=f"{search_text} Report Generated Successfully",
@@ -125,10 +136,10 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
 def apply_skills_on_index(index_name: str):
     try:
         start_time = time.time()
-        search = get_search_client(index_name)
-        results = search_query(search_text="*",search_index=index_name,k=search.get_document_count())
+        results = search_query(search_text="*",search_index=index_name)
         docs = 0
         for index in results["rs"]:
+            index["index_date"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
             chunk = index["chunk"]
             if chunk is not None:
                 if index["language"] is None:
@@ -148,7 +159,7 @@ def apply_skills_on_index(index_name: str):
                     index["people"] = entities[tak.PERSON.value]
                     index["organizations"] = entities[tak.ORGANIZATION.value]
                     index["locations"] = entities[tak.LOCATION.value]
-                    index["dateTime"] = [parser.parse(date).replace(microsecond=0).isoformat() + "Z"  if is_valid_date(date) else date for date in entities[tak.DATETIME.value]]
+                    index["dateTime"] = [parser.parse(date).replace(microsecond=0).isoformat() + "Z" for date in entities[tak.DATETIME.value] if is_valid_date(date)]
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
         update_index(index_name=index_name, data=results["rs"])
@@ -165,9 +176,9 @@ def is_valid_date(date_str):
     try:
         parser.parse(date_str)
         return True
-    except Exception:
+    except ValueError:
         return False
-
+    
 async def sentiment_skill(values: list):
     results = []
     for record in values:
