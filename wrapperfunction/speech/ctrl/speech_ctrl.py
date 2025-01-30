@@ -7,6 +7,6 @@ router = APIRouter()
 def get_speech_token():
     return speech_service.get_speech_token()
 
-@router.get("/fetch-access-info")
-def get_speech_endpoint_and_key():
-    return speech_service.get_speech_endpoint_and_key()
+@router.get("/authorization-access-token")
+def get_speech_authorization_access_token():
+    return speech_service.get_speech_authorization_access_token()
