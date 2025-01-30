@@ -4,7 +4,6 @@ from io import BytesIO
 from fastapi import File, Form, HTTPException
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from wrapperfunction.core import config
 import wrapperfunction.speech.integration.speech_connector as speech_connector
 
 async def transcribe(file: bytes = File(...), filename: str = Form(...)):
