@@ -148,6 +148,7 @@ def apply_skills_on_index(index_name: str):
                     index["people"] = entities[tak.PERSON.value]
                     index["organizations"] = entities[tak.ORGANIZATION.value]
                     index["locations"] = entities[tak.LOCATION.value]
+                    index["dateTime"] = [parser.parse(date).replace(microsecond=0).isoformat() + "Z"  if is_valid_date(date) else date for date in entities[tak.DATETIME.value]]
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
         update_index(index_name=index_name, data=results["rs"])

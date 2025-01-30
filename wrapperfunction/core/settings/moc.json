@@ -1,4 +1,5 @@
 {
+  "entity_name": "moc",
   "chatbots": [
     {
       "name": "website",
@@ -46,5 +47,8 @@
     "منتجع الخور": "مُنْتَجَع الخُورْ",
     "تملك": "تَمَلُّك",
     "الغرافة": "الغَرَّافة"
-  }
+  },
+  "access_token_valid_time": 30,
+  "refresh_token_valid_time": "60"
 }
+

@@ -126,14 +126,21 @@ async def get_setting(entity_name: str):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
 
-@router.post("/settings")
+@router.put("/settings")
 async def update_setting(entity: Dict[str, Any]):
     try:
         return settings_service.update_bot_settings(entity=entity)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/settings/schedule")
+async def update_schedule_setting(entity: Dict[str, Any], days: int):
+    try:
+        return settings_service.update_schedule_settings(new_settings=entity, days=days)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
     
-@router.put("/settings")
+@router.post("/settings")
 async def add_setting(body: Dict[str, Any]):
     try:
         return await settings_service.add_setting(entity=body)
