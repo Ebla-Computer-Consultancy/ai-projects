@@ -8,7 +8,7 @@ from wrapperfunction.core.service import settings_service
 from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
-from wrapperfunction.core.utls.helper import pdfs_files_filter
+from wrapperfunction.core.utls.helper import jsonVSfiles_filter
 
 
 router = APIRouter()
@@ -23,8 +23,9 @@ def crawler(urls: list[CrawlRequestUrls], settings: CrawlSettings = None):
 @router.post("/upload-blobs/")
 def upload_blobs(files: list[UploadFile], container_name: str, subfolder_name: str, metadata_1: str = None, metadata_2: str = None, metadata_4: str = "pdf"):
     try:
-        pdf_files, json_files= pdfs_files_filter(files)
+        pdf_files, json_files, other_files= jsonVSfiles_filter(files)
         blob_service.read_and_upload_pdfs(pdf_files, container_name, store_pdf_subfolder=subfolder_name+"_pdf",subfolder_name= subfolder_name)
+        blob_service.upload_files_to_blob(other_files, container_name, subfolder_name+"_other")
         blob_service.add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, json_files)
         return {"message": "Files uploaded successfully"}
     except Exception as e:
