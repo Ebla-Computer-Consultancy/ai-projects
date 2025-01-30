@@ -161,6 +161,12 @@ def apply_skills_on_index(index_name: str):
         print(f"Error While Applying Skills: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error while monitoring indexer: {str(e)}")     
             
+def is_valid_date(date_str):
+    try:
+        parser.parse(date_str)
+        return True
+    except (ValueError, TypeError):
+        return False
 
 async def sentiment_skill(values: list):
     results = []
