@@ -5,20 +5,15 @@ from fastapi import HTTPException,Request,UploadFile
 import httpx
 import requests
 import requests.auth
-from starlette.responses import JSONResponse
-from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity
-from wrapperfunction.chat_history.model.message_entity import MessageEntity, MessageType, Roles
-from wrapperfunction.chat_history.service.chat_history_service import add_entity, save_video_to_db
+from wrapperfunction.chat_history.service.chat_history_service import save_video_to_db
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from azure.identity import ClientSecretCredential
-
 import httpx
-import asyncio
 from fastapi import HTTPException
 
-from wrapperfunction.core.utls.helper import extract_client_details
+
 
 # async def create_video_index(v_name: str, v_url: str,request: Request):
 #     try:
