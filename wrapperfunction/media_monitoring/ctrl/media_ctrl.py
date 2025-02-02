@@ -2,7 +2,6 @@ import asyncio
 import time
 from fastapi import APIRouter, HTTPException
 from wrapperfunction.core.model.customskill_model import CustomSkillRequest
-from wrapperfunction.function_auth.service import auth_db_service
 from wrapperfunction.media_monitoring.model.media_crawl_model import MediaCrawlRequest
 from wrapperfunction.media_monitoring.model.media_model import MediaRequest
 from wrapperfunction.media_monitoring.service import media_service
@@ -18,11 +17,11 @@ async def generate_report(request:MediaRequest):
 
 @router.post("/crawl/")
 async def media_crawl(request:MediaCrawlRequest):
-    try:    
+    try:
         return await media_service.media_crawl(request.urls, request.settings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @router.post("/sentiment/")   
 async def sentiment(request:CustomSkillRequest):
     try:
