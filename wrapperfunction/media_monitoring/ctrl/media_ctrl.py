@@ -22,6 +22,13 @@ async def media_crawl(request:MediaCrawlRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/crawl/status")
+async def get_all_urls_crawling_status():
+    try:
+        return media_service.get_crawling_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/sentiment/")   
 async def sentiment(request:CustomSkillRequest):
     try:

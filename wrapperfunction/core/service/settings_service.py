@@ -3,7 +3,6 @@ import uuid
 from fastapi import HTTPException
 from wrapperfunction.core import config
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
-from wrapperfunction.core.model.schedule_days_model import ScheduleDays
 
 def get_all_settings():
     try:
@@ -33,10 +32,20 @@ def update_bot_settings(entity):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def update_schedule_settings(new_settings: dict,days: int):
+def update_schedule_settings(new_settings: dict):
     try:
         entity_settings = get_settings_by_entity(config.ENTITY_NAME)[0]
-        entity_settings["media_settings"][f'{ScheduleDays(days).name}'] = new_settings
+        entity_settings["media_settings"]["crawling_urls"] = new_settings
+        return update_bot_settings(entity_settings)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def update_crawling_status(new_status: str,index: int,new_last_crawl=None):
+    try:
+        entity_settings = get_settings_by_entity(config.ENTITY_NAME)[0]
+        entity_settings["media_settings"]["crawling_urls"][index]["crawling_status"] = new_status
+        if new_last_crawl:
+            entity_settings["media_settings"]["crawling_urls"][index]["last_crawl"] = new_last_crawl
         return update_bot_settings(entity_settings)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

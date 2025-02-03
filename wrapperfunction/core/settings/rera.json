@@ -327,33 +327,39 @@
       "container",
       "item"
     ],
-    "oneDayUrls": {
-      "settings": {
-        "deep": false,
-        "selectors": [],
-        "mediaCrawling": false,
-        "topics": [],
-        "containerName": "moc-container",
-        "schedule_by_days": 0
-      },
-      "urls": [
-        {
-          "link": "string",
-          "headers": {},
-          "cookies": {},
-          "payload": {},
-          "internal": false,
-          "settings": {
-            "deep": false,
-            "selectors": [],
-            "mediaCrawling": false,
-            "topics": [],
-            "containerName": "moc-container",
-            "schedule_by_days": 0
+    "crawling_urls": [{
+      "last_crawl":"1-2-2025",
+      "crawl_days":2,
+      "crawling_status": "Success",
+      "crawl_settings":{
+        "settings": {
+          "deep": false,
+          "selectors": [],
+          "mediaCrawling": false,
+          "topics": [],
+          "containerName": "moc-container",
+          "schedule_by_days": 0
+        },
+        "urls": [
+          {
+            "link": "string",
+            "headers": {},
+            "cookies": {},
+            "payload": {},
+            "internal": false,
+            "settings": {
+              "deep": false,
+              "selectors": [],
+              "mediaCrawling": false,
+              "topics": [],
+              "containerName": "moc-container",
+              "schedule_by_days": 0
+            }
           }
-        }
       ]
     }
+    }
+  ]
   },
   "access_token_valid_time": 30,
   "refresh_token_valid_time": 58
