@@ -372,19 +372,19 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
         )
 
 
-async def save_video_to_db(status_data: dict, request: Request, conversation_id: str, bot_name: str):
+async def save_video_to_db(res_data: dict, request: Request, conversation_id: str, bot_name: str):
     client_details = extract_client_details(request)
     conv_entity = ConversationEntity(
         user_id=str(uuid.uuid4()),
         conversation_id=conversation_id,
         bot_name=bot_name,
-        title=status_data.get("name", ""),
+        title=res_data.get("name", ""),
         client_ip=client_details["client_ip"],
         forwarded_ip=client_details["forwarded_ip"],
         device_info=json.dumps(client_details["device_info"]),
     )
     message_entity = MessageEntity(
-        content=json.dumps(status_data),
+        content=json.dumps(res_data),
         conversation_id=conversation_id,
         role=Roles.User.value,
         context="",

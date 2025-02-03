@@ -7,7 +7,7 @@ router = APIRouter()
 @router.get("/get_vi")
 async def get_vi(vid: str, request: Request):
     try:
-        return await vi_service.get_video_index(v_id= vid, request= request)
+        return await vi_service.get_video_index(video_id= vid, request= request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -27,6 +27,6 @@ async def get_all_vi():
 @router.post("/upload_video")
 async def upload_video(file: UploadFile,request: Request):
     try:
-        return await vi_service.upload_video(video_file=file,request=request)
+        return await vi_service.upload_video(video_file=file)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -111,8 +111,8 @@ async def get_video_index(video_id: str, request: Request):
                 if res_data.get("state") == "Processed":
                     conversation_id = str(uuid.uuid4())
                     bot_name = "video-indexer"
-                    await save_video_to_db(status_data=res_data, request=request, conversation_id=conversation_id, bot_name=bot_name)
-                    summary = await summarize_with_openai(res_data)
+                    await save_video_to_db(res_data=res_data, request=request, conversation_id=conversation_id, bot_name=bot_name)
+                    summary =  summarize_with_openai(json.dumps(res_data))
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
@@ -316,11 +316,11 @@ async def upload_video(video_file: UploadFile):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def summarize_with_openai(content: str):
+def summarize_with_openai(content: str):
     try:
         
-        response = await openai_connector.chat_completion(
-            chatbot_settings=config.load_chatbot_settings("video-indexer"),
+        response =openai_connector.chat_completion(
+            chatbot_setting=config.load_chatbot_settings("video-indexer"),
             chat_history=[{"role": "system", "content": "Summarize the content."}, {"role": "user", "content": content}])
         return response["message"]["content"].strip()
     except Exception as e:
