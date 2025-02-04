@@ -32,3 +32,15 @@ def stop_render(stream_id: str):
 
 def close_stream(stream_id: str):
     return avatar_connector.close_stream(stream_id)
+
+def render_video(video_id: str):
+    return avatar_connector.render_video(video_id)
+
+def retrieve_video(video_id: str):
+    return avatar_connector.retrieve_video(video_id)
+
+def delete_video(video_id: str):
+    return avatar_connector.delete_video(video_id)
+
+def list_videos(page: int, limit:int, with_deleted:bool):
+    return avatar_connector.list_videos(page, limit, with_deleted)

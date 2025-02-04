@@ -33,3 +33,4 @@ def get_bot_name():
 @router.post("/add-message/")
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
     return await history_service.add_message(chat_payload,bot_name,request)
+  

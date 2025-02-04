@@ -39,8 +39,24 @@ AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+COSMOS_FAQ_TABLE=os.getenv("COSMOS_FAQ_TABLE")
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
 DEFAULT_ENTITY_SETTINGS=os.getenv("DEFAULT_ENTITY_SETTINGS")
+LDAP_SERVER=os.getenv("LDAP_SERVER")
+LDAP_DOMAIN=os.getenv("LDAP_DOMAIN")
+COSMOS_AUTH_USER_TABLE=os.getenv("COSMOS_AUTH_USER_TABLE")
+COSMOS_AUTH_PERMISSION_TABLE=os.getenv("COSMOS_AUTH_PERMISSION_TABLE")
+COSMOS_AUTH_USER_PER_TABLE=os.getenv("COSMOS_AUTH_USER_PER_TABLE")
+JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
+ALGORITHM=os.getenv("ALGORITHM")
+BASE_URL=os.getenv("BASE_URL")
+AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
+TENANT_ID=os.getenv("TENANT_ID")
+CLIENT_ID=os.getenv("CLIENT_ID")
+CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
+SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
+
+
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
@@ -53,6 +69,8 @@ def load_entity_settings():
             with open(file_path, "r", encoding="utf-8") as file:
                 entity = json.load(file)
                 entity["entity_name"] = ENTITY_NAME
+                chatbot = entity.get("chatbots", [])
+                chatbot[0]["index_name"] = ENTITY_NAME
                 asyncio.create_task(
                     settings_service.add_setting(entity=entity)
                 )      
