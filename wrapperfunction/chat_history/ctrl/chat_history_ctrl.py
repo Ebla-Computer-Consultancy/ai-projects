@@ -16,7 +16,7 @@ def get_chats(conv_id: str):
 
 @router.get("/all-conversations/")
 def get_all_conversations(bot_name:Optional[str]=None):
-    return history_service.get_all_conversations(bot_name)
+    return history_service.get_conversations_by_bot_name(bot_name)
 
 @router.post("/sentiment-analysis/")
 def apply_analysis():
@@ -32,12 +32,12 @@ def add_feedback(message_id: str, feedback: int):
 @router.get("/bot-names/")
 def get_bot_name():
     return history_service.get_bot_name()
-@router.get("/FAQ/")
-def get_bot_name():
-    return history_service.get_FAQ()
-
 @router.post("/add-message/")
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
     return await history_service.add_message(chat_payload,bot_name,request)
+
+@router.put("/check-question-answered")
+def UpdateAnswerEntities():
+    return history_service.UpdateAnswerEntities()
 
 

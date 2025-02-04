@@ -25,7 +25,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion(
-            # chatbot_settings, chat_history_with_system["chat_history"]
+            chatbot_settings, chat_history_with_system["chat_history"]
         )
 
         if chatbot_settings.enable_history:

@@ -79,18 +79,25 @@ def get_user_messages(conversation_id):
 
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
-
-
-def get_all_conversations(bot_name: Optional[str] = None,condition:Optional[str] = None):
+def get_conversations_by_bot_name(bot_name: Optional[str] = None):
     try:
-        if condition:
-            res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME,condition)
-            return res
         filter_condition = f"{ConversationPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
         res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME, filter_condition)
         return res
     except Exception as e:
-        return HTTPException(status_code=400, detail=str(e)) 
+        raise HTTPException(status_code=400, detail="An error occurred while fetching conversations.")
+
+def get_conversations_by_condition(condition: str):
+    try:
+        allowed_conditions = ["state eq 'active'", "state eq 'completed'"]
+
+        if condition not in allowed_conditions:
+            raise HTTPException(status_code=400, detail="Invalid condition provided.")
+        
+        res = db_connector.get_entities(config.CONVERSATION_TABLE_NAME, condition)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="An error occurred while fetching conversations.")
     
 async def add_entity(message_entity:Optional[MessageEntity]=None,assistant_entity:Optional[MessageEntity] = None,conv_entity:Optional[ConversationEntity] = None):
 
@@ -133,7 +140,7 @@ def update_message(updated_data: dict,message_ids: Optional[list[str]]=None,mess
         raise HTTPException(status_code=400, detail=str(e))    
 def perform_sentiment_analysis():
     try:
-        conversations = get_all_conversations(condition=f"{ConversationPropertyName.SENTIMENT.value} eq 'undefined' and {ConversationPropertyName.BOT_NAME.value} ne 'interactive'")
+        conversations = get_conversations_by_condition(condition=f"{ConversationPropertyName.SENTIMENT.value} eq 'undefined' and {ConversationPropertyName.BOT_NAME.value} ne 'interactive'")
         for conversation in conversations:
             conversation_id = conversation[
                     ConversationPropertyName.CONVERSATION_ID.value
