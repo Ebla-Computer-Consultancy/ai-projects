@@ -21,6 +21,13 @@ async def update_refresh_token(token: str = Depends(jwt_service.get_token_from_h
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")    
 
+@router.get("/access-token")
+async def generate_access_token(token: str = Depends(jwt_service.get_token_from_header)):
+    try:
+        return auth_service.get_access_token(token=token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}") 
+    
 def hasAuthority(permission: str):
     if config.AUTH_ENABLED:
         async def dependency(request: Request, token: str = Depends(jwt_service.get_token_from_header)):

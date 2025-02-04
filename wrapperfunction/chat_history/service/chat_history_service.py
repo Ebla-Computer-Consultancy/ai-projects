@@ -17,7 +17,6 @@ from wrapperfunction.chat_history.model.conversation_entity import (
 )
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.core.model.service_return import ServiceReturn,StatusCode
-
 import wrapperfunction.admin.integration.textanalytics_connector as text_connector
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core.utls.helper import extract_client_details
@@ -416,6 +415,7 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
              message_entity=user_message_entity, assistant_entity=assistant_message_entity
         )
 
+
 def get_question_answer_pairs():
     try:
         messages = get_messages(filter_condition=f"{MessagePropertyName.IS_ANSWERED.value} eq 'undefined'")
@@ -495,3 +495,4 @@ def get_error_logs(conversation_id=None):
         return ServiceReturn(status=StatusCode.SUCCESS, message="Error logs retrieved successfully", data=error_logs).to_dict()
     except Exception as e:
         return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}").to_dict()
+
