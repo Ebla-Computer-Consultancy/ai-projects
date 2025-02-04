@@ -93,57 +93,106 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 
 def get_azure_token() -> str:
+
     try:
-        credential = ClientSecretCredential(
-            tenant_id=config.TENANT_ID,
-            client_id=config.CLIENT_ID,
-            client_secret=config.CLIENT_SECRET_VALUE
-        )
-        return credential.get_token("https://management.azure.com/.default").token
+    # Authenticate with Azure AD
+        credential = ClientSecretCredential(tenant_id=config.TENANT_ID, client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET_VALUE)
+        token = credential.get_token("https://management.azure.com/.default").token
+
+        return token
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    
 def get_access_token() -> Dict:
     try:
         token = get_azure_token()
         url = "https://management.azure.com/subscriptions/fcd1f0ed-84c0-4a06-a4bd-a74a51026856/resourceGroups/RERA-RG-WE/providers/Microsoft.VideoIndexer/accounts/rerawe-vi-01/generateAccessToken?api-version=2024-01-01"
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
-        body = {"permissionType": "Contributor", "scope": "Account"}
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",           
+        }
+        body = {
+            "permissionType": "Contributor",
+            "scope": "Account",
+        }
+
+
         response = requests.post(url=url, headers=headers, json=body)
+
         response.raise_for_status()
-        return {"status": "SUCCESS", "message": "Access token generated successfully", "data": response.json().get("accessToken")}
+
+
+        access_token = response.json().get("accessToken")
+
+
+        return {
+            "status": "SUCCESS",
+            "message": "Access token generated successfully",
+            "data": access_token,
+        }
     except requests.RequestException as e:
+
+        status_code = e.response.status_code if e.response else 500
+        detail = e.response.json() if e.response else str(e)
+
+
         raise HTTPException(
-            status_code=e.response.status_code if e.response else 500,
-            detail={"error": "Failed to generate Video Indexer token", "details": e.response.json() if e.response else str(e)}
+            status_code=status_code,
+            detail={
+                "error": "Failed to generate Video Indexer token",
+                "details": detail,
+            },
         )
 
 async def get_video_index(video_id: str, request: Request):
     try:
         access_token = get_access_token()["data"]
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
+        status_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
         params = {"accessToken": access_token}
+
         async with httpx.AsyncClient() as client:
-            response = await client.get(url=url, params=params)
+            response = await client.get(url=status_url, params=params)
             if response.status_code == 200:
                 res_data = response.json()
                 await add_thumbnail_urls(res_data, access_token, video_id)
+
                 if res_data.get("state") == "Processed":
                     conversation_id = str(uuid.uuid4())
                     bot_name = "video-indexer"
-                    await save_video_to_db(res_data, request, conversation_id, bot_name)
-                    summary = summarize_with_openai(res_data)
+                    await save_video_to_db(res_data=res_data, request=request, conversation_id=conversation_id, bot_name=bot_name)
+                    transcript = " ".join(entry["text"] for entry in res_data.get("videos", [{}])[0].get("insights", {}).get("transcript", []))
+                    topics = ", ".join(f"{topic['name']} (Confidence: {topic['confidence']})" for topic in res_data.get("videos", [{}])[0].get("insights", {}).get("topics", []))
+                    sentiments = ", ".join(f"{sentiment['sentimentType']} (Average Score: {sentiment['averageScore']})" for sentiment in res_data.get("videos", [{}])[0].get("insights", {}).get("sentiments", []))
+                    named_people = ", ".join(person['name'] for person in res_data.get("videos", [{}])[0].get("insights", {}).get("namedPeople", []))
+
+                    summary_content = f"Transcript: {transcript}\nTopics: {topics}\nSentiments: {sentiments}\nNamed People: {named_people}"
+
+                    summary = summarize_with_openai(summary_content.strip())
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data, "conversation_id": conversation_id, "bot_name": bot_name, "summary": summary}
+                        data={"res_data": res_data, "conversation_id": conversation_id, "bot_name": "video-indexer", "summary": summary}
                     ).to_dict()
+
                 elif res_data.get("state") == "Failed":
-                    return ServiceReturn(status=StatusCode.BAD_REQUEST, message=f"Indexing failed for video ID: {video_id}", data=res_data).to_dict()
+                    return ServiceReturn(
+                        status=StatusCode.BAD_REQUEST,
+                        message=f"Indexing failed for video ID: {video_id}",
+                        data=res_data
+                    ).to_dict()
+
                 else:
-                    return ServiceReturn(status=StatusCode.PENDING, message=f"Indexing in progress for video ID: {video_id}", data=res_data).to_dict()
+                    return ServiceReturn(
+                        status=StatusCode.PENDING,
+                        message=f"Indexing in progress for video ID: {video_id}",
+                        data=res_data
+                    ).to_dict()
+
             else:
                 raise HTTPException(status_code=500, detail="Failed to fetch indexing status")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -298,15 +347,22 @@ async def get_all_videos():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-def get_video_thumbnail(video_id: str, access_token: str) -> str:
+def get_video_thumbnail(video_id, access_token):
     try:
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/default"
+        metadata_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
         params = {"accessToken": access_token}
+        res = requests.get(metadata_url, params=params)
 
-        res = requests.get(url, params=params)
         if res.ok:
-            return res.url  
+            metadata = res.json()
+            thumbnail_id = metadata.get("summarizedInsights", {}).get("thumbnailId")
+
+            if thumbnail_id:
+                return f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/{thumbnail_id}?accessToken={access_token}"
+            else:
+                return None
         else:
-            raise HTTPException(status_code=500, detail="Failed to retrieve thumbnail")
+            return None
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
