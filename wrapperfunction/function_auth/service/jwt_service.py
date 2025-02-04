@@ -69,7 +69,7 @@ def decode_jwt(token: str) -> User:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.BASE_URL}/api/v1/user/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.BASE_URL}/api/v1/user/swagger/login")
 def get_token_from_header(authorization: str = Depends(oauth2_scheme)):
     if authorization.startswith("Bearer "):
         return authorization[7:]
