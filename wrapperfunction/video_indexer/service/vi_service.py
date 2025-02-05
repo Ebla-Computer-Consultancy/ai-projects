@@ -66,7 +66,7 @@ def get_azure_token() -> str:
 def get_access_token() -> Dict:
     try:
         token = get_azure_token()
-        url = f"https://management.azure.com/subscriptions/{config.SUBSCRIPTION_ID}/resourceGroups/{config.RESOURCE_GROUP_NAME}/providers/Microsoft.VideoIndexer/accounts/{config.ACCOUNT_NAME}/generateAccessToken?{config.API_VERSION}"
+        url = f"https://management.azure.com/subscriptions/{config.SUBSCRIPTION_ID}/resourceGroups/{config.RESOURCE_GROUP_NAME}/providers/Microsoft.VideoIndexer/accounts/{config.ACCOUNT_NAME}/generateAccessToken?api-version={config.API_VERSION}"
 
         headers = {
             "Content-Type": "application/json",
