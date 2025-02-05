@@ -12,7 +12,7 @@ from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
 async def create_video_index(v_name: str, v_url: str, request: Request):
     try:
-        base_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}"
+        base_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}"
         url = f"{base_url}/Videos"
         headers = {
             "Content-Type": "application/json",
@@ -108,7 +108,7 @@ def get_access_token() -> Dict:
 async def get_video_index(video_id: str, request: Request):
     try:
         access_token = get_access_token()["data"]
-        status_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
+        status_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
         params = {"accessToken": access_token}
 
         async with httpx.AsyncClient() as client:
@@ -156,7 +156,7 @@ async def get_video_index(video_id: str, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 async def add_thumbnail_urls(res_data, access_token, video_id):
-    base_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/"
+    base_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/"
     
     thumbnail_id = res_data.get("summarizedInsights", {}).get("thumbnailId")
     if thumbnail_id:
@@ -208,7 +208,7 @@ def summarize_with_openai(content: str):
     
 async def upload_video(video_file: UploadFile):
     try:
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
         headers = {
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY,
         }
@@ -253,7 +253,7 @@ async def upload_video(video_file: UploadFile):
 
 async def reindex_video(v_id: str):
     try:
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{v_id}/ReIndex"
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{v_id}/ReIndex"
         headers = {
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
@@ -276,7 +276,7 @@ async def reindex_video(v_id: str):
     
 async def get_all_videos():
     try:
-        url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
         headers = {
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY
@@ -308,7 +308,7 @@ async def get_all_videos():
         raise HTTPException(status_code=500, detail=str(e))
 def get_video_thumbnail(video_id, access_token):
     try:
-        metadata_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
+        metadata_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
         params = {"accessToken": access_token}
         res = requests.get(metadata_url, params=params)
 
@@ -317,7 +317,7 @@ def get_video_thumbnail(video_id, access_token):
             thumbnail_id = metadata.get("summarizedInsights", {}).get("thumbnailId")
 
             if thumbnail_id:
-                return f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/{thumbnail_id}?accessToken={access_token}"
+                return f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Thumbnails/{thumbnail_id}?accessToken={access_token}"
             else:
                 return None
         else:
