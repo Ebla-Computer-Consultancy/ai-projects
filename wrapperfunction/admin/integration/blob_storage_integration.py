@@ -38,7 +38,7 @@ def generate_sas_token(blob_url: str = None, container_name: str = None, blob_na
             path_parts = parsed_url.path.lstrip('/').split('/', 1)
             container_name = path_parts[0]
             blob_name = urllib.parse.unquote(path_parts[1])
-        expiry_time = (datetime.datetime.utcnow() + datetime.timedelta(minutes=60)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        expiry_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=60)
         sas_token = generate_blob_sas(
             account_name=account_name,
             account_key=config.STORAGE_ACCOUNT_KEY,
