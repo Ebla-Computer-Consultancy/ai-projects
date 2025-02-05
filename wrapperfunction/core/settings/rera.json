@@ -240,8 +240,8 @@
       "name": "qrep"
     },
     {
-      "name": null,
-      "index_name": "video-indexer",
+      "name": "video-indexer",
+      "index_name": null,
       "custom_settings": {
         "temperature": 0.5,
         "enable_history": true
