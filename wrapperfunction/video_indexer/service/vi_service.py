@@ -5,12 +5,12 @@ import httpx
 from typing import Dict
 from fastapi import HTTPException, Request, UploadFile
 from azure.identity import ClientSecretCredential
-from wrapperfunction.chat_history.service.chat_history_service import extract_client_details, save_video_to_db
+from wrapperfunction.chat_history.service.chat_history_service import save_video_to_db
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
-async def create_video_index(v_name: str, v_url: str, request: Request):
+async def create_video_index(v_name: str, v_url: str):
     try:
         base_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}"
         url = f"{base_url}/Videos"
