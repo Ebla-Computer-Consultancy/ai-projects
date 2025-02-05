@@ -5,93 +5,52 @@ import httpx
 from typing import Dict
 from fastapi import HTTPException, Request, UploadFile
 from azure.identity import ClientSecretCredential
-from wrapperfunction.chat_history.service.chat_history_service import save_video_to_db
+from wrapperfunction.chat_history.service.chat_history_service import extract_client_details, save_video_to_db
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 
-# async def create_video_index(v_name: str, v_url: str,request: Request):
-#     try:
-#         base_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}"
-#         url = f"{base_url}/Videos"
-#         headers = {
-#             "Content-Type": "application/json",
-#             "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY,
-#         }
+async def create_video_index(v_name: str, v_url: str, request: Request):
+    try:
+        base_url = f"https://api.videoindexer.ai/westeurope/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}"
+        url = f"{base_url}/Videos"
+        headers = {
+            "Content-Type": "application/json",
+            "Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY,
+        }
 
-#         params = {
-#             "name": v_name,
-#             "privacy": "Public",
-#             "language": "auto",
-#             "videoUrl": v_url,
-#             "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJWZXJzaW9uIjoiMi4wLjAuMCIsIktleVZlcnNpb24iOiIxNGIwZDg4NTU0OTE0YjkwYjBkYjEwM2M0NmRkYTNkNiIsIkFjY291bnRJZCI6ImE2ZmRiZWNmLTAxMDEtNDEzYy1iMjA4LTk5ZTg5ZjRjOWI3NyIsIkFjY291bnRUeXBlIjoiQXJtIiwiUGVybWlzc2lvbiI6IkNvbnRyaWJ1dG9yIiwiRXh0ZXJuYWxVc2VySWQiOiJGMjhBRUM0REM1NDA0Q0IwQkY3Q0UxOEQ5MUY1REUzMSIsIlVzZXJUeXBlIjoiTWljcm9zb2Z0Q29ycEFhZCIsIklzc3VlckxvY2F0aW9uIjoid2VzdGV1cm9wZSIsIm5iZiI6MTczODA1ODE0NywiZXhwIjoxNzM4MDYyMDQ3LCJpc3MiOiJodHRwczovL2FwaS52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly9hcGkudmlkZW9pbmRleGVyLmFpLyJ9.fOaZOuQdqYzi8Ckq1gb1mX35fW1WOn7dGNcLufd_5NY8iv1zATACwuK6_-O-QXM_QUuo_Re475v2l2X1DqyAFj9Tc2ke4vrR9q1o9r6CNUiQQpzWMyb295W9MtE9I7Tqq10eyDah189moMPA29vj-8aJT8LCzLqzfmSavYgtTIwk-WfD2fIaqR0XMJL8MfA-tmgSxxY_7sBnSR74WyY7CGwst-bz8nD4e8jHLAUEYY0T7vjgYMZtofZNE7sl5I5sDirlWlZZyNE7pOoX0wdJKtkpcY5zLfZOonL7r6O69qBuC_CDVE0LzNnyBnhi0VswVflDrK9NOceCAiC_MDe1Ug",  # Add your valid access token here
-#         }
+        access_token = get_access_token()["data"]
+        params = {
+            "name": v_name,
+            "privacy": "Public",
+            "language": "auto",
+            "videoUrl": v_url,
+            "accessToken": access_token,
+        }
 
-#         async with httpx.AsyncClient() as client:
-#             response = await client.post(url=url, headers=headers, params=params)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url=url, headers=headers, params=params)
 
-#             if response.status_code == 200:
-#                 data = response.json()
-#                 video_id = data.get("id")
+            if response.status_code == 200:
+                data = response.json()
+                video_url = v_url
 
-#                 for _ in range(60): 
-#                     status_url = f"{base_url}/Videos/{video_id}/Index"
-#                     status_params = {"accessToken": params["accessToken"]}
-#                     status_response = await client.get(url=status_url, params=status_params)
+                if not video_url:
+                    raise HTTPException(status_code=500, detail="Failed to retrieve video URL.")
 
-#                     if status_response.status_code == 200:
-#                         status_data = status_response.json()
-#                         indexing_state = status_data.get("state")
+                return {
+                    "status": "SUCCESS",
+                    "message": f"{v_name} indexing has started successfully.",
+                    "data": {"video_url": video_url, "video_details": data},
+                }
 
-#                         if indexing_state == "Processed":
-#                             client_details=extract_client_details(request)
-#                             conv_entity = ConversationEntity(
-#                                 user_id=str(uuid.uuid4()),
-#                                 conversation_id=video_id,
-#                                 bot_name="video-indexer",
-#                                 title=v_name,
-#                               client_ip=client_details["client_ip"],
-#                             forwarded_ip=client_details["forwarded_ip"],
-#                             device_info=json.dumps(client_details["device_info"]),
-#                             )
+            else:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()
+                )
 
-#                             video_message = MessageEntity(
-#                                 content=json.dumps(status_data),
-#                                 conversation_id=video_id,
-#                                 role=Roles.Assistant.value,
-#                                 context="VideoIndexer",
-#                                 type=MessageType.Video.value,
-#                             )
-
-#                             await add_entity(conv_entity=conv_entity, message_entity=video_message)
-
-#                             return {
-#                                 "status": "SUCCESS",
-#                                 "message": f"{v_name} Indexer has successfully completed processing.",
-#                                 "data": status_data,
-#                             }
-#                         elif indexing_state in ["Failed", "Error"]:
-#                             raise HTTPException(
-#                                 status_code=500,
-#                                 detail=f"Indexing failed with state: {indexing_state}",
-#                             )
-
-#                     await asyncio.sleep(10)
-
-#                 raise HTTPException(
-#                     status_code=408,
-#                     detail="Indexing process timed out.",
-#                 )
-
-#             else:
-#                 raise HTTPException(
-#                     status_code=response.status_code, detail=response.json()
-#                 )
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 def get_azure_token() -> str:
 
     try:
@@ -107,7 +66,7 @@ def get_azure_token() -> str:
 def get_access_token() -> Dict:
     try:
         token = get_azure_token()
-        url = "https://management.azure.com/subscriptions/fcd1f0ed-84c0-4a06-a4bd-a74a51026856/resourceGroups/RERA-RG-WE/providers/Microsoft.VideoIndexer/accounts/rerawe-vi-01/generateAccessToken?api-version=2024-01-01"
+        url = f"https://management.azure.com/subscriptions/{config.SUBSCRIPTION_ID}/resourceGroups/{config.RESOURCE_GROUP_NAME}/providers/Microsoft.VideoIndexer/accounts/{config.ACCOUNT_NAME}/generateAccessToken?{config.API_VERSION}"
 
         headers = {
             "Content-Type": "application/json",
