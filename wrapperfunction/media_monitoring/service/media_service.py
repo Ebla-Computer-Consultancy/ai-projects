@@ -1,5 +1,4 @@
 from datetime import datetime
-import threading
 import time
 from typing import List
 from dateutil import parser
@@ -84,8 +83,8 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
         index_info = aisearch_connector.get_index_info(info["index_name"])
         indexer_name = index_info.indexer_name
         search_indexer_client = get_search_indexer_client()
-        status = search_indexer_client.get_indexer_status(indexer_name)
         search_indexer_client.run_indexer(indexer_name)
+        status = search_indexer_client.get_indexer_status(indexer_name)
         
         print(f"URL's:{urls} | Topics:{settings.topics} crawled successfully")
         # Return Response
