@@ -72,10 +72,9 @@ def get_speech_entra_access_token():
     tenant_id = config.TENANT_ID
     client_id = config.CLIENT_ID
     client_secret = config.CLIENT_SECRET_VALUE
-    speechResourceId = config.SPEECH_RESOURCE_ID
     try:
         credential = ClientSecretCredential(tenant_id, client_id, client_secret)
         token: AccessToken = credential.get_token("https://cognitiveservices.azure.com/.default")
-        return {"token": 'aad#' + speechResourceId +'#' + token.token, "region": speech_region}
+        return {"token": token.token, "region": speech_region}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

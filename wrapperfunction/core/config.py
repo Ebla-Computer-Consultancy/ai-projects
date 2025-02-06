@@ -54,7 +54,6 @@ AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
 TENANT_ID=os.getenv("TENANT_ID")
 CLIENT_ID=os.getenv("CLIENT_ID")
 CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
-SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
 
 
 
