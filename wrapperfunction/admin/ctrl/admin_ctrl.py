@@ -51,6 +51,13 @@ def get_subfolders(container_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-subfolders-blobs/{container_name}")
+def get_subfolders_blobs(container_name: str):
+    try:
+        return blob_service.get_subfolders_with_blobs(container_name=container_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/delete-subfolder")
 async def delete_subfolder(container_name: str, subfolder_name: str):
     try:
