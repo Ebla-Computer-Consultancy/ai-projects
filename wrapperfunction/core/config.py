@@ -52,7 +52,7 @@ JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
 BASE_URL=os.getenv("BASE_URL")
 AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
-
+LDAP_ENABLED=os.environ.get("LDAP_ENABLED", "false").lower() == "true"
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
