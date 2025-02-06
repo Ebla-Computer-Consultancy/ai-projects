@@ -129,7 +129,7 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
 def apply_skills_on_index(index_name: str):
     try:
         start_time = time.time()
-        results = search_query(search_text="*",search_index=index_name)
+        results = search_query(search_text="*",search_index=index_name, k=1000)
         docs = 0
         for index in results["rs"]:
             index["index_date"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
