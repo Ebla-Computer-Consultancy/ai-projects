@@ -171,7 +171,7 @@ def upload_files_to_blob(files: list[UploadFile],container_name :str = config.BL
                     blocks.append(BlobBlock(block_id=block_id_str))
                     block_id += 1
                 blob_client.commit_block_list(blocks)
-                if len(files) == 1:
+                if file.content_type == "application/pdf":
                     metadata_storage_path =blob_client.url
                     return metadata_storage_path
 
