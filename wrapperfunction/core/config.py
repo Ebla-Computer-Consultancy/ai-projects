@@ -51,6 +51,7 @@ JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
 BASE_URL=os.getenv("BASE_URL")
 AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
+LDAP_ENABLED=os.environ.get("LDAP_ENABLED", "false").lower() == "true"
 TENANT_ID=os.getenv("TENANT_ID")
 CLIENT_ID=os.getenv("CLIENT_ID")
 CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")

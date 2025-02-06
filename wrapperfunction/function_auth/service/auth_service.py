@@ -32,7 +32,7 @@ def test_ldap_connection(username: str, password: str):
             password=password,
             authentication=NTLM
         )
-        if config.AUTH_ENABLED:
+        if config.AUTH_ENABLED or config.LDAP_ENABLED:
             if conn.bind():
                 return True, conn
             else:
