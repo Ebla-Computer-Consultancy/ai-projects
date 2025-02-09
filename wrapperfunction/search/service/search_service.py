@@ -17,12 +17,12 @@ def search(bot_name: str,rs: searchCriteria):
         chatbot_settings = config.load_chatbot_settings(bot_name)
         # submit the query and get the results
         results = aisearchconnector.search_query(
-            chatbot_settings.index_name,
-            search_text,
-            filter_expression,
-            sort_expression,
-            rs.page_size,
-            rs.page_number,
+            search_index=chatbot_settings.index_name,
+            search_text=search_text,
+            filter_by=filter_expression,
+            sort_order=sort_expression,
+            page_size=rs.page_size,
+            page_number=rs.page_number,
         )
         # render the results
         return results
@@ -67,3 +67,9 @@ def indexes_name():
         return aisearchconnector.get_indexes_name()
     except:
         raise HTTPException(status_code=404, detail="index not found")
+    
+def update_index(index_name: str, data):
+    try:
+        return aisearchconnector.update_index(index_name,data)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"{str(e)}")

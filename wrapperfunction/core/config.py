@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 
 # Load environment variables from .env file
@@ -58,6 +59,10 @@ LDAP_ENABLED=os.environ.get("LDAP_ENABLED", "false").lower() == "true"
 TENANT_ID=os.getenv("TENANT_ID")
 CLIENT_ID=os.getenv("CLIENT_ID")
 CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
+SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
+SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
+SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
+COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
 
 
 def load_entity_settings():
@@ -127,3 +132,15 @@ def load_chatbot_settings(bot_name: str):
         enable_history=True,
         apply_sentiment=True
     )
+
+
+def get_media_info() -> dict:
+    try:
+        media_settings = ENTITY_SETTINGS.get("media_settings",{})
+        info = media_settings.get("info",{}) if len(media_settings) > 0 else None
+        if info is not None and len(info) > 0: 
+            return info
+        else:
+            raise HTTPException(status_code=500, detail="There is no media setting info provided")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="There is no media setting info provided")
