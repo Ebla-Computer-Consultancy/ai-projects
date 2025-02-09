@@ -68,20 +68,22 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
 def prepare_chat_history_with_system_message(chat_payload, bot_name):
     chat_history_arr = []
     bot_settings = config.load_chatbot_settings(bot_name)
+
     if bot_settings.custom_settings.max_history_length != 0:
         if chat_payload.conversation_id:
             chat_history_arr = chat_history_service.get_messages(
                 conversation_id=chat_payload.conversation_id
             )
+
         if bot_settings.custom_settings.max_history_length > 0:
-            if bot_name == "video-indexer" and chat_history_arr:
-                first_message = chat_history_arr[0]  
+            if bot_settings.custom_settings.preserve_first_message and chat_history_arr:
+                first_message = chat_history_arr[0]
                 chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
                 if first_message not in chat_history_arr:
-                    chat_history_arr.insert(0, first_message) 
+                    chat_history_arr.insert(0, first_message)
             else:
                 chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
-        
+
     chat_history = []
     is_ar = is_arabic(chat_payload.messages[-1].content)
     if chat_payload.stream_id:

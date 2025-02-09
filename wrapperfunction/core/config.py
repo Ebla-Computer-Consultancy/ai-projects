@@ -103,12 +103,14 @@ def load_chatbot_settings(bot_name: str):
             tools = custom_settings_data.get("tools",None)
             enable_history = chatbot_obj.get("enable_history", True)
             display_in_chat = chatbot_obj.get("display_in_chat", True)
+            preserve_first_message = custom_settings_data.get("preserve_first_message", False)
             custom_settings = CustomSettings(temperature=temperature,
                                             top_p=top_p,
                                             max_tokens=max_tokens,
                                             tools=tools,
                                             max_history_length=max_history_length,
-                                            display_in_chat=display_in_chat
+                                            display_in_chat=display_in_chat,
+                                            preserve_first_message=preserve_first_message
                                         )
             chatbot = ChatbotSetting(
 
@@ -117,7 +119,8 @@ def load_chatbot_settings(bot_name: str):
                 system_message = chatbot_obj["system_message"],
                 examples = chatbot_obj.get("examples", []),
                 custom_settings = custom_settings,
-                enable_history=enable_history
+                enable_history=enable_history,
+                preserve_first_message=preserve_first_message
 
             )
             return chatbot
@@ -128,5 +131,6 @@ def load_chatbot_settings(bot_name: str):
         system_message="",
         examples=[],
         custom_settings=None,
-        enable_history=True
+        enable_history=True,
+        preserve_first_message=False
     )
