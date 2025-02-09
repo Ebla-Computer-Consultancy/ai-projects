@@ -40,7 +40,10 @@ AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+NAME=os.getenv("COSMOS_FAQ_TABLE")
+
 COSMOS_FAQ_TABLE=os.getenv("COSMOS_FAQ_TABLE")
+
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
 DEFAULT_ENTITY_SETTINGS=os.getenv("DEFAULT_ENTITY_SETTINGS")
 LDAP_SERVER=os.getenv("LDAP_SERVER")
@@ -60,6 +63,7 @@ SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
 SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
 COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
+
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
@@ -85,33 +89,37 @@ AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
 
 def load_chatbot_settings(bot_name: str):
     chatbots_settings = ENTITY_SETTINGS.get("chatbots", [])
-    chatbots = chatbots_settings if isinstance(chatbots_settings,list) else json.loads(chatbots_settings)
+    chatbots = chatbots_settings if isinstance(chatbots_settings, list) else json.loads(chatbots_settings)
     for chatbot_obj in chatbots:
         if chatbot_obj["name"] == bot_name:
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
             max_tokens = custom_settings_data.get("max_tokens", 800)
-            max_history_length= custom_settings_data.get("max_history_length", 9)
+            max_history_length = custom_settings_data.get("max_history_length", 9)
             top_p = custom_settings_data.get("top_p", 0.95)
-            tools = custom_settings_data.get("tools",None)
+            tools = custom_settings_data.get("tools", None)
             enable_history = chatbot_obj.get("enable_history", True)
             display_in_chat = chatbot_obj.get("display_in_chat", True)
-            custom_settings = CustomSettings(temperature=temperature,
-                                            top_p=top_p,
-                                            max_tokens=max_tokens,
-                                            tools=tools,
-                                            max_history_length=max_history_length,
-                                            display_in_chat=display_in_chat
-                                        )
+            apply_sentiment = custom_settings_data.get("apply_sentiment", True) 
+
+            custom_settings = CustomSettings(
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
+                tools=tools,
+                max_history_length=max_history_length,
+                display_in_chat=display_in_chat,
+                apply_sentiment=apply_sentiment 
+            )
+
             chatbot = ChatbotSetting(
-
-                name = chatbot_obj["name"],
-                index_name = chatbot_obj.get("index_name", None),
-                system_message = chatbot_obj["system_message"],
-                examples = chatbot_obj.get("examples", []),
-                custom_settings = custom_settings,
-                enable_history=enable_history
-
+                name=chatbot_obj["name"],
+                index_name=chatbot_obj.get("index_name", None),
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj.get("examples", []),
+                custom_settings=custom_settings,
+                enable_history=enable_history,
+                apply_sentiment=apply_sentiment
             )
             return chatbot
 
@@ -121,8 +129,10 @@ def load_chatbot_settings(bot_name: str):
         system_message="",
         examples=[],
         custom_settings=None,
-        enable_history=True
+        enable_history=True,
+        apply_sentiment=True
     )
+
 
 def get_media_info() -> dict:
     try:
