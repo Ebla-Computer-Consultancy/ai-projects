@@ -1,6 +1,8 @@
+import asyncio
 from datetime import datetime
 import time
 from typing import List
+import uuid
 from dateutil import parser
 from fastapi import HTTPException
 from wrapperfunction.admin.integration import imageanalytics_connector
@@ -23,6 +25,7 @@ from azure.search.documents.indexes.models import SearchIndexer
 from azure.search.documents.indexes import SearchIndexerClient
 from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
 from wrapperfunction.search.service.search_service import update_index
+import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
 async def generate_report(search_text: str,index_date_from,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
@@ -74,16 +77,16 @@ async def generate_report(search_text: str,index_date_from,index_date_to = None,
 async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
     try:
         # Crawling
-        crawl_urls(
-            urls,
-            settings
-        )
+        # crawl_urls(
+        #     urls,
+        #     settings
+        # )
         # Indexer
         info = config.get_media_info()
         index_info = aisearch_connector.get_index_info(info["index_name"])
         indexer_name = index_info.indexer_name
         search_indexer_client = get_search_indexer_client()
-        search_indexer_client.run_indexer(indexer_name)
+        # search_indexer_client.run_indexer(indexer_name)
         status = search_indexer_client.get_indexer_status(indexer_name)
         
         print(f"URL's:{urls} | Topics:{settings.topics} crawled successfully")
@@ -126,33 +129,42 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
         print(f"Error while monitoring indexer: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error while monitoring indexer: {str(e)}")
 
-def apply_skills_on_index(index_name: str):
+async def apply_skills_on_index(index_name: str):
     try:
         start_time = time.time()
         results = search_query(search_text="*",search_index=index_name, k=1000)
         docs = 0
         for index in results["rs"]:
+            update = False
             index["index_date"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
             chunk = index["chunk"]
             if chunk is not None:
                 if index["language"] is None:
                     detected_language = textanalytics_connector.detect_language(messages=[chunk])
                     index["language"] = detected_language[tak.LANGUAGE_ISO6391_NAME.value]
+                    update = True
                     
                 if index["sentiment"] is None:
                     sentiment = textanalytics_connector.analyze_sentiment(messages=[chunk])
                     index["sentiment"] = sentiment
+                    update = True
                 
-                if index["keyphrases"] is None:
+                if len(index["keyphrases"]) == 0:
                     key_phrases = textanalytics_connector.extract_key_phrases(messages=[chunk],language=index["language"])
                     index["keyphrases"] = key_phrases
+                    update = True
                 
                 if len(index["people"]) == 0 and len(index["organizations"]) == 0 and len(index["locations"]) == 0:
                     entities = textanalytics_connector.entity_recognition(messages=[chunk],language=index["language"])
                     index["people"] = entities[tak.PERSON.value]
                     index["organizations"] = entities[tak.ORGANIZATION.value]
                     index["locations"] = entities[tak.LOCATION.value]
-                    index["dateTime"] = [parser.parse(date).replace(microsecond=0).isoformat() + "Z" for date in entities[tak.DATETIME.value] if is_valid_date(date)]
+                    index["dateTime"] = [parser.parse(date).replace(microsecond=0).isoformat() + "Z" if is_valid_date(date) else date for date in entities[tak.DATETIME.value] ]
+                    update = True
+                    
+                if update:
+                    await add_skills_to_knowledge_db(index)
+            
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
         update_index(index_name=index_name, data=results["rs"])
@@ -180,6 +192,25 @@ def get_crawling_status():
         return urls
     except Exception as e:
         raise Exception(f"{str(e)}")
+
+async def add_skills_to_knowledge_db(entity: dict):
+    try:
+        del entity["text_vector"]
+        del entity["@search.score"]
+        del entity["@search.reranker_score"]
+        del entity["@search.highlights"]
+        del entity["@search.captions"]
+        entity["PartitionKey"] = str(uuid.uuid4())
+        entity["RowKey"] = str(uuid.uuid4())
+        entity["keyphrases"] = str(entity["keyphrases"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["keyphrases"] else None
+        entity["people"] = str(entity["people"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["people"] else None
+        entity["organizations"] = str(entity["organizations"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["organizations"] else None
+        entity["locations"] = str(entity["locations"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["locations"] else None
+        entity["dateTime"] = str(entity["dateTime"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["dateTime"] else None
+        await db_connector.add_entity(table_name=config.COSMOS_MEDIA_KNOWLEDGE_TABLE,entity=entity)
+    except Exception as e:
+        print(f'{str(e)}')
+        return Exception(f'{str(e)}')
 
 async def sentiment_skill(values: list):
     results = []

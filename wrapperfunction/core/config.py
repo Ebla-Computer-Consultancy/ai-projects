@@ -59,6 +59,7 @@ CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
 SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
 SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
+COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
