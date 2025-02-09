@@ -27,7 +27,12 @@ async def daily_schedule_media_crawl(CrawlingTimer: func.TimerRequest):
 
         # Start crawling tasks for each URL asynchronously
         for index, url in enumerate(urls):
-            asyncio.create_task(setup_and_crawl(url, index))
+            thread = threading.Thread(
+                target=setup_and_crawl,
+                args=(url, index)  
+                )
+            thread.start()
+            
 
         # Update bot settings after scheduling crawls
         settings_service.update_bot_settings(entity_settings)
@@ -38,7 +43,7 @@ async def daily_schedule_media_crawl(CrawlingTimer: func.TimerRequest):
         print(f"Error during scheduled crawl: {e}")
 
 # Function to handle crawling setup and execution
-async def setup_and_crawl(url: dict, index: int):
+def setup_and_crawl(url: dict, index: int):
     try:
         # Parse last crawl date and determine the next scheduled crawl date
         last_crawl_date = parser.parse(url["last_crawl"]).date()
@@ -60,7 +65,7 @@ async def setup_and_crawl(url: dict, index: int):
             if data[0] and data[1]:
                 print("Crawl Started...")
                 print(data[0][0].link)
-                res = await crawl_service.crawl_urls(urls=data[0], settings=data[1])
+                res = crawl_service.crawl_urls(urls=data[0], settings=data[1])
                 print(f"Scheduled URL Crawling results: {res}")
             else:
                 print("No URLs to be crawled")
@@ -134,6 +139,5 @@ async def schedule_media_crawl(RunMediaIndexer: func.TimerRequest):
         thread = threading.Thread(
             target=media_service.monitor_indexer,
             args=(search_indexer_client, indexer_name, index_name),
-            daemon=True,
         )
         thread.start()
