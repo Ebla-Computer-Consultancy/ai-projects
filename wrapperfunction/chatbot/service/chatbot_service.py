@@ -76,7 +76,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
             )
 
         if bot_settings.custom_settings.max_history_length > 0:
-            if bot_settings.custom_settings.preserve_first_message and chat_history_arr:
+            if bot_settings.preserve_first_message and chat_history_arr:
                 first_message = chat_history_arr[0]
                 chat_history_arr = chat_history_arr[-bot_settings.custom_settings.max_history_length:]
                 if first_message not in chat_history_arr:
