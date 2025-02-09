@@ -17,17 +17,17 @@ class MessagePropertyName(Enum):
     PROMPTTOKENS="prompt_tokens"
     TOTALTOKENS="total_tokens"
     MessageType = "MessageType"
-    FEEDBACK = "feedback"
     IS_ANSWERED = "is_answered"
-
+    QUESTION_ID = "question_id"
+    Exception = "Exception"
 
 
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles, context: str,type:MessageType=MessageType.Message.value,completion_tokens=None,prompt_tokens=None,total_tokens=None):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str,message_id,type:MessageType=MessageType.Message.value,completion_tokens=None,prompt_tokens=None,total_tokens=None,question_id=None,exception=None):
 
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
-        self.message_id = str(uuid4())
+        self.message_id = message_id
         self.timestamp = datetime.now().isoformat()  
         self.content = content
         self.conversation_id = conversation_id
@@ -39,6 +39,9 @@ class MessageEntity:
         self.total_tokens=total_tokens
         self.feedback="undefined"
         self.is_answered="undefined"
+        self.question_id=question_id
+        self.exception=exception
+
 
 
 
@@ -57,11 +60,8 @@ class MessageEntity:
             MessagePropertyName.COMPLETIONTOKENS.value: self.completion_tokens,
             MessagePropertyName.PROMPTTOKENS.value: self.prompt_tokens,
             MessagePropertyName.TOTALTOKENS.value: self.total_tokens,
-            MessagePropertyName.FEEDBACK.value: self.feedback,
-            MessagePropertyName.IS_ANSWERED.value: self.is_answered
-
-                
-
-
-
+            MessagePropertyName.IS_ANSWERED.value: self.is_answered,
+            MessagePropertyName.QUESTION_ID.value: self.question_id,
+            MessagePropertyName.Exception.value: self.exception
+            
         }

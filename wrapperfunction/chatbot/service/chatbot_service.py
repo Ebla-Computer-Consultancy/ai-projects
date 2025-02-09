@@ -17,10 +17,11 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
         chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
         chatbot_settings = config.load_chatbot_settings(bot_name)
+        user_message_id=str(uuid.uuid4())
 
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                Roles.User.value,chat_payload, conversation_id, bot_name, client_details, chat_history_with_system
+                Roles.User.value,chat_payload, conversation_id,user_message_id,None,bot_name, client_details, chat_history_with_system
             )
 
         # Get response from OpenAI ChatGPT
@@ -30,7 +31,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                role=Roles.Assistant.value,results=results, conversation_id=conversation_id, chat_payload=chat_payload, bot_name=bot_name
+                role=Roles.Assistant.value,results=results, question_id=user_message_id,message_id=str(uuid.uuid4()),conversation_id=conversation_id, chat_payload=chat_payload, bot_name=bot_name
             )
         if chat_payload.stream_id is not None and results["message"]["content"] is not None:
             is_ar = is_arabic(results["message"]["content"][:30])
@@ -45,7 +46,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         return results
 
     except Exception as error:
-        await chat_history_service.log_error_to_db(bot_name=bot_name,error_message= str(error),stack_trace= traceback.format_exc(),conversation_id= conversation_id)
+        asyncio.create_task(chat_history_service.log_error_to_db( str(error), traceback.format_exc(), conversation_id, user_message_id))
         return {"error": True, "message": str(error)}
 
 

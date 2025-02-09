@@ -25,9 +25,6 @@ def apply_analysis():
 @router.post("/add-conversation-feedback/")
 def add_feedback(conv_id: str, feedback: int):
     return history_service.perform_feedback_update(conversation_id=conv_id, feedback=feedback)
-@router.post("/add-message-feedback/")
-def add_feedback(message_id: str, feedback: int):
-    return history_service.perform_feedback_update(message_id=message_id, feedback=feedback)
 
 @router.get("/bot-names/")
 def get_bot_name():
@@ -35,9 +32,5 @@ def get_bot_name():
 @router.post("/add-message/")
 async def add_message(chat_payload:ChatPayload,bot_name:str,request: Request):
     return await history_service.add_message(chat_payload,bot_name,request)
-
-@router.put("/check-question-answered")
-def UpdateAnswerEntities():
-    return history_service.UpdateAnswerEntities()
 
 
