@@ -35,6 +35,7 @@ async def update_index_with_skills(index_name:str):
         return await media_service.apply_skills_on_index(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/sentiment/")   
 async def sentiment(request:CustomSkillRequest):
     try:

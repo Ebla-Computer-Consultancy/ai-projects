@@ -32,14 +32,8 @@ async def daily_schedule_media_crawl(CrawlingTimer: func.TimerRequest):
                 args=(url, index)  
                 )
             thread.start()
-            
-
-        # Update bot settings after scheduling crawls
-        settings_service.update_bot_settings(entity_settings)
 
     except Exception as e:
-        # If an error occurs, update the settings and log the error
-        settings_service.update_bot_settings(entity_settings)
         print(f"Error during scheduled crawl: {e}")
 
 # Function to handle crawling setup and execution
