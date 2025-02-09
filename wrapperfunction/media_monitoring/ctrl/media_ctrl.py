@@ -1,3 +1,5 @@
+import asyncio
+import time
 from fastapi import APIRouter, HTTPException
 from wrapperfunction.core.model.customskill_model import CustomSkillRequest
 from wrapperfunction.media_monitoring.model.media_crawl_model import MediaCrawlRequest
@@ -17,6 +19,20 @@ async def generate_report(request:MediaRequest):
 async def media_crawl(request:MediaCrawlRequest):
     try:
         return await media_service.media_crawl(request.urls, request.settings)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/crawl/status")
+async def get_all_urls_crawling_status():
+    try:
+        return media_service.get_crawling_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/index/{index_name}")
+async def update_index_with_skills(index_name:str):
+    try:
+        return await media_service.apply_skills_on_index(index_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

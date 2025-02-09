@@ -12,7 +12,7 @@ def get_user_by_username(username):
             del user["refresh_token"]
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_user_by_id(id):
     try:
@@ -21,7 +21,7 @@ def get_user_by_id(id):
             del user["refresh_token"]
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_user_by_refresh_token(token, user_id):
     try:
@@ -30,21 +30,21 @@ def get_user_by_refresh_token(token, user_id):
             del user["refresh_token"]
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_user_permissions(user_id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_PER_TABLE,f"user_id eq '{user_id}'")
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_user_permission(user_id, per_id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_USER_PER_TABLE,f"user_id eq '{user_id}' and permission_id eq '{per_id}'")
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_full_user_permissions_info(user_id):
     try:
@@ -55,21 +55,21 @@ def get_full_user_permissions_info(user_id):
         res = [per for per in all_permissions if per["_id"] in user_per_id]
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
 def get_permission_by_id(id):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"_id eq '{id}'")
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
 def get_permission_by_key(key):
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE,f"name eq '{key}'")
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def update_refresh_token(entity, token):
     try:
@@ -77,7 +77,7 @@ def update_refresh_token(entity, token):
         res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE,entity)
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 async def add_permission_to_user(user_id: str, per_ids: list):
     try:  
@@ -93,8 +93,10 @@ async def add_permission_to_user(user_id: str, per_ids: list):
             else:
                 raise Exception(f"Permission with id:'{per_id}' Not Found")
             return res
+        else:
+            raise Exception("User Not Found")
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 async def update_user_permissions(user_id: str, new_per_ids: list):
     try:
@@ -116,14 +118,14 @@ async def update_user_permissions(user_id: str, new_per_ids: list):
         else:
             raise Exception("User Not Found")
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_permissions():
     try:
         res =  db_connector.get_entities(config.COSMOS_AUTH_PERMISSION_TABLE)
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def get_users():
     try:
@@ -132,14 +134,14 @@ def get_users():
             del user["refresh_token"]
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def update_user(user):
     try:        
         res =  db_connector.update_entity(config.COSMOS_AUTH_USER_TABLE, entity=user)
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 async def add_user(username: str):
     try:
@@ -161,7 +163,7 @@ async def add_user(username: str):
         else:
             raise Exception(f"'{username}' is not a valid username")
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def remove_user_permission(user_id: str,per_ids: list):
     try:
@@ -173,7 +175,7 @@ def remove_user_permission(user_id: str,per_ids: list):
                 raise Exception(f"Permission with id:'{per_id}' Not Found")
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def delete_user(user_id):
     try:
@@ -181,7 +183,7 @@ def delete_user(user_id):
         res =  db_connector.delete_entity(config.COSMOS_AUTH_USER_TABLE,entity[0])
         return res
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 def validate_username(username: str):

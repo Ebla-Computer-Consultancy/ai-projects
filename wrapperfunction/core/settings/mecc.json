@@ -1,11 +1,12 @@
 {
+  "entity_name": "mecc",
   "chatbots": [
     {
       "name": "website",
       "custom_settings": {
         "temperature": 0.5
       },
-      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation."
+      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the Ministry Of Environment & Climate Change."
     },
     {
       "name": "document_intelligence_chatbot",
@@ -79,5 +80,8 @@
     "منتجع الخور": "مُنْتَجَع الخُورْ",
     "تملك": "تَمَلُّك",
     "الغرافة": "الغَرَّافة"
-  }
+  },
+    "refresh_token_valid_time": 60,
+    "access_token_valid_time": 30
+  
 }

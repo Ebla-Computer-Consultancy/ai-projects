@@ -1,4 +1,6 @@
 import json
+from fastapi import HTTPException
+import requests
 import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -21,6 +23,7 @@ def search_query(
     search_text,
     filter_by=None,
     sort_order=None,
+    k = 50,
     page_size=1000000,
     page_number=1,
 ):
@@ -34,7 +37,7 @@ def search_query(
                     "kind": "text",
                     "text":search_text,
                     "fields": "text_vector",
-                    # "k": 10,
+                    "k": k,
                 }
             ],
             query_type="semantic",
@@ -127,3 +130,18 @@ def get_index_info(index_name:str):
             data_storage_name =data_storage_name,
             skillset_name=skillset_name
         )
+
+def update_index(index_name: str, data):
+    url = f"{config.SEARCH_ENDPOINT}/indexes/{index_name}/docs/index?api-version={config.SEARCH_API_VERSION}"
+    body = {"value":data}
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": config.SEARCH_KEY  
+    }
+    
+    res = requests.post(url=url,data=json.dumps(body, ensure_ascii=False),headers=headers)
+    if res.ok:
+        return res
+    else:
+        print(f"Error While updating '{index_name}' Index: {str(res.content)}")
+        return HTTPException(status_code=res.status_code, detail=str(res.content))
