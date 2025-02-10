@@ -19,6 +19,7 @@ import wrapperfunction.admin.integration.textanalytics_connector as text_connect
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core.utls.helper import extract_client_details
 from wrapperfunction.document_intelligence.integration.document_intelligence_connector import analyze_file
+from wrapperfunction.video_indexer.service import vi_service
 
 
 
@@ -372,9 +373,12 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
         )
 
 
-async def save_video_to_db(res_data: dict, request: Request, conversation_id: str, bot_name: str):
-    client_details = extract_client_details(request)
-    conv_entity = ConversationEntity(
+async def start_video_chat(video_id: str, request: Request, bot_name: str):
+    try:
+        res_data = await vi_service.get_video_index(video_id=video_id, request=request, bot_name=bot_name).get("data")
+        client_details = extract_client_details(request)
+        conversation_id = str(uuid.uuid4())
+        conv_entity = ConversationEntity(
         user_id=str(uuid.uuid4()),
         conversation_id=conversation_id,
         bot_name=bot_name,
@@ -383,11 +387,18 @@ async def save_video_to_db(res_data: dict, request: Request, conversation_id: st
         forwarded_ip=client_details["forwarded_ip"],
         device_info=json.dumps(client_details["device_info"]),
     )
-    message_entity = MessageEntity(
+        message_entity = MessageEntity(
         content=json.dumps(res_data),
         conversation_id=conversation_id,
         role=Roles.User.value,
         context="",
         type=MessageType.Video.value,
     )
-    await add_entity(message_entity=message_entity, conv_entity=conv_entity)
+        await add_entity(message_entity=message_entity, conv_entity=conv_entity)
+        return ServiceReturn(
+            status=StatusCode.SUCCESS, message="Video chat started successfully", data=conversation_id
+        )
+    except Exception as e:
+        ServiceReturn(
+            status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
+        )      
