@@ -1,4 +1,5 @@
 {
+  "entity_name": "rera",
   "chatbots": [
     {
       "name": "website",
@@ -17,20 +18,20 @@
       "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to a legal documents for a General Authority for Real Estate Regulation."
     },
     {
-        "name": "media",
-        "index_name": "rera-media",
-        "custom_settings": {
-          "temperature": 0.5,
-          "max_tokens": 4000
-        },
-        "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that write long reports from a given results"
+      "name": "media",
+      "index_name": "rera-media",
+      "custom_settings": {
+        "temperature": 0.5,
+        "max_tokens": 4000
+      },
+      "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that writes long reports from a given results, and answers related question "
     },
     {
       "name": "interactive",
       "index_name": null,
       "custom_settings": {
         "temperature": 0.5,
-        "max_history_length":20,
+        "max_history_length": 20,
         "max_tokens": 1500,
         "tool_choice": "auto",
         "tools": [
@@ -44,7 +45,7 @@
                 "properties": {
                   "vacation_type": {
                     "type": "string",
-                    "description": "The type of the form the employee want to fill. only availabel type are (Year Vacation,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)"
+                    "description": "The type of the form the employee want to fill. only available type are (Year Vacation,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)"
                   },
                   "employee_name": {
                     "type": "string",
@@ -92,7 +93,7 @@
             "type": "function",
             "function": {
               "name": "submit-form",
-              "description": "chack if the form is fill correctly, if yes,submit the form that employee filled once he approve the information, else return to fill the missing information",
+              "description": "check if the form is fill correctly, if yes,submit the form that employee filled once he approve the information, else return to fill the missing information",
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -101,7 +102,9 @@
                     "description": "The user confirmation text."
                   }
                 },
-                "required": ["confirm-text"]
+                "required": [
+                  "confirm-text"
+                ]
               }
             }
           },
@@ -109,7 +112,7 @@
             "type": "function",
             "function": {
               "name": "approve",
-              "description": "Approves the vacation request for the employee with the given employee name and departemnt.",
+              "description": "Approves the vacation request for the employee with the given employee name and department.",
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -117,9 +120,10 @@
                     "type": "integer",
                     "description": "The name of the employee whose vacation request is to be approved."
                   }
-                  
                 },
-                "required": ["employee_ID"]
+                "required": [
+                  "employee_ID"
+                ]
               }
             }
           },
@@ -127,7 +131,7 @@
             "type": "function",
             "function": {
               "name": "reject",
-              "description": "Reject the vacation request for the employee with the given employee name and departemnt.",
+              "description": "Reject the vacation request for the employee with the given employee name and department.",
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -135,9 +139,10 @@
                     "type": "integer",
                     "description": "The name of the employee whose vacation request is to be approved."
                   }
-                  
                 },
-                "required": ["employee_ID"]
+                "required": [
+                  "employee_ID"
+                ]
               }
             }
           },
@@ -145,7 +150,7 @@
             "type": "function",
             "function": {
               "name": "pending",
-              "description": "Pending the vacation request for the employee with the given employee name and departemnt.",
+              "description": "Pending the vacation request for the employee with the given employee name and department.",
               "parameters": {
                 "type": "object",
                 "properties": {
@@ -153,9 +158,10 @@
                     "type": "integer",
                     "description": "The name of the employee whose vacation request is to be approved."
                   }
-                  
                 },
-                "required": ["employee_ID"]
+                "required": [
+                  "employee_ID"
+                ]
               }
             }
           },
@@ -163,20 +169,23 @@
             "type": "function",
             "function": {
               "name": "filter-vacation-forms-by",
-              "description": "Returns all vacation requests for employees in the specified fillter.ex:to return all vaction for a Department of Status ",
+              "description": "Returns all vacation requests for employees in the specified filter.ex:to return all vacation for a Department of Status ",
               "parameters": {
                 "type": "object",
                 "properties": {
                   "coulomn_name": {
                     "type": "string",
-                    "description": "The name of the cuolomn for which vacation requests should be retrieved. values should be on of the following(Vacation_Type,Employee_Name,Employee_ID,Manager_Name,Department,Start_Date,End_Date,Total_Days,Status)"
+                    "description": "The name of the column for which vacation requests should be retrieved. values should be on of the following(Vacation_Type,Employee_Name,Employee_ID,Manager_Name,Department,Start_Date,End_Date,Total_Days,Status)"
                   },
                   "value": {
                     "type": "string",
-                    "description": "The name of the value for which cuolomn in vacation requests should be retrieved."
+                    "description": "The name of the value for which column in vacation requests should be retrieved."
                   }
                 },
-                "required": ["coulomn_name", "value"]
+                "required": [
+                  "coulomn_name",
+                  "value"
+                ]
               }
             }
           },
@@ -193,14 +202,16 @@
                     "description": "The manager prompt to show all the forms."
                   }
                 },
-                "required": ["text"]
+                "required": [
+                  "text"
+                ]
               }
             }
           }
         ]
       },
-      "system_message": "You are an intelligent AI assistant, that helps users to do action on forms. You need to extract information from the user message to handel form actions. Be friendly and strate forword. Make sure all required fields are provided and if user asked you to do an action that is not provided in the tools_description answer that you cant do that action! If any required field is missing, ask the user for it,once all requird information is provider call fill-vacation-form and ask for edit or submit.important note: allways try to make a function tool_calls, if the user asked you to approve or reject or pending more than one vacation take the employee numbers from the history and call the function. Remember:- Dates should always be in the format YYYY-MM-DD.make sure that the end date is after the start date. If the user provides them differently, reformat them.- If the user provides the date in Arabic, translate it to English and apply the correct format.- Departments should be one of the following: AI, PM, HR, SE, IT.for the Request/Form Status use when filter use 0 for approve, 1 for reject, 2 for pending, ex. if user asked you to show the approved requests call the filter-vacation-forms-by with {column_name:Status,value:0} Ask the user if their department isn't clear.Vacation_type should be one of the following((Year Vacation,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)),- Respond in the language of the user (Arabic or English). samples for function calls: if the user asked you any thing about (all) requests of forms without any filtering data call get-all-vacation-forms, if the user asked you any thing about (all) requests of forms with filtering data like department or employee id call filter-vacation-forms-by, dont call submit-form befor you call fill-vaction-form, if fill-vacation form in the history and user asked you to submit the form or send it call submit_form otherwise call fill-vacation-form, dont return None in the content if you call a function all ways generate a content",
-      "suggestion_message": "suggestion examples:if he just filled the form, suggest to submit or edit information, if he just fillter or get the forms , suggest to approve,disapprove or revert to pending.if he just approve,disapprove or revert to pending, suggest to send email or to undo.. note:\"Based on these results and the setiuation, suggest the best action, make it as simple as possbile, dont show all suggestions only the best two\"+\"important note: speek arabic if the manager is speeking arabic in the previose messages, do not translate the name keep it as is, show all the results dont hide any thing, the user should see the all detials"
+      "system_message": "You are an intelligent AI assistant, that helps users to do action on forms. You need to extract information from the user message to handel form actions. Be friendly and strate forward. Make sure all required fields are provided and if user asked you to do an action that is not provided in the tools_description answer that you cant do that action! If any required field is missing, ask the user for it,once all required information is provider call fill-vacation-form and ask for edit or submit.important note: always try to make a function tool_calls, if the user asked you to approve or reject or pending more than one vacation take the employee numbers from the history and call the function. Remember:- Dates should always be in the format YYYY-MM-DD.make sure that the end date is after the start date. If the user provides them differently, reformat them.- If the user provides the date in Arabic, translate it to English and apply the correct format.- Departments should be one of the following: AI, PM, HR, SE, IT.for the Request/Form Status use when filter use 0 for approve, 1 for reject, 2 for pending, ex. if user asked you to show the approved requests call the filter-vacation-forms-by with {column_name:Status,value:0} Ask the user if their department isn't clear.Vacation_type should be one of the following((Year Vacation,Sick Leave, Personal Leave, Public Holidays, Unpaid Leave)),- Respond in the language of the user (Arabic or English). samples for function calls: if the user asked you any thing about (all) requests of forms without any filtering data call get-all-vacation-forms, if the user asked you any thing about (all) requests of forms with filtering data like department or employee id call filter-vacation-forms-by, do not call submit-form before you call fill-vacation-form, if fill-vacation form in the history and user asked you to submit the form or send it call submit_form otherwise call fill-vacation-form, do not return None in the content if you call a function all ways generate a content",
+      "suggestion_message": "suggestion examples:if he just filled the form, suggest to submit or edit information, if he just filter or get the forms , suggest to approve,disapprove or revert to pending.if he just approve,disapprove or revert to pending, suggest to send email or to undo.. note:\"Based on these results and the situation, suggest the best action, make it as simple as possible, do not show all suggestions only the best two\"+\"important note: speak arabic if the manager is speaking arabic in the previous messages, do not translate the name keep it as is, show all the results do not hide any thing, the user should see the all details"
     },
     {
       "name": "document_intelligence_chatbot",
@@ -287,44 +298,78 @@
     "تملك": "تَمَلُّك",
     "الغرافة": "الغَرَّافة"
   },
-  "media_settings":{
-    "web_urls":
-        [
-            "https://www.amlakqatar.qa/",
-            "https://www.amlakqatar.qa/Topics/sectionid/8",
-            "https://www.amlakqatar.qa/Topics/sectionid/9",
-            "https://www.amlakqatar.qa/Topics/sectionid/11",
-
-            "https://www.invest.qa/ar/media-centre/news-and-articles",
-            "https://www.invest.qa/ar/media-centre/events",
-            "https://www.invest.qa/ar/media-centre/newsletters",
-            "https://www.invest.qa/ar/resources/laws-and-regulations/tax-regime",
-            "https://www.invest.qa/ar/resources/laws-and-regulations/customs",
-            "https://www.invest.qa/ar/resources/laws-and-regulations/labour-law-practices",
-            "https://www.invest.qa/en/resources/laws-and-regulations/types-of-companies"
-        ],
-    "a_class": 
-        [
-            "news-box",
-            "inner",
-            "btn-wrapper"
-        ],
-    "p_class": 
-        [
-            "col-lg-12 col-md-12 col-sm-12 col-xs-12",
-            "container animatedParent animateOnce",
-            "career-desc news-desc",
-            "container",
-            "card-body"
-        ],
-    "img_class": 
-        [
-            "col-lg-12 col-md-12 col-sm-12 col-xs-12",
-            "container animatedParent animateOnce",
-            "col-md-12 col-lg-7 animated fadeInUpShort go",
-            "container",
-            "item"
-            
-        ]
-}
+  "media_settings": {
+    "info": {
+      "index_name": "rera-media",
+      "reports_container_name": "rera-media-reports",
+      "container_name": "rera-media"
+    },
+    "web_urls": [
+      "https://www.amlakqatar.qa/",
+      "https://www.amlakqatar.qa/Topics/sectionid/8",
+      "https://www.amlakqatar.qa/Topics/sectionid/9",
+      "https://www.amlakqatar.qa/Topics/sectionid/11",
+      "https://www.invest.qa/ar/media-centre/news-and-articles",
+      "https://www.invest.qa/ar/media-centre/events",
+      "https://www.invest.qa/ar/media-centre/newsletters",
+      "https://www.invest.qa/ar/resources/laws-and-regulations/tax-regime",
+      "https://www.invest.qa/ar/resources/laws-and-regulations/customs",
+      "https://www.invest.qa/ar/resources/laws-and-regulations/labour-law-practices",
+      "https://www.invest.qa/en/resources/laws-and-regulations/types-of-companies"
+    ],
+    "a_class": [
+      "news-box",
+      "inner",
+      "btn-wrapper"
+    ],
+    "p_class": [
+      "col-lg-12 col-md-12 col-sm-12 col-xs-12",
+      "container animatedParent animateOnce",
+      "career-desc news-desc",
+      "container",
+      "card-body"
+    ],
+    "img_class": [
+      "col-lg-12 col-md-12 col-sm-12 col-xs-12",
+      "container animatedParent animateOnce",
+      "col-md-12 col-lg-7 animated fadeInUpShort go",
+      "container",
+      "item"
+    ],
+    "crawling_urls": [{
+      "last_crawl":"1-2-2025",
+      "crawl_days":2,
+      "crawling_status": "Success",
+      "crawl_settings":{
+        "settings": {
+          "deep": false,
+          "selectors": [],
+          "mediaCrawling": false,
+          "topics": [],
+          "containerName": "moc-container",
+          "schedule_by_days": 0
+        },
+        "urls": [
+          {
+            "link": "string",
+            "headers": {},
+            "cookies": {},
+            "payload": {},
+            "internal": false,
+            "settings": {
+              "deep": false,
+              "selectors": [],
+              "mediaCrawling": false,
+              "topics": [],
+              "containerName": "moc-container",
+              "schedule_by_days": 0
+            }
+          }
+      ]
+    }
+    }
+  ]
+  },
+  "access_token_valid_time": 30,
+  "refresh_token_valid_time": 58
 }

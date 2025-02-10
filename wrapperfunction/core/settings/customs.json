@@ -1,16 +1,19 @@
 {
+    "entity_name": "customs",
     "chatbots": [
-        {
-            "name":"website",
-            "index_name":"customs",
-            "custom_settings":{
-                "temperature":0.5
-            },
-            "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to General Authority of Customs."
-        }
+      {
+        "name": "website",
+        "index_name": "customs",
+        "custom_settings": {
+          "temperature": 0.5
+        },
+        "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to General Authority of Customs."
+      }
     ],
     "dict_AR": {
-        "تملك": "تَمَلُّك",
-        "الغرافة": "الغَرَّافة"
-    }
+      "تملك": "تَمَلُّك",
+      "الغرافة": "الغَرَّافة"
+    },
+    "access_token_valid_time": "30",
+    "refresh_token_valid_time": "60"
 }

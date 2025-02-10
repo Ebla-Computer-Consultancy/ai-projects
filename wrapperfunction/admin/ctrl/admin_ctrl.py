@@ -51,6 +51,13 @@ def get_subfolders(container_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-subfolders-blobs/{container_name}")
+def get_subfolders_blobs(container_name: str):
+    try:
+        return blob_service.get_subfolders_with_blobs(container_name=container_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/delete-subfolder")
 async def delete_subfolder(container_name: str, subfolder_name: str):
     try:
@@ -119,14 +126,21 @@ async def get_setting(entity_name: str):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
 
-@router.post("/settings")
+@router.put("/settings")
 async def update_setting(entity: Dict[str, Any]):
     try:
         return settings_service.update_bot_settings(entity=entity)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/settings/schedule")
+async def update_schedule_setting(entity: Dict[str, Any], days: int):
+    try:
+        return settings_service.update_schedule_settings(new_settings=entity, days=days)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
     
-@router.put("/settings")
+@router.post("/settings")
 async def add_setting(body: Dict[str, Any]):
     try:
         return await settings_service.add_setting(entity=body)
@@ -208,6 +222,13 @@ def get_sas_token(blob_url:str):
     try:
         return blob_service.generate_blob_sas_url(blob_url=blob_url)
     except Exception as e:    
-        raise HTTPException(status_code=500, detail=str(e))
 
+        raise HTTPException(status_code=500, detail=str(e))      
+
+@router.post("/update-index/{index_name}")
+async def update_index(index_name: str, data:List[dict]):
+    try:
+        return search_service.update_index(index_name, data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

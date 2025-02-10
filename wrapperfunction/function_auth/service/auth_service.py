@@ -32,14 +32,15 @@ def test_ldap_connection(username: str, password: str):
             password=password,
             authentication=NTLM
         )
-        return True, conn
-        # if conn.bind():
-        #     return True, conn
-        # else:
-        #     return True, conn
+        if config.AUTH_ENABLED or config.LDAP_ENABLED:
+            if conn.bind():
+                return True, conn
+            else:
+                return False, conn
+        else:
+            return True, conn
     except Exception as e:
-        return True, conn
-        # raise Exception(f'LDAP: {str(e)}')
+        raise Exception(f'LDAP: {str(e)}')
 
 def get_user(username) -> Tuple[User, dict]:
     try:
