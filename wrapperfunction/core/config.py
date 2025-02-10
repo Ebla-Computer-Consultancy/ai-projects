@@ -109,9 +109,9 @@ def load_chatbot_settings(bot_name: str):
             top_p = custom_settings_data.get("top_p", 0.95)
             tools = custom_settings_data.get("tools", None)
             enable_history = chatbot_obj.get("enable_history", True)
+            preserve_first_message = chatbot_obj.get("preserve_first_message", False)
             display_in_chat = chatbot_obj.get("display_in_chat", True)
-            apply_sentiment = custom_settings_data.get("apply_sentiment", True)
-            preserve_first_message = custom_settings_data.get("preserve_first_message", False) 
+            apply_sentiment = chatbot_obj.get("apply_sentiment", True)
 
             custom_settings = CustomSettings(
                 temperature=temperature,
@@ -119,9 +119,6 @@ def load_chatbot_settings(bot_name: str):
                 max_tokens=max_tokens,
                 tools=tools,
                 max_history_length=max_history_length,
-                display_in_chat=display_in_chat,
-                apply_sentiment=apply_sentiment,
-                preserve_first_message=preserve_first_message 
             )
 
             chatbot = ChatbotSetting(
@@ -132,7 +129,8 @@ def load_chatbot_settings(bot_name: str):
                 custom_settings=custom_settings,
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
-                preserve_first_message=preserve_first_message
+                preserve_first_message=preserve_first_message,
+                display_in_chat=display_in_chat
             )
             return chatbot
 
@@ -144,7 +142,8 @@ def load_chatbot_settings(bot_name: str):
         custom_settings=None,
         enable_history=True,
         preserve_first_message=False,
-        apply_sentiment=True
+        apply_sentiment=True,
+        display_in_chat=True
     )
 
 

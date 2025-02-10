@@ -489,31 +489,38 @@ async def log_error_to_db(
      
 async def start_video_chat(video_id: str, request: Request, bot_name: str):
     try:
-        res_data = await vi_service.get_video_index(video_id=video_id, request=request, bot_name=bot_name).get("data")
+        response = await vi_service.get_video_index(video_id=video_id, bot_name=bot_name)
+        res_data = response.get("data", {})
         client_details = extract_client_details(request)
         conversation_id = str(uuid.uuid4())
         conv_entity = ConversationEntity(
-        user_id=str(uuid.uuid4()),
-        conversation_id=conversation_id,
-        bot_name=bot_name,
-        title=res_data.get("name", ""),
-        client_ip=client_details["client_ip"],
-        forwarded_ip=client_details["forwarded_ip"],
-        device_info=json.dumps(client_details["device_info"]),
-    )
-        message_entity = MessageEntity(
-        content=json.dumps(res_data),
-        conversation_id=conversation_id,
-        role=Roles.User.value,
-        context="",
-        type=MessageType.Video.value,
-    )
-        await add_entity(message_entity=message_entity, conv_entity=conv_entity)
-        return ServiceReturn(
-            status=StatusCode.SUCCESS, message="Video chat started successfully", data=conversation_id
+            user_id=str(uuid.uuid4()),
+            conversation_id=conversation_id,
+            bot_name=bot_name,
+            title=res_data.get("name", ""),
+            client_ip=client_details["client_ip"],
+            forwarded_ip=client_details["forwarded_ip"],
+            device_info=json.dumps(client_details["device_info"]),
         )
-    except Exception as e:
-        ServiceReturn(
-            status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
-        )      
 
+        message_entity = MessageEntity(
+            content=json.dumps(res_data),
+            conversation_id=conversation_id,
+            message_id=str(uuid.uuid4()),
+            role=Roles.User.value,
+            context="",
+            type=MessageType.Video.value,
+        )
+
+        await add_entity(message_entity=message_entity, conv_entity=conv_entity)
+
+        return ServiceReturn(
+            status=StatusCode.SUCCESS,
+            message="Video chat started successfully",
+            data=conversation_id,
+        ).to_dict()
+    except Exception as e:
+        return ServiceReturn(
+            status=StatusCode.INTERNAL_SERVER_ERROR,
+            message=f"Error occurred: {str(e)}",
+        ).to_dict()

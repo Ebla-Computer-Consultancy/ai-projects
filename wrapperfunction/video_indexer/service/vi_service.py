@@ -3,7 +3,7 @@ import uuid
 import requests
 import httpx
 from typing import Dict
-from fastapi import HTTPException, Request, UploadFile
+from fastapi import HTTPException, UploadFile
 from azure.identity import ClientSecretCredential
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
@@ -104,7 +104,7 @@ def get_access_token() -> Dict:
             },
         )
 
-async def get_video_index(video_id: str, request: Request,bot_name: str):
+async def get_video_index(video_id: str,bot_name: str):
     try:
         access_token = get_access_token()["data"]
         status_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
@@ -114,10 +114,10 @@ async def get_video_index(video_id: str, request: Request,bot_name: str):
             response = await client.get(url=status_url, params=params)
             if response.status_code == 200:
                 res_data = response.json()
-                await add_thumbnail_urls(res_data, access_token, video_id)
+
 
                 if res_data.get("state") == "Processed":
-
+                    await add_thumbnail_urls(res_data, access_token, video_id)
                     transcript = " ".join(entry["text"] for entry in res_data.get("videos", [{}])[0].get("insights", {}).get("transcript", []))
                     summary_content = f"Transcript: {transcript}"
 
@@ -125,7 +125,7 @@ async def get_video_index(video_id: str, request: Request,bot_name: str):
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data, "bot_name": bot_name, "summary": summary}
+                        data={"res_data": res_data,"summary": summary}
                     ).to_dict()
 
                 elif res_data.get("state") == "Failed":

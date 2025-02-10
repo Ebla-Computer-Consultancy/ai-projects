@@ -253,9 +253,9 @@
     {
       "name": "video-indexer",
       "index_name": null,
+      "preserve_first_message": true,
       "custom_settings": {
-        "temperature": 0.5,
-        "enable_history": true
+        "temperature": 0.5
       },
       "system_message": "You are an intelligent assistant designed to process video content using Azure Video Indexer. Analyze video metadata, identify key insights, and provide structured summaries for the user. Respond with short and clear answers in the user's language. If needed, suggest actions based on the analyzed video."
     }

@@ -7,9 +7,9 @@ from wrapperfunction.video_indexer.model import vi_model
 
 router = APIRouter()
 @router.get("/index")
-async def get_video_index(vid: str, request: Request):
+async def get_video_index(vid: str, bot_name: str):
     try:
-        return await vi_service.get_video_index(video_id=vid, request=request)
+        return await vi_service.get_video_index(video_id=vid,bot_name=bot_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
