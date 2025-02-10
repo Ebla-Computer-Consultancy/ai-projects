@@ -5,7 +5,6 @@ import httpx
 from typing import Dict
 from fastapi import HTTPException, Request, UploadFile
 from azure.identity import ClientSecretCredential
-from wrapperfunction.chat_history.service.chat_history_service import save_video_to_db
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
@@ -105,7 +104,7 @@ def get_access_token() -> Dict:
             },
         )
 
-async def get_video_index(video_id: str, request: Request):
+async def get_video_index(video_id: str, request: Request,bot_name: str):
     try:
         access_token = get_access_token()["data"]
         status_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
@@ -118,21 +117,15 @@ async def get_video_index(video_id: str, request: Request):
                 await add_thumbnail_urls(res_data, access_token, video_id)
 
                 if res_data.get("state") == "Processed":
-                    conversation_id = str(uuid.uuid4())
-                    bot_name = "video-indexer"
-                    await save_video_to_db(res_data=res_data, request=request, conversation_id=conversation_id, bot_name=bot_name)
+
                     transcript = " ".join(entry["text"] for entry in res_data.get("videos", [{}])[0].get("insights", {}).get("transcript", []))
-                    topics = ", ".join(f"{topic['name']} (Confidence: {topic['confidence']})" for topic in res_data.get("videos", [{}])[0].get("insights", {}).get("topics", []))
-                    sentiments = ", ".join(f"{sentiment['sentimentType']} (Average Score: {sentiment['averageScore']})" for sentiment in res_data.get("videos", [{}])[0].get("insights", {}).get("sentiments", []))
-                    named_people = ", ".join(person['name'] for person in res_data.get("videos", [{}])[0].get("insights", {}).get("namedPeople", []))
+                    summary_content = f"Transcript: {transcript}"
 
-                    summary_content = f"Transcript: {transcript}\nTopics: {topics}\nSentiments: {sentiments}\nNamed People: {named_people}"
-
-                    summary = summarize_with_openai(summary_content.strip())
+                    summary = summarize_with_openai(summary_content.strip(),bot_name)
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data, "conversation_id": conversation_id, "bot_name": "video-indexer", "summary": summary}
+                        data={"res_data": res_data, "bot_name": bot_name, "summary": summary}
                     ).to_dict()
 
                 elif res_data.get("state") == "Failed":
@@ -196,10 +189,10 @@ async def add_thumbnail_urls(res_data, access_token, video_id):
                 if key_frame_thumbnail_id:
                     key_frame["thumbnail_url"] = f"{base_url}{key_frame_thumbnail_id}?accessToken={access_token}"
 
-def summarize_with_openai(content: str):
+def summarize_with_openai(content: str,bot_name: str):
     try:
         response = openai_connector.chat_completion(
-            chatbot_setting=config.load_chatbot_settings("video-indexer"),
+            chatbot_setting=config.load_chatbot_settings(bot_name),
             chat_history=[{"role": "system", "content": "Summarize the content."}, {"role": "user", "content": content}]
         )
         return response["message"]["content"].strip()

@@ -20,6 +20,7 @@ import wrapperfunction.admin.integration.textanalytics_connector as text_connect
 from wrapperfunction.chatbot.model.chat_message import Roles,MessageType
 from wrapperfunction.core.utls.helper import extract_client_details
 from wrapperfunction.document_intelligence.integration.document_intelligence_connector import analyze_file
+from wrapperfunction.video_indexer.service import vi_service
 
 
 
@@ -416,6 +417,7 @@ async def add_message_to_Entity(user_message_entity=None, assistant_message_enti
 
 
 
+
 def get_question_answer_pairs():
     try:
         messages = get_messages(filter_condition=f"{MessagePropertyName.IS_ANSWERED.value} eq 'undefined'")
@@ -485,4 +487,33 @@ async def log_error_to_db(
     except Exception as e:
         return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Failed to log error: {str(e)}").to_dict()
      
+async def start_video_chat(video_id: str, request: Request, bot_name: str):
+    try:
+        res_data = await vi_service.get_video_index(video_id=video_id, request=request, bot_name=bot_name).get("data")
+        client_details = extract_client_details(request)
+        conversation_id = str(uuid.uuid4())
+        conv_entity = ConversationEntity(
+        user_id=str(uuid.uuid4()),
+        conversation_id=conversation_id,
+        bot_name=bot_name,
+        title=res_data.get("name", ""),
+        client_ip=client_details["client_ip"],
+        forwarded_ip=client_details["forwarded_ip"],
+        device_info=json.dumps(client_details["device_info"]),
+    )
+        message_entity = MessageEntity(
+        content=json.dumps(res_data),
+        conversation_id=conversation_id,
+        role=Roles.User.value,
+        context="",
+        type=MessageType.Video.value,
+    )
+        await add_entity(message_entity=message_entity, conv_entity=conv_entity)
+        return ServiceReturn(
+            status=StatusCode.SUCCESS, message="Video chat started successfully", data=conversation_id
+        )
+    except Exception as e:
+        ServiceReturn(
+            status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
+        )      
 
