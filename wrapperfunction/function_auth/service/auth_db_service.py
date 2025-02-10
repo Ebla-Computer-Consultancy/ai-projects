@@ -92,9 +92,7 @@ async def add_permission_to_user(user_id: str, per_ids: list):
                 res = await db_connector.add_entity(config.COSMOS_AUTH_USER_PER_TABLE,entity=entity)
             else:
                 raise Exception(f"Permission with id:'{per_id}' Not Found")
-            return res
-        else:
-            raise Exception("User Not Found")
+        return res
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
