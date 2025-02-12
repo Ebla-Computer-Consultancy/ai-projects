@@ -100,7 +100,7 @@ def load_chatbot_settings(bot_name: str):
             tools = custom_settings_data.get("tools", None)
             enable_history = chatbot_obj.get("enable_history", True)
             display_in_chat = chatbot_obj.get("display_in_chat", True)
-            apply_sentiment = custom_settings_data.get("apply_sentiment", True) 
+            apply_sentiment = chatbot_obj.get("apply_sentiment", True) 
 
             custom_settings = CustomSettings(
                 temperature=temperature,
@@ -109,7 +109,6 @@ def load_chatbot_settings(bot_name: str):
                 tools=tools,
                 max_history_length=max_history_length,
                 display_in_chat=display_in_chat,
-                apply_sentiment=apply_sentiment 
             )
 
             chatbot = ChatbotSetting(
