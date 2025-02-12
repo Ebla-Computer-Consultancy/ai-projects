@@ -1,9 +1,9 @@
-import asyncio
-import time
 from fastapi import APIRouter, HTTPException
 from wrapperfunction.core.model.customskill_model import CustomSkillRequest
+from wrapperfunction.media_monitoring.integration import x_integrations
 from wrapperfunction.media_monitoring.model.media_crawl_model import MediaCrawlRequest
 from wrapperfunction.media_monitoring.model.media_model import MediaRequest
+from wrapperfunction.media_monitoring.model.x_model import XRequestModel
 from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
@@ -33,6 +33,13 @@ async def get_all_urls_crawling_status():
         return media_service.get_crawling_status()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/x-search")
+async def get_x_search_results(query: str, start_time: str = None, end_time: str = None, max_results: int = None):
+    try:
+        return x_integrations.x_search(query=query, start_time=start_time, end_time=end_time, max_results=max_results)
+    except Exception as e:
+        raise Exception(f"{str(e)}")
 
 @router.put("/index/{index_name}")
 async def update_index_with_skills(index_name:str):
