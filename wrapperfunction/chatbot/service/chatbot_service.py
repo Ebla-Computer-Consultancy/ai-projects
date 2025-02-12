@@ -13,11 +13,12 @@ from wrapperfunction.core.utls.helper import extract_client_details
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
+        user_message_id=str(uuid.uuid4())
         client_details = extract_client_details(request)
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
         chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
         chatbot_settings = config.load_chatbot_settings(bot_name)
-        user_message_id=str(uuid.uuid4())
+        
 
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
