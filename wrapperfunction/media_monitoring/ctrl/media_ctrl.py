@@ -3,7 +3,6 @@ from wrapperfunction.core.model.customskill_model import CustomSkillRequest
 from wrapperfunction.media_monitoring.integration import x_integrations
 from wrapperfunction.media_monitoring.model.media_crawl_model import MediaCrawlRequest
 from wrapperfunction.media_monitoring.model.media_model import MediaRequest
-from wrapperfunction.media_monitoring.model.x_model import XRequestModel
 from wrapperfunction.media_monitoring.service import media_service
 
 router = APIRouter()
