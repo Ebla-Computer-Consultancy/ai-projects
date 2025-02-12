@@ -129,7 +129,25 @@ async def getAllForms_action(chat_payload: ChatPayload, request: Request):
     except Exception as e:
         print(f"Error While getting forms: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error While getting forms: {str(e)}") 
-        
+
+async def get_all_employee_vacations_count(arguments: interactive_model.Status, chat_payload: ChatPayload, request: Request):
+    try:
+        result = get_vacations_filter_by("Employee_ID",arguments.employee_ID)
+        if len(result) == 0: 
+            result = f"No forms found"
+        final_message = await generate_final_response(f'Total Vacations Forms count:{len(result)}', chat_payload, request)
+        return ServiceReturn(
+                            status=StatusCode.SUCCESS,
+                            data={
+                                "action_results": len(result),
+                                "final_message": final_message
+                                },
+                            message="All Forms Returned Successfully"
+                            ).to_dict()
+    except Exception as e:
+        print(f"Error While getting forms: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error While getting Employee forms count: {str(e)}")
+
 async def generate_final_response(result, chat_payload: ChatPayload, request: Request):
     try:
         chat_payload.messages.append(
