@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, Status, VacationForm, VacationTypes
-from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, get_all_employee_vacations_count, getAllForms_action, getForm_action, pending_action, submit_form
+from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, get_all_employee_vacation_forms, get_all_employee_vacations_count, getAllForms_action, get_filtered_form_action, pending_action, submit_form
 
 router = APIRouter()
 
@@ -48,9 +48,9 @@ async def pending_form_action(arguments:Status, chat_payload: ChatPayload, reque
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.post("/action/filter-vacation-forms-by")
-async def getForm_form_action(arguments: GetForm, chat_payload: ChatPayload, request: Request):
+async def get_filtered_form_action(arguments: GetForm, chat_payload: ChatPayload, request: Request):
     try:
-        return await getForm_action(arguments,chat_payload,request)
+        return await get_filtered_form_action(arguments,chat_payload,request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -65,5 +65,12 @@ async def get_All_Forms_action(chat_payload: ChatPayload, request: Request):
 async def get_all_employee_forms_count(arguments:Status, chat_payload: ChatPayload, request: Request):
     try:
         return await get_all_employee_vacations_count(arguments,chat_payload,request) 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/action/get-employee-vacation-forms")
+async def get_all_employee_forms(arguments:Status, chat_payload: ChatPayload, request: Request):
+    try:
+        return await get_all_employee_vacation_forms(arguments,chat_payload,request) 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
