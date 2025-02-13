@@ -1,6 +1,8 @@
+import json
 from fastapi import HTTPException
 import requests
 import datetime
+from wrapperfunction.admin.service import blob_service
 from wrapperfunction.core import config
 
 def x_search(query: str, start_time: str = None, end_time: str = None, max_results: int = None):
@@ -13,7 +15,7 @@ def x_search(query: str, start_time: str = None, end_time: str = None, max_resul
             "end_time": end_time,
             "max_results": max_results if 10 <= max_results <= 100 else 100,
             "user.fields": "name,entities,profile_banner_url,profile_image_url,username,verified,created_at",
-            "tweet.fields": "entities,text,referenced_tweets,created_at",
+            "tweet.fields": "entities,text,referenced_tweets,created_at,source",
             "place.fields": "country,full_name,geo,name",
             "media.fields": "alt_text,url,type",
             "expansions": "author_id,referenced_tweets.id,entities.mentions.username,geo.place_id,attachments.media_keys"
@@ -58,3 +60,22 @@ def x_search(query: str, start_time: str = None, end_time: str = None, max_resul
 
     except Exception as e:
         raise HTTPException(status_code=response.status_code, detail=str(e))
+
+def prepare_x_data_and_upload(results: dict):
+    try:
+        tweets = results["includes"]["tweets"]
+        index = 0
+        for tweet in tweets:
+            url = tweet["entities"].get("urls",[])
+            page = {
+                "content": tweet["text"],
+                "url": url[0]["url"] if len(url) > 0 else None,
+                "created_at": tweet["created_at"]
+            }
+            media_info = config.get_media_info()
+            blob_service.append_blob(blob=json.dumps(page,ensure_ascii=False),blob_name=f"{index}_tweet.json",folder_name=f"social_media/X/{datetime.datetime.now().date()}",container_name=media_info["container_name"],metadata_2=page["url"])
+            index += 1
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error While Uploading X data: index-{index}:{str(e)}")
+    
+# TODO upload to db
