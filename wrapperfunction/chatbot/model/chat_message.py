@@ -20,6 +20,7 @@ MessageType=Enum(
     {
         "Message": "message",
         "Document": "document",
+        "Video": "video",
     },
 )
 

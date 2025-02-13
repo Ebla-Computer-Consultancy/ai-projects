@@ -203,6 +203,7 @@ def generate_blob_sas_url(container_name: str=None, blob_name: str=None,blob_url
         blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
         return blob_url
     except Exception as e:
+
         return(f"Error generating SAS URL: {str(e)}")        
 
 def get_subfolders_with_blobs(container_name):
@@ -213,4 +214,5 @@ def get_subfolders_with_blobs(container_name):
         results[f"{subfolder_name}"] = [blob.name for blob in blob_list]
     
     return results
+
 

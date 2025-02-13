@@ -39,6 +39,10 @@ STORAGE_ACCOUNT_KEY=os.getenv("STORAGE_ACCOUNT_KEY")
 AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
+
+VIDEO_INDEXER_KEY=os.getenv("VIDEO_INDEXER_KEY")
+VIDEO_INDEXER_ACCOUNT_ID=os.getenv("VIDEO_INDEXER_ACCOUNT_ID")
+
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
 NAME=os.getenv("COSMOS_FAQ_TABLE")
 
@@ -58,11 +62,17 @@ AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
 LDAP_ENABLED=os.environ.get("LDAP_ENABLED", "false").lower() == "true"
 TENANT_ID=os.getenv("TENANT_ID")
 CLIENT_ID=os.getenv("CLIENT_ID")
+SUBSCRIPTION_ID=os.getenv("SUBSCRIPTION_ID")
+ACCOUNT_NAME = os.getenv("ACCOUNT_NAME")
 CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
+RESOURCE_GROUP_NAME = os.getenv("RESOURCE_GROUP_NAME")
+ACCOUNT_REGION=os.getenv("ACCOUNT_REGION")
 SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
+API_VERSION = os.getenv("API_VERSION")
 SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
 COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
+
 
 
 def load_entity_settings():
@@ -99,8 +109,10 @@ def load_chatbot_settings(bot_name: str):
             top_p = custom_settings_data.get("top_p", 0.95)
             tools = custom_settings_data.get("tools", None)
             enable_history = chatbot_obj.get("enable_history", True)
-            display_in_chat = chatbot_obj.get("display_in_chat", True)
+            preserve_first_message = chatbot_obj.get("preserve_first_message", False)
+            display_in_chat = custom_settings_data.get("display_in_chat", True)
             apply_sentiment = chatbot_obj.get("apply_sentiment", True) 
+
 
             custom_settings = CustomSettings(
                 temperature=temperature,
@@ -109,6 +121,7 @@ def load_chatbot_settings(bot_name: str):
                 tools=tools,
                 max_history_length=max_history_length,
                 display_in_chat=display_in_chat,
+
             )
 
             chatbot = ChatbotSetting(
@@ -118,7 +131,8 @@ def load_chatbot_settings(bot_name: str):
                 examples=chatbot_obj.get("examples", []),
                 custom_settings=custom_settings,
                 enable_history=enable_history,
-                apply_sentiment=apply_sentiment
+                apply_sentiment=apply_sentiment,
+                preserve_first_message=preserve_first_message,
             )
             return chatbot
 
@@ -129,6 +143,7 @@ def load_chatbot_settings(bot_name: str):
         examples=[],
         custom_settings=None,
         enable_history=True,
+        preserve_first_message=False,
         apply_sentiment=True
     )
 
@@ -143,3 +158,4 @@ def get_media_info() -> dict:
             raise HTTPException(status_code=500, detail="There is no media setting info provided")
     except Exception as e:
         raise HTTPException(status_code=500, detail="There is no media setting info provided")
+

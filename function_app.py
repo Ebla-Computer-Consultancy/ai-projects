@@ -9,3 +9,4 @@ app = func.AsgiFunctionApp(app=fastapi_app, http_auth_level=func.AuthLevel.FUNCT
 app.register_functions(media_bp)
 app.register_functions(chat_history_bp)
 
+

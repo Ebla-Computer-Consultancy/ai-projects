@@ -13,6 +13,7 @@ from wrapperfunction.search.ctrl import search_ctrl
 from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctrl
 from wrapperfunction.chat_history.ctrl import chat_history_ctrl
 from wrapperfunction.media_monitoring.ctrl import media_ctrl
+from wrapperfunction.video_indexer.ctrl import vi_ctrl
 
 app = FastAPI()
 app.add_middleware(
@@ -38,4 +39,6 @@ app.include_router(admin_ctrl.router, prefix="/api/v1/admin", tags=["admin"], de
 app.include_router(document_intelligence_ctrl.router,prefix="/api/v1/document-intelligence",tags=["document-intelligence"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.DOCUMENT_INTELLIGENCE.value))])
 app.include_router(chat_history_ctrl.router, prefix="/api/v1/chat-history", tags=["chat-history"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.CHAT_HISTORY.value))])
 app.include_router(media_ctrl.router, prefix="/api/v1/media", tags=["media"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.MEDIA.value))])
+app.include_router(vi_ctrl.router, prefix="/api/v1/vi", tags=["video-indexer"])
 app.include_router(FAQ_ctrl.router, prefix="/api/v1/FAQ", tags=["FAQ"])
+
