@@ -144,8 +144,7 @@ def load_chatbot_settings(bot_name: str):
         custom_settings=None,
         enable_history=True,
         preserve_first_message=False,
-        apply_sentiment=True,
-        display_in_chat=True
+        apply_sentiment=True
     )
 
 
