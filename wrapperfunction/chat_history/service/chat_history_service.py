@@ -265,7 +265,7 @@ def set_message(conversation_id, role,message_id, content=None, tool_calls=None,
             completion_tokens=completion_tokens,
             prompt_tokens=prompt_tokens,
             total_tokens=total_tokens,
-            qestion_id=question_id,
+            question_id=question_id,
             exception=exception
         )
         for tool_call in tool_calls
