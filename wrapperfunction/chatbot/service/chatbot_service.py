@@ -22,7 +22,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
 
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                Roles.User.value,chat_payload, conversation_id,user_message_id,None,bot_name, client_details, chat_history_with_system
+                Roles.User.value,chat_payload, conversation_id,user_message_id,bot_name,None, client_details, chat_history_with_system
             )
 
         # Get response from OpenAI ChatGPT
