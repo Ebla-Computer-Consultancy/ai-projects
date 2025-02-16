@@ -46,7 +46,7 @@ def hasAuthority(permission: str):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")
         return dependency
     else:
-        async def dependency():
+        async def dependency(request: Request):
             return True
         return dependency
     
