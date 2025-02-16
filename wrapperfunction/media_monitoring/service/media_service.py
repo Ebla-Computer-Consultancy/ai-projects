@@ -164,10 +164,10 @@ async def apply_skills_on_index(index_name: str):
                     
                 if update:
                     await add_skills_to_knowledge_db(index)
+                    update_index(index_name=index_name, data=results["rs"])
             
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
-        update_index(index_name=index_name, data=results["rs"])
         end_time = time.time()
         print(f"Total time: {end_time - start_time:.5f} sec")
     except Exception as e:
