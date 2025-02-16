@@ -197,9 +197,9 @@ async def get_user_permissions(id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/user")
-async def add_user(username: str):
+async def add_user(username: str,department: str = None, employee_ID: int = None, manager_name: str = None, role: str = None):
     try:
-        return await auth_db_service.add_user(username=username)
+        return await auth_db_service.add_user(username=username,department=department,employee_ID=employee_ID,manager_name=manager_name, role=role)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

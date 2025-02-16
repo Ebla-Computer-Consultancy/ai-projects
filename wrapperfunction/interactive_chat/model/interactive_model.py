@@ -45,6 +45,15 @@ class DepartmentTypes(Enum):
            DepartmentTypes.SE.value,
            DepartmentTypes.IT.value 
         ]
+
+class RoleTypes(Enum):
+    MANAGER = "manager"
+    EMPLOYEE = "employee"
+    def to_list():
+        return[
+           RoleTypes.MANAGER.value,
+           RoleTypes.EMPLOYEE.value,
+        ]
 class VacationForm(BaseModel):
     vacation_type: str
     employee_name: str

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 from wrapperfunction.core import config
 from wrapperfunction.function_auth.model.func_auth_model import User
-from wrapperfunction.function_auth.service import auth_db_service
+from wrapperfunction.function_auth.service import auth_db_service, auth_service
 
 
 # Function to create JWT tokens
@@ -31,6 +31,10 @@ def generate_access_token(user: User, time: datetime) -> str:
             payload = {
                 "id": user.id,
                 "name": user.username,
+                "department": user.department,
+                "manager_name": user.manager_name,
+                "employee_ID": user.employee_ID,
+                "role": user.role,
                 "permissions": user.dict_permissions(),
                 "exp": time,
                 "token_type": "access"
@@ -45,6 +49,10 @@ def generate_refresh_token(user: User, time: datetime) -> str:
             payload = {
                 "id": user.id,
                 "name": user.username,
+                "department": user.department,
+                "manager_name": user.manager_name,
+                "employee_ID": user.employee_ID,
+                "role": user.role,
                 "permissions": user.dict_permissions(), 
                 "exp": time,
                 "token_type": "refresh"
@@ -60,9 +68,14 @@ def update_refresh_token(token: str = None, user: dict = None):
     auth_db_service.update_refresh_token(user, token)
     
 # Function to decode and verify JWT tokens
-def decode_jwt(token: str) -> User:
+def decode_jwt(token: str, clear_payload = False) -> User:
     try:
         payload = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.ALGORITHM])
+        if clear_payload:
+            del payload["id"]
+            del payload["exp"]
+            del payload["token_type"]
+            del payload["permissions"]
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
