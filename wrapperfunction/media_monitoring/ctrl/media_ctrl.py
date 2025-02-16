@@ -11,7 +11,12 @@ router = APIRouter()
 @router.post("/generate-report/")
 async def generate_report(request:MediaRequest):
     try:
-        return await media_service.generate_report(request.search_text)
+        return await media_service.generate_report(request.search_text,
+                                                   index_date_from=request.index_date_from,
+                                                   index_date_to=request.index_date_to,
+                                                   news_date_from=request.news_date_from,
+                                                   news_date_to=request.news_date_to,
+                                                   tags=request.tags)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

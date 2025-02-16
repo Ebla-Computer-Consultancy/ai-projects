@@ -1,4 +1,5 @@
 import asyncio
+import copy
 from datetime import datetime
 import time
 from typing import List
@@ -27,7 +28,7 @@ from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
 from wrapperfunction.search.service.search_service import update_index
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
-async def generate_report(search_text: str,index_date_from,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
+async def generate_report(search_text: str,index_date_from = None,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
         # Prepare Filter Expression
@@ -163,11 +164,11 @@ async def apply_skills_on_index(index_name: str):
                     update = True
                     
                 if update:
+                    update_index(index_name=index_name, data=results["rs"])
                     await add_skills_to_knowledge_db(index)
             
             docs += 1
             print(f"{docs}/{len(results['rs'])}...")            
-        update_index(index_name=index_name, data=results["rs"])
         end_time = time.time()
         print(f"Total time: {end_time - start_time:.5f} sec")
     except Exception as e:
@@ -195,19 +196,23 @@ def get_crawling_status():
 
 async def add_skills_to_knowledge_db(entity: dict):
     try:
-        del entity["text_vector"]
-        del entity["@search.score"]
-        del entity["@search.reranker_score"]
-        del entity["@search.highlights"]
-        del entity["@search.captions"]
-        entity["PartitionKey"] = str(uuid.uuid4())
-        entity["RowKey"] = str(uuid.uuid4())
-        entity["keyphrases"] = str(entity["keyphrases"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["keyphrases"] else None
-        entity["people"] = str(entity["people"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["people"] else None
-        entity["organizations"] = str(entity["organizations"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["organizations"] else None
-        entity["locations"] = str(entity["locations"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["locations"] else None
-        entity["dateTime"] = str(entity["dateTime"]).replace(", ",",").replace("[","").replace("]","").replace("'","") if entity["dateTime"] else None
-        await db_connector.add_entity(table_name=config.COSMOS_MEDIA_KNOWLEDGE_TABLE,entity=entity)
+        entity_copy = copy.deepcopy(entity)  # Create an independent copy
+
+        # Remove unnecessary fields
+        for key in ["text_vector", "@search.score", "@search.reranker_score", "@search.highlights", "@search.captions"]:
+            entity_copy.pop(key, None)
+
+        entity_copy["PartitionKey"] = str(uuid.uuid4())
+        entity_copy["RowKey"] = str(uuid.uuid4())
+
+        # Convert list fields to strings, replace empty lists with None
+        for key in ["keyphrases", "people", "organizations", "locations", "dateTime"]:
+            if isinstance(entity_copy.get(key), list):  # Check if it's a list
+                entity_copy[key] = None if not entity_copy[key] else ",".join(map(str, entity_copy[key]))
+
+        # Store the modified copy in the database
+        await db_connector.add_entity(table_name=config.COSMOS_MEDIA_KNOWLEDGE_TABLE, entity=entity_copy)
+
     except Exception as e:
         print(f'{str(e)}')
         return Exception(f'{str(e)}')
