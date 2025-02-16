@@ -9,7 +9,7 @@ from wrapperfunction.function_auth.service import jwt_service
 router = APIRouter()
 
 @router.post("/chat/{bot_name}")
-async def chat(request: Request,bot_name: str,message_payload: ChatPayload,token: str = Depends(jwt_service.get_token_from_header) if config.AUTH_ENABLED else None):
+async def chat(request: Request,bot_name: str,message_payload: ChatPayload,token: str = Depends(jwt_service.get_token_from_header)):
     return await chatbotservice.chat(bot_name,message_payload,request,token)
 
 @router.post("/upload_documents/")
