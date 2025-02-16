@@ -60,7 +60,14 @@ def get_user(username) -> Tuple[User, dict]:
                     for permission in all_permissions
                     if (permission["_id"] in user_per_id)
                 ]  
-            return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
+            return User(id=user[0]["_id"],
+                        username=username,
+                        permissions=user_permissions,
+                        never_expire=user[0]["never_expire"],
+                        employee_ID=user[0]["employee_ID"] if exist_property(user[0],"employee_ID") else None,
+                        department=user[0]["department"] if exist_property(user[0],"department") else None,
+                        role=user[0]["role"] if exist_property(user[0],"role") else None,
+                        manager_name=user[0]["manager_name"] if exist_property(user[0],"manager_name") else None),user[0]
         else: 
             raise Exception("User Not Found")
     except Exception as e:
@@ -125,5 +132,11 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
     except Exception as e:
         raise Exception(f"{str(e)}") 
             
-        
+def exist_property(dic : dict, field: str):
+    try: 
+        if dic[field]:
+            return True
+    except Exception as e:
+        return False
+            
         

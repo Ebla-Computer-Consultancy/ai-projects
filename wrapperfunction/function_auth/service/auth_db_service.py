@@ -3,6 +3,7 @@ import uuid
 from fastapi import HTTPException, status
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.core import config
+from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, RoleTypes
 
 
 def get_user_by_username(username):
@@ -141,8 +142,20 @@ def update_user(user):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-async def add_user(username: str):
+async def add_user(username: str, department: str = None, employee_ID: int = None, manager_name:str = None, role: str = None):
     try:
+        if role is not None:
+            if not role in RoleTypes.to_list():
+                raise Exception(f"'{department}' is not a valid department")
+        if department is not None:
+            if not department in DepartmentTypes.to_list():
+                raise Exception(f"'{department}' is not a valid department")
+        if employee_ID is not None:
+            if not validate_id(employee_ID)[0]:
+                raise Exception(f"'{employee_ID}' is not a valid employee_ID")
+        if manager_name is not None:
+            if not validate_username(manager_name, include_num=False)[0]:
+                raise Exception(f"'{manager_name}' is not a valid manager_name")
         if validate_username(username)[0]:
             if len(get_user_by_username(username)) < 1:
                 
@@ -151,6 +164,10 @@ async def add_user(username: str):
                     "RowKey":str(uuid.uuid4()),
                     "_id":str(uuid.uuid4()),
                     "username":username,
+                    "department":department,
+                    "employee_ID":employee_ID,
+                    "manager_name":manager_name,
+                    "role": role, 
                     "never_expire": False,
                     "refresh_token": ""
                 }
@@ -184,15 +201,27 @@ def delete_user(user_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-def validate_username(username: str):
+def validate_username(username: str, include_num= True):
     
     if not username.strip():
         return False, "Username cannot be empty."
     if len(username) < 3 or len(username) > 50:
         return False, "Username must be between 3 and 50 characters."
-    elif not username.isalnum():
-        return False, "Username can only contain letters and numbers."
+    if include_num:
+        if not username.isalnum():
+            return False, "Username can only contain letters and numbers."
+    else:
+        if not username.isalpha():
+            return False, "Username can only contain letters."
     return True, "Valid username."
+
+def validate_id(employee_ID: int):
+    if not isinstance(employee_ID, int):
+        return False, "ID must be an integer."
+    if employee_ID <= 0:
+        return False, "ID must be a positive number."
+    return True, "Valid ID."
+
 
 def validate_password(password: str):
     

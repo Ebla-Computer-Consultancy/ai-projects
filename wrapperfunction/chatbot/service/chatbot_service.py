@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import traceback
 import uuid
@@ -10,13 +11,15 @@ import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
 from wrapperfunction.core.utls.helper import extract_client_details
+from wrapperfunction.function_auth.service import jwt_service
 
-async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
+async def chat(bot_name: str, chat_payload: ChatPayload, request: Request, token: str):
     try:
+        user_data = jwt_service.decode_jwt(token, clear_payload=True)
         user_message_id=str(uuid.uuid4())
         client_details = extract_client_details(request)
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
-        chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name)
+        chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name, user_data)
         chatbot_settings = config.load_chatbot_settings(bot_name)
         
 
@@ -69,10 +72,10 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
 
 
-def prepare_chat_history_with_system_message(chat_payload, bot_name):
+def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data):
     chat_history_arr = []
     bot_settings = config.load_chatbot_settings(bot_name)
-
+    date = datetime.datetime.now().date()
     if bot_settings.custom_settings.max_history_length != 0:
         if chat_payload.conversation_id:
             chat_history_arr = chat_history_service.get_messages(
@@ -98,6 +101,7 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name):
     else:
         system_message = f"{bot_settings.system_message}, I want you to detect the input language and responds in the same language."
     system_message += " If user asked you about a topic outside your knowledge, never answer but suggest relevant resources or someone knowledgeable."
+    system_message += f" You are talking to following user: {user_data}. today date:{date}"
     chat_history.insert(0, {"role": Roles.System.value, "content": system_message})
 
     chat_history.extend(bot_settings.examples)
