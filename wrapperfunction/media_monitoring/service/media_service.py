@@ -27,7 +27,7 @@ from wrapperfunction.search.model.indexer_model import IndexerLastRunStatus
 from wrapperfunction.search.service.search_service import update_index
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 
-async def generate_report(search_text: str,index_date_from,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
+async def generate_report(search_text: str,index_date_from = None,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
         user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
         # Prepare Filter Expression
