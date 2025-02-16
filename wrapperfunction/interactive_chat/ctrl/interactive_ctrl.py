@@ -1,10 +1,17 @@
 from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, Status, VacationForm, VacationTypes
+from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, RoleTypes, Status, VacationForm, VacationTypes
 from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, get_all_employee_vacation_forms, get_all_employee_vacations_count, getAllForms_action, get_filtered_form_action, pending_action, submit_form
 
 router = APIRouter()
 
+@router.get("/role-types")
+async def get_role_types():
+    try:
+        return RoleTypes.to_list()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.get("/department-types")
 async def get_department_types():
     try:
