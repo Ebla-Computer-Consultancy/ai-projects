@@ -119,41 +119,50 @@ def update_message(updated_data: dict,message_ids: list[str]):
         raise HTTPException(status_code=400, detail=str(e))    
 def perform_sentiment_analysis():
     try:
-        excluded_chatbots = [chatbot["name"] for chatbot in config.ENTITY_SETTINGS.get("chatbots", []) if not chatbot.get("apply_sentiment", True)]
+        excluded_chatbots = [
+            chatbot["name"]
+            for chatbot in config.ENTITY_SETTINGS.get("chatbots", [])
+            if not chatbot.get("apply_sentiment", True)
+        ]
         conversations = get_conversations_by_condition(
             condition=f"{ConversationPropertyName.SENTIMENT.value} eq 'undefined'"
         )
         for conversation in conversations:
-            conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
-            bot_name = conversation[ConversationPropertyName.BOT_NAME.value]
-            
-            if not conversation_id or bot_name in excluded_chatbots:
-                continue
-            
-            messages = get_user_messages(conversation_id)
-            message_texts = [
-                msg[MessagePropertyName.CONTENT.value]
-                for msg in messages
-                if MessagePropertyName.CONTENT.value in msg
-            ]
-            
-            if not message_texts:
-                continue
-            
-            all_message_texts = " ".join(message_texts) + " "
-            semantic_data = text_connector.analyze_sentiment([all_message_texts])
-            
-            update_conversation(
-                conversation_id,
-                {ConversationPropertyName.SENTIMENT.value: semantic_data},
-            )
-        
+            try:
+                conversation_id = conversation[ConversationPropertyName.CONVERSATION_ID.value]
+                bot_name = conversation[ConversationPropertyName.BOT_NAME.value]
+                
+                if not conversation_id or bot_name in excluded_chatbots:
+                    continue
+                
+                messages = get_user_messages(conversation_id)
+                message_texts = [
+                    msg[MessagePropertyName.CONTENT.value]
+                    for msg in messages
+                    if MessagePropertyName.CONTENT.value in msg
+                ]
+                
+                if not message_texts or all(not msg.strip() for msg in message_texts):
+                    continue
+                
+                all_message_texts = " ".join(message_texts) + " "
+                trimmed_messages = [msg[:5000] for msg in [all_message_texts]]
+                semantic_data = text_connector.analyze_sentiment(trimmed_messages)
+                
+                update_conversation(
+                    conversation_id,
+                    {ConversationPropertyName.SENTIMENT.value: semantic_data},
+                )
+            except Exception as e:
+                continue  
+
         return ServiceReturn(
             status=StatusCode.SUCCESS, message="analysis done successfully"
         ).to_dict()
-    
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
     
 def perform_feedback_update(feedback: int,conversation_id:str):
