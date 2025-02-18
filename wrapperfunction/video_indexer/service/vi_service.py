@@ -1,5 +1,6 @@
+from io import StringIO
 import json
-import uuid
+import xml.etree.ElementTree as ET
 import requests
 import httpx
 from typing import Dict
@@ -104,11 +105,11 @@ def get_access_token() -> Dict:
             },
         )
 
-async def get_video_index(video_id: str,bot_name: str):
+async def get_video_index(video_id: str,bot_name: str,language:str):
     try:
         access_token = get_access_token()["data"]
         status_url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Index"
-        params = {"accessToken": access_token}
+        params = {"accessToken": access_token,"language": language}
 
         async with httpx.AsyncClient() as client:
             response = await client.get(url=status_url, params=params)
@@ -120,12 +121,13 @@ async def get_video_index(video_id: str,bot_name: str):
                     await add_thumbnail_urls(res_data, access_token, video_id)
                     transcript = " ".join(entry["text"] for entry in res_data.get("videos", [{}])[0].get("insights", {}).get("transcript", []))
                     summary_content = f"Transcript: {transcript}"
-
-                    summary = summarize_with_openai(summary_content.strip(),bot_name)
+                    video_stream_url = await get_video_stream_url(video_id)
+                    video_download_url=await get_video_download_url(video_id)
+                    summary = summarize_with_openai(summary_content.strip(),bot_name,language)
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data,"summary": summary}
+                        data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"video_download_url":video_download_url}
                     ).to_dict()
 
                 elif res_data.get("state") == "Failed":
@@ -189,16 +191,16 @@ async def add_thumbnail_urls(res_data, access_token, video_id):
                 if key_frame_thumbnail_id:
                     key_frame["thumbnail_url"] = f"{base_url}{key_frame_thumbnail_id}?accessToken={access_token}"
 
-def summarize_with_openai(content: str,bot_name: str):
+def summarize_with_openai(content: str, bot_name: str, language: str):
     try:
         response = openai_connector.chat_completion(
             chatbot_setting=config.load_chatbot_settings(bot_name),
-            chat_history=[{"role": "system", "content": "Summarize the content."}, {"role": "user", "content": content}]
+            chat_history=[{"role": "system", "content": f"Summarize the following content in {language}:"}, {"role": "user", "content": content}]
         )
         return response["message"]["content"].strip()
     except Exception as e:
         return f"Error summarizing content: {str(e)}"
-    
+
 async def upload_video(video_file: UploadFile):
     try:
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
@@ -246,6 +248,7 @@ async def upload_video(video_file: UploadFile):
 
 async def reindex_video(v_id: str):
     try:
+        
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{v_id}/ReIndex"
         headers = {
             "Content-Type": "application/json",
@@ -318,3 +321,54 @@ def get_video_thumbnail(video_id, access_token):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+async def get_video_stream_url(video_id: str):
+    try:
+        access_token = get_access_token()["data"]
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/streaming-url"
+        params = {"accessToken": access_token}
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            if response.status_code != 200:
+                return None
+
+            data = response.json()
+            manifest_url = data.get("url")
+            if not manifest_url:
+                return None
+
+            manifest_response = await client.get(manifest_url)
+            if manifest_response.status_code != 200:
+                return None
+
+            mpd_data = manifest_response.text.strip()
+            try:
+                for event, elem in ET.iterparse(StringIO(mpd_data), events=("start",)):
+                    if elem.tag.endswith("Representation") and elem.attrib.get("mimeType") == "video/mp4":
+                        base_url = elem.find(".//BaseURL", namespaces={"": "urn:mpeg:dash:schema:mpd:2011"})
+                        if base_url is not None:
+                            return base_url.text
+            except ET.ParseError:
+                return None
+
+        return None
+    except Exception:
+        return None
+
+
+    
+async def get_video_download_url(video_id: str):
+    try:
+        access_token = get_access_token()["data"]
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/SourceFile/DownloadUrl"
+        params = {"accessToken": access_token}
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            if response.status_code == 200:
+                return response.json() 
+
+            return None
+    except Exception:
+        return None    
