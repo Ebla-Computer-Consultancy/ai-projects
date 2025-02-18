@@ -72,7 +72,7 @@ def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
         return json.dumps({"error": True, "message": str(error)})
 
 
-def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data):
+def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data = None):
     chat_history_arr = []
     bot_settings = config.load_chatbot_settings(bot_name)
     date = datetime.datetime.now().date()
