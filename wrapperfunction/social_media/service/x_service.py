@@ -1,12 +1,31 @@
 import datetime
 import json
+from typing import List
 import uuid
 from fastapi import HTTPException
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.chat_history.integration import cosmos_db_connector
 from wrapperfunction.core import config
+from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.function_auth.service import auth_service
+from wrapperfunction.social_media.integration import x_connector
+from wrapperfunction.social_media.model.x_model import XSearch
 
+def x_multi_search(data: List[XSearch]):
+    try:
+        for node in data:
+            results = x_connector.x_search(query=node.query,
+                    start_time=node.start_time,
+                    end_time=node.end_time,
+                    max_results=node.max_results)
+            if results["meta"]["result_count"] > 0:
+                prepare_x_data_and_upload(results)
+        return ServiceReturn(
+            status=StatusCode.SUCCESS,
+            message=f"X Crawled Successfully"
+        ).to_dict()
+    except Exception as e:
+        raise Exception(str(e))
 
 def prepare_x_data_and_upload(results: dict):
     try:

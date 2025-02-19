@@ -1,26 +1,7 @@
-from typing import List
 from fastapi import HTTPException
 import requests
 import datetime
 from wrapperfunction.core import config
-from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-from wrapperfunction.social_media.model.x_model import XSearch
-from wrapperfunction.social_media.service import x_service 
-
-
-def x_multi_search(data: List[XSearch]):
-    try:
-        for node in data:
-            x_search(query=node.query,
-                    start_time=node.start_time,
-                    end_time=node.end_time,
-                    max_results=node.max_results)
-        return ServiceReturn(
-            status=StatusCode.SUCCESS,
-            message=f"X Crawled Successfully"
-        ).to_dict()
-    except Exception as e:
-        raise Exception(str(e))
 
 def x_search(query: str, start_time: str = None, end_time: str = None, max_results: int = 10):
     try:
@@ -72,8 +53,7 @@ def x_search(query: str, start_time: str = None, end_time: str = None, max_resul
             result_count += res.get("meta", {}).get("result_count", 0)
             results["meta"]["result_count"] = result_count
             next_token = res.get("meta", {}).get("next_token")
-        if results["meta"]["result_count"] > 0:
-            x_service.prepare_x_data_and_upload(results)
+            
         return results
 
     except Exception as e:
