@@ -123,11 +123,12 @@ async def get_video_index(video_id: str,bot_name: str,language:str):
                     summary_content = f"Transcript: {transcript}"
                     video_stream_url = await get_video_stream_url(video_id)
                     video_download_url=await get_video_download_url(video_id)
+                    video_caption=await get_video_caption_url(video_id)
                     summary = summarize_with_openai(summary_content.strip(),bot_name,language)
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"video_download_url":video_download_url}
+                        data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"video_download_url":video_download_url,"video_caption":video_caption}
                     ).to_dict()
 
                 elif res_data.get("state") == "Failed":
@@ -371,4 +372,14 @@ async def get_video_download_url(video_id: str):
 
             return None
     except Exception:
-        return None    
+        return None  
+
+async def get_video_caption_url(video_id: str):
+    try:
+        access_token = get_access_token()["data"]
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Captions"
+        params = {"accessToken": access_token, "format": "Vtt"}
+
+        return f"{url}?accessToken={access_token}&format=Vtt"
+    except Exception:
+        return None
