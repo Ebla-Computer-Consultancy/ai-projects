@@ -122,7 +122,9 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
             print(f"Checking status: {status.last_result.status}")
             
             if status.last_result.status != IndexerLastRunStatus.IN_PROGRESS.value:
-                apply_skills_on_index(index_name)
+                asyncio.create_task(
+                    apply_skills_on_index(index_name)
+                )
                 break
             time.sleep(10)
             retries += 1
