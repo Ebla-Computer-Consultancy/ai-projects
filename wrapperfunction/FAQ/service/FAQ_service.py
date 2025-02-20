@@ -55,11 +55,13 @@ def update_question(RawKEY: str, updated_data: Question):
             message="Question updated successfully.").to_dict()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-def get_questions(bot_name: Optional[str] = None):
+def get_questions(bot_name: Optional[str] = None,n= None):
     try:
         filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
         res=db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter_condition)
         filtered_res = sorted(({QuestionPropertyName.ROW_KEY.value: item[QuestionPropertyName.ROW_KEY.value],QuestionPropertyName.ACTUAL_QUESTION.value: item[QuestionPropertyName.ACTUAL_QUESTION.value],QuestionPropertyName.TOTAL_COUNT.value: item[QuestionPropertyName.TOTAL_COUNT.value],}for item in res),key=lambda x: x[QuestionPropertyName.TOTAL_COUNT.value],reverse=True)
+        if n != None:
+            return filtered_res[:n]
         return filtered_res
     except Exception as e:
         raise HTTPException(
