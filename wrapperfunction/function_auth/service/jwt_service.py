@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from datetime import datetime, timedelta
@@ -94,3 +94,16 @@ def get_token_from_header(authorization: str = Depends(oauth2_scheme) if config.
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")
     else:
         return None
+
+def get_token(request: Request):
+    token = request.headers.get("Authorization",None)
+    return token[7:] if token else None
+
+def get_user_role(token: str = None):
+    if token:
+        user_data = decode_jwt(token, clear_payload=True)
+        role = user_data.get("role",None)
+        return role
+    else:
+        return None
+    
