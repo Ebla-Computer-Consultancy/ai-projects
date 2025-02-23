@@ -120,15 +120,19 @@ async def get_video_index(video_id: str,bot_name: str,language:str):
                 if res_data.get("state") == "Processed":
                     await add_thumbnail_urls(res_data, access_token, video_id)
                     transcript = " ".join(entry["text"] for entry in res_data.get("videos", [{}])[0].get("insights", {}).get("transcript", []))
-                    summary_content = f"Transcript: {transcript}"
-                    video_stream_url = await get_video_stream_url(video_id)
+                    if not transcript.strip():
+                        summary = "No transcript available."
+                    else:
+                        summary_content = transcript
+                        summary = summarize_with_openai(summary_content, bot_name, language)                    
+                    video_stream_url = await get_stream_url(video_id,"video/mp4")
+                    audio_stream_url = await get_stream_url(video_id,"audio/mp4")
                     video_download_url=await get_video_download_url(video_id)
                     video_caption=await get_video_caption_url(video_id)
-                    summary = summarize_with_openai(summary_content.strip(),bot_name,language)
                     return ServiceReturn(
                         status=StatusCode.SUCCESS,
                         message=f"Indexing completed successfully for video ID: {video_id}",
-                        data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"video_download_url":video_download_url,"video_caption":video_caption}
+                        data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"audio_stream_url":audio_stream_url,"video_download_url":video_download_url,"video_caption":video_caption}
                     ).to_dict()
 
                 elif res_data.get("state") == "Failed":
@@ -202,7 +206,7 @@ def summarize_with_openai(content: str, bot_name: str, language: str):
     except Exception as e:
         return f"Error summarizing content: {str(e)}"
 
-async def upload_video(video_file: UploadFile):
+async def upload_video(video_file: UploadFile,language: str):
     try:
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos"
         headers = {
@@ -215,7 +219,7 @@ async def upload_video(video_file: UploadFile):
             "accessToken": access_token,
             "name": video_file.filename,
             "privacy": "Public",
-            "language": "auto"
+            "language": language
         }
 
         video_content = await video_file.read()
@@ -323,7 +327,7 @@ def get_video_thumbnail(video_id, access_token):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def get_video_stream_url(video_id: str):
+async def get_stream_url(video_id: str, content_type: str):
     try:
         access_token = get_access_token()["data"]
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/streaming-url"
@@ -346,7 +350,7 @@ async def get_video_stream_url(video_id: str):
             mpd_data = manifest_response.text.strip()
             try:
                 for event, elem in ET.iterparse(StringIO(mpd_data), events=("start",)):
-                    if elem.tag.endswith("Representation") and elem.attrib.get("mimeType") == "video/mp4":
+                    if elem.tag.endswith("Representation") and elem.attrib.get("mimeType") == content_type:
                         base_url = elem.find(".//BaseURL", namespaces={"": "urn:mpeg:dash:schema:mpd:2011"})
                         if base_url is not None:
                             return base_url.text
@@ -378,8 +382,21 @@ async def get_video_caption_url(video_id: str):
     try:
         access_token = get_access_token()["data"]
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/Captions"
-        params = {"accessToken": access_token, "format": "Vtt"}
 
         return f"{url}?accessToken={access_token}&format=Vtt"
     except Exception:
         return None
+
+def get_supported_languages():
+    try:
+        url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/SupportedLanguages"
+        headers = {"Ocp-Apim-Subscription-Key": config.VIDEO_INDEXER_KEY}
+        
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return {"status": "success", "languages": response.json()}
+        else:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

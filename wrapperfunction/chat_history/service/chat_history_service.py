@@ -496,9 +496,9 @@ async def log_error_to_db(
     except Exception as e:
         return ServiceReturn(status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Failed to log error: {str(e)}").to_dict()
      
-async def start_video_chat(video_id: str, request: Request, bot_name: str):
+async def start_video_chat(video_id: str, request: Request, bot_name: str,language:str):
     try:
-        response = await vi_service.get_video_index(video_id=video_id, bot_name=bot_name)
+        response = await vi_service.get_video_index(video_id=video_id, bot_name=bot_name, language=language)
         res_data = response.get("data", {})
         client_details = extract_client_details(request)
         conversation_id = str(uuid.uuid4())
