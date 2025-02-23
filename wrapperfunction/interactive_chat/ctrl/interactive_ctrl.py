@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
 from wrapperfunction.interactive_chat.model.interactive_model import DepartmentTypes, GetForm, RoleTypes, Status, VacationForm, VacationTypes
-from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, get_all_employee_vacation_forms, get_all_employee_vacations_count, getAllForms_action, get_filtered_form_action, pending_action, submit_form
+from wrapperfunction.interactive_chat.service.interactive_service import approve_action, disapprove_action, get_all_employee_vacation_forms, get_all_employee_vacations_count, getAllForms_action, filtered_form_action, pending_action, submit_form
 
 router = APIRouter()
 
@@ -57,7 +57,7 @@ async def pending_form_action(arguments:Status, chat_payload: ChatPayload, reque
 @router.post("/action/filter-vacation-forms-by")
 async def get_filtered_form_action(arguments: GetForm, chat_payload: ChatPayload, request: Request):
     try:
-        return await get_filtered_form_action(arguments,chat_payload,request)
+        return await filtered_form_action(arguments,chat_payload,request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

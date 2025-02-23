@@ -4,6 +4,7 @@ from wrapperfunction.chatbot.service import chatbot_service
 from wrapperfunction.core import config
 from wrapperfunction.core.config import ENTITY_SETTINGS
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
+from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.interactive_chat.model import interactive_model
 from wrapperfunction.chatbot.model.chat_message import ChatMessage, Roles
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
@@ -38,9 +39,14 @@ async def submit_form(form: interactive_model.VacationForm, chat_payload: ChatPa
 
 async def approve_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
-        if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfully"
+        token = jwt_service.get_token(request)
+        role = jwt_service.get_user_role(token)
+        if role == interactive_model.RoleTypes.MANAGER.value:
+            result = update_Status(arguments.employee_ID,interactive_model.FormStatus.APPROVED.value)
+            if result is None:
+                result = f"Employee With ID:{arguments.employee_ID} Form Approved Successfully"
+        else:
+            result = f"Employee With ID:{arguments.employee_ID} Can not Approve because he is not a manager"
         final_message = await generate_final_response(result, chat_payload, request)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
@@ -57,9 +63,14 @@ async def approve_action(arguments:interactive_model.Status, chat_payload: ChatP
 
 async def disapprove_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
-        if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Rejected Successfully"
+        token = jwt_service.get_token(request)
+        role = jwt_service.get_user_role(token)
+        if role == interactive_model.RoleTypes.MANAGER.value:
+            result = update_Status(arguments.employee_ID,interactive_model.FormStatus.REJECTED.value)
+            if result is None:
+                result = f"Employee With ID:{arguments.employee_ID} Form Rejected Successfully"
+        else:
+            result = f"Employee With ID:{arguments.employee_ID} Can not Reject because he is not a manager"
         final_message = await generate_final_response(result, chat_payload, request)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
@@ -75,9 +86,14 @@ async def disapprove_action(arguments:interactive_model.Status, chat_payload: Ch
 
 async def pending_action(arguments:interactive_model.Status, chat_payload: ChatPayload, request: Request):
     try:
-        result = update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
-        if result is None:
-            result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfully"
+        token = jwt_service.get_token(request)
+        role = jwt_service.get_user_role(token)
+        if role == interactive_model.RoleTypes.MANAGER.value:
+            result = update_Status(arguments.employee_ID,interactive_model.FormStatus.PENDING.value)
+            if result is None:
+                result = f"Employee With ID:{arguments.employee_ID} Form Pended Successfully"
+        else:
+            result = f"Employee With ID:{arguments.employee_ID} Can not Pend because he is not a manager"
         final_message = await generate_final_response(result, chat_payload, request)
         return ServiceReturn(
                         status=StatusCode.SUCCESS,
@@ -91,12 +107,18 @@ async def pending_action(arguments:interactive_model.Status, chat_payload: ChatP
         print(f"Error While Pending form:{arguments.employee_ID}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error While Pending form:{arguments.employee_ID}: {str(e)}")
 
-async def get_filtered_form_action(arguments: interactive_model.GetForm, chat_payload: ChatPayload, request: Request):
+async def filtered_form_action(arguments: interactive_model.GetForm, chat_payload: ChatPayload, request: Request):
     try:
-        print(f'Argument-Type:{type(arguments)}')
-        print(f'Argument:{arguments}')
-        
-        result = get_vacations_filter_by(arguments.column_name,arguments.value)
+        token = jwt_service.get_token(request)
+        user_data = jwt_service.decode_jwt(token, clear_payload=True)
+        employee_id = user_data.get("employee_ID",None)
+        role = user_data.get("role",None)
+        result = "Employee can not filter as he is not authenticated"
+        if role == interactive_model.RoleTypes.MANAGER.value:
+            result = get_vacations_filter_by(arguments.column_name,arguments.value)
+        elif role == interactive_model.RoleTypes.EMPLOYEE.value:
+            if employee_id:
+                result = get_employee_vacations_filter_by(arguments.column_name,arguments.value, employee_id) 
         if len(result) == 0: 
             result = f"No forms found for {arguments.column_name}:{arguments.value}"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -114,7 +136,13 @@ async def get_filtered_form_action(arguments: interactive_model.GetForm, chat_pa
 
 async def getAllForms_action(chat_payload: ChatPayload, request: Request):
     try:
-        result = get_all_vacations()
+        token = jwt_service.get_token(request)
+        role = jwt_service.get_user_role(token)
+        if role == interactive_model.RoleTypes.MANAGER.value:
+            result = get_all_vacations()
+        else:
+            result = f"Can not get all vacations because user he is not a manager"
+        
         if len(result) == 0: 
             result = f"No forms found"
         final_message = await generate_final_response(result, chat_payload, request)
@@ -200,6 +228,16 @@ def get_vacations_filter_by(column_name,value):
         return res
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
+ 
+def get_employee_vacations_filter_by(column_name,value, employee_id):
+    try:
+        query = f"Employee_ID eq {employee_id}"
+        if column_name != "Employee_ID":
+            query += f" and {column_name} eq {value}"
+        res =  db_connector.get_entities(config.COSMOS_VACATION_TABLE,query)
+        return res
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))   
 
 def update_Status(employee_ID: str, status: int):
     try:

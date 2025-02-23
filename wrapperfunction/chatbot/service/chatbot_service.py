@@ -13,8 +13,9 @@ import wrapperfunction.chat_history.service.chat_history_service as chat_history
 from wrapperfunction.core.utls.helper import extract_client_details
 from wrapperfunction.function_auth.service import jwt_service
 
-async def chat(bot_name: str, chat_payload: ChatPayload, request: Request, token: str = None):
+async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
+        token = jwt_service.get_token(request)
         user_data = jwt_service.decode_jwt(token, clear_payload=True) if token is not None else None
         user_message_id=str(uuid.uuid4())
         client_details = extract_client_details(request)
