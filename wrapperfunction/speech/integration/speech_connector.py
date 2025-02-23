@@ -53,6 +53,7 @@ def get_speech_token():
     headers = {
         "Ocp-Apim-Subscription-Key": speech_key,
         "Content-Type": "application/x-www-form-urlencoded",
+        # "Authorization": f"Bearer {get_speech_entra_access_token()}",
     }
 
     try:
@@ -62,20 +63,27 @@ def get_speech_token():
         )
         response.raise_for_status()
         return JSONResponse(content={"token": response.text, "region": speech_region})
-    except requests.exceptions.RequestException:
+    except Exception as e:
         raise HTTPException(
-            status_code=401, detail="There was an error authorizing your speech key."
+            status_code=401, detail=str(e)
         )
 
 def get_speech_entra_access_token():
-    speech_region = config.SPEECH_SERVICE_REGION
     tenant_id = config.TENANT_ID
     client_id = config.CLIENT_ID
     client_secret = config.CLIENT_SECRET_VALUE
-    speechResourceId = config.SPEECH_RESOURCE_ID
+    resource_url = "https://cognitiveservices.azure.com/.default"
+    token_endpoint = f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"
+    
     try:
-        credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-        token: AccessToken = credential.get_token("https://cognitiveservices.azure.com/.default")
-        return {"token": 'aad#' + speechResourceId +'#' + token.token, "region": speech_region}
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "resource": resource_url
+        }
+        response = requests.post(token_endpoint, data=payload)
+        return response.access_token
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

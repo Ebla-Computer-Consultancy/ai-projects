@@ -73,6 +73,7 @@ def jsonVSfiles_filter(files):
     return pdf_files, json_files,other_files
 
 def extract_client_details(request: Request) -> dict:
+    
     client_ip = request.client.host if request.client else "Unknown"
     forwarded_ip = request.headers.get("X-Forwarded-For", "Unknown")
     user_agent = request.headers.get("User-Agent", "")

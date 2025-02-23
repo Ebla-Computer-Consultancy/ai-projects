@@ -1,13 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from wrapperfunction.core import config
+from wrapperfunction.function_auth.model.func_auth_model import LoginRequest
 from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.function_auth.service import auth_service
 
 router = APIRouter()
     
+@router.post("/swagger/login")
+def swagger_login(body: OAuth2PasswordRequestForm = Depends()):
+    try:
+        response = auth_service.authenticate_user(username=body.username, password=body.password)
+        return response 
+    except Exception as e:
+        raise e
+
 @router.post("/login")
-def login(body: OAuth2PasswordRequestForm = Depends()):
+def login(body: LoginRequest):
     try:
         response = auth_service.authenticate_user(username=body.username, password=body.password)
         return response 
@@ -37,7 +46,7 @@ def hasAuthority(permission: str):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")
         return dependency
     else:
-        async def dependency():
+        async def dependency(request: Request):
             return True
         return dependency
     
