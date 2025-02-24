@@ -13,7 +13,7 @@ from wrapperfunction.function_auth.service import auth_service
 from wrapperfunction.social_media.integration import x_connector
 from wrapperfunction.social_media.model.x_model import XSearch
 
-async def x_multi_search(data: List[XSearch], push_to_knowledge = False):
+async def x_multi_search(data: List[XSearch]):
     try:
         for node in data:
             results = x_connector.x_search(query=node.query,
@@ -22,11 +22,11 @@ async def x_multi_search(data: List[XSearch], push_to_knowledge = False):
                     max_results=node.max_results)
             if results["meta"]["result_count"] > 0:
                 prepare_x_data_and_upload(results)
-                if push_to_knowledge:
-                   await add_x_data_to_knowledge_db(results)
+                await add_x_data_to_knowledge_db(results)
         return ServiceReturn(
             status=StatusCode.SUCCESS,
-            message=f"X Crawled Successfully"
+            message=f"X Crawled Successfully",
+            data=results
         ).to_dict()
     except Exception as e:
         raise Exception(str(e))
@@ -59,6 +59,7 @@ async def add_x_data_to_knowledge_db(results: dict):
         tweet_data["RowKey"] = str(uuid.uuid4())
         tweet_data["language"] = textanalytics_connector.detect_language(messages=[tweet["text"]])[tak.LANGUAGE_ISO6391_NAME.value]
         tweet_data["keyphrases"] = textanalytics_connector.extract_key_phrases(messages=[tweet["text"]],language=tweet_data["language"])
+        tweet_data["keyphrases"] = None if len(tweet_data["keyphrases"]) == 0 else ",".join(map(str, tweet_data["keyphrases"]))
         tweet_data["sentiment"] = textanalytics_connector.analyze_sentiment(messages=[tweet["text"]])
         if auth_service.exist_property(dic=tweet, field="referenced_tweets"):
             tweet_data["referenced_tweets"] = get_ids_list(tweet["referenced_tweets"])

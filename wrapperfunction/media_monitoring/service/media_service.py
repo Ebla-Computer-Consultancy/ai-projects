@@ -224,20 +224,14 @@ async def add_skills_to_knowledge_db(entity: dict):
     
 def return_most_indexed_urls(from_date: str = None, to_date: str = None):
     try:
-        if validation_service.is_valid_utc_date(from_date) and validation_service.is_valid_utc_date(to_date):
-            filter_exp = " and ".join(filter(None, [f"IndexDate gt {from_date}" if from_date else None, f"IndexDate lt {to_date}" if to_date else None]))
-            return db_connector.get_entities(table_name=config.MOST_INDEXED_URLS_TABLE, filter_expression=filter_exp)
-        else:
-            raise Exception("Invalid date format")
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_utc_date(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_utc_date(to_date) else None]))
+        return db_connector.get_entities(table_name=config.MOST_INDEXED_URLS_TABLE, filter_expression=filter_exp)
     except Exception as e:
         raise Exception(str(e))
 
 def return_most_used_keywords(from_date: str = None, to_date: str = None):
     try:
-        if validation_service.is_valid_utc_date(from_date) and validation_service.is_valid_utc_date(to_date):
-            filter_exp = " and ".join(filter(None, [f"IndexDate gt {from_date}" if from_date else None, f"IndexDate lt {to_date}" if to_date else None]))
-            return db_connector.get_entities(table_name=config.MOST_USED_KEYWORDS_TABLE, filter_expression=filter_exp)
-        else:
-            raise Exception("Invalid date format")
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_utc_date(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_utc_date(to_date) else None]))
+        return db_connector.get_entities(table_name=config.MOST_USED_KEYWORDS_TABLE, filter_expression=filter_exp)
     except Exception as e:
         raise Exception(str(e))

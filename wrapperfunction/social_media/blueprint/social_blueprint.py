@@ -11,7 +11,7 @@ social_bp = func.Blueprint()
 social_bp.function_name("schedule_social_crawl")
 
 # Scheduled function to trigger crawling every day at midnight (UTC)
-@social_bp.schedule(arg_name="CrawlingTimer", schedule="0 0 * * *")
+@social_bp.schedule(arg_name="CrawlingTimer", schedule="08 * * * *")
 async def daily_schedule_x_crawl(CrawlingTimer: func.TimerRequest):
     try:
         entity_settings = settings_service.get_settings_by_entity(config.ENTITY_NAME)[0]
@@ -19,7 +19,7 @@ async def daily_schedule_x_crawl(CrawlingTimer: func.TimerRequest):
         x_crawl_settings = media_settings.get("x_crawling", [])
         if len(x_crawl_settings) > 0:
             data = get_x_data(x_crawl_settings)
-            await x_service.x_multi_search(data=data, push_to_knowledge=True)
+            await x_service.x_multi_search(data=data)
     except Exception as e:
         raise Exception(str(e))
 
