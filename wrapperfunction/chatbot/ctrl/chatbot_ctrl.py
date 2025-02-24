@@ -13,3 +13,7 @@ async def chat(request: Request,bot_name: str,message_payload: ChatPayload):
 @router.post("/upload_documents/")
 async def upload(files:List[UploadFile],request: Request,bot_name,conversation_id: Optional[str] = None):
     return await upload_documents(files,bot_name,request,conversation_id)
+
+@router.post("/catogrize/")
+def catogrize(query,bot_name):
+    return chatbotservice.CategorizeQuery(query,bot_name)

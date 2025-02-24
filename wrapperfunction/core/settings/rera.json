@@ -295,6 +295,14 @@
         "temperature": 0.5
       },
       "system_message": "You are an intelligent assistant designed to process video content using Azure Video Indexer. Analyze video metadata, identify key insights, and provide structured summaries for the user. Respond with short and clear answers in the user's language. If needed, suggest actions based on the analyzed video."
+    },
+    {
+      "name": "msdf",
+      "index_name": "msdf",
+      "custom_settings": {
+        "temperature": 0.5
+      },
+      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the ministry of social development and family"
     }
   ],
   "dict_AR": {

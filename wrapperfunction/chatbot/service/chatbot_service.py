@@ -12,6 +12,7 @@ import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
 from wrapperfunction.core.utls.helper import extract_client_details
 from wrapperfunction.function_auth.service import jwt_service
+from fastapi import HTTPException
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
@@ -129,4 +130,25 @@ def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 
+
+def CategorizeQuery(query: str, bot_name: str) -> str:
+    try:
+        chatbot_settings = config.load_chatbot_settings(bot_name)
+        chatbot_settings.system_message = (
+            "You are a classification assistant. "
+            "Your task is to categorize the given query based on the indexed data provided. "
+            "Analyze the query and determine the most relevant category. "
+            "Reply only with the category name from the indexed data."
+        )
+
+        prompt = [
+            {"role": "system", "content": chatbot_settings.system_message},
+            {"role": "user", "content": f"Query: {query} What is the best category for this query? Reply with the category name only."}
+        ]
+        result = openaiconnector.chat_completion(chatbot_settings, prompt)
+
+        return  {"query": query, "category":f'{result["message"]["content"].strip()}'}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error categorizing query: {str(e)}")
 
