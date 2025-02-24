@@ -39,6 +39,20 @@ async def update_index_with_skills(index_name:str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/most-indexed-urls")
+async def get_most_indexed_urls(from_date: str = None, to_date: str = None):
+    try:
+        return await media_service.return_most_indexed_urls(from_date=from_date,to_date=to_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/most-indexed-urls")
+async def get_most_used_keywords(from_date: str = None, to_date: str = None):
+    try:
+        return await media_service.return_most_used_keywords(from_date=from_date,to_date=to_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.post("/sentiment/")   
 async def sentiment(request:CustomSkillRequest):
     try:

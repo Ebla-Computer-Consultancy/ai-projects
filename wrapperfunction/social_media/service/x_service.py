@@ -3,6 +3,8 @@ import json
 from typing import List
 import uuid
 from fastapi import HTTPException
+from wrapperfunction.admin.integration import textanalytics_connector
+from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
 from wrapperfunction.admin.service import blob_service
 from wrapperfunction.chat_history.integration import cosmos_db_connector
 from wrapperfunction.core import config
@@ -11,7 +13,7 @@ from wrapperfunction.function_auth.service import auth_service
 from wrapperfunction.social_media.integration import x_connector
 from wrapperfunction.social_media.model.x_model import XSearch
 
-def x_multi_search(data: List[XSearch]):
+async def x_multi_search(data: List[XSearch], push_to_knowledge = False):
     try:
         for node in data:
             results = x_connector.x_search(query=node.query,
@@ -20,6 +22,8 @@ def x_multi_search(data: List[XSearch]):
                     max_results=node.max_results)
             if results["meta"]["result_count"] > 0:
                 prepare_x_data_and_upload(results)
+                if push_to_knowledge:
+                   await add_x_data_to_knowledge_db(results)
         return ServiceReturn(
             status=StatusCode.SUCCESS,
             message=f"X Crawled Successfully"
@@ -53,6 +57,9 @@ async def add_x_data_to_knowledge_db(results: dict):
         tweet_data["tweet_id"] = tweet["id"]
         tweet_data["PartitionKey"] = str(uuid.uuid4())
         tweet_data["RowKey"] = str(uuid.uuid4())
+        tweet_data["language"] = textanalytics_connector.detect_language(messages=[tweet["text"]])[tak.LANGUAGE_ISO6391_NAME.value]
+        tweet_data["keyphrases"] = textanalytics_connector.extract_key_phrases(messages=[tweet["text"]],language=tweet_data["language"])
+        tweet_data["sentiment"] = textanalytics_connector.analyze_sentiment(messages=[tweet["text"]])
         if auth_service.exist_property(dic=tweet, field="referenced_tweets"):
             tweet_data["referenced_tweets"] = get_ids_list(tweet["referenced_tweets"])
         await cosmos_db_connector.add_entity(config.X_TABLE,tweet_data)

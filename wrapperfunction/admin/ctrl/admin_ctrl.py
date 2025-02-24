@@ -6,6 +6,7 @@ from wrapperfunction.admin.service import blob_service
 from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.core.service import settings_service
 from wrapperfunction.function_auth.service import auth_db_service
+from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
@@ -79,7 +80,13 @@ async def delete_blob_by_list_of_titles(blobs_name_list: list[str],subfolder_nam
         return await blob_service.delete_blob_by_list_of_title(blobs_name_list = blobs_name_list,subfolder_name=subfolder_name, container_name=container_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@router.delete("/website-blobs")
+async def delete_blobs_and_indexed_data(container_name:str, index_name:str, deleted_url:str):
+    try:
+        return aisearch_connector.delete_blobs_and_indexed_data(container_name=container_name, index_name=index_name, deleted_url=deleted_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))   
 
 @router.post("/reset-index/{index_name}")
 async def reset_index(index_name: str, value: str = None, key: str = "chunk_id"):

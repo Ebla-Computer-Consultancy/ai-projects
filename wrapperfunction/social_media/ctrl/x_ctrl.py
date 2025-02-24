@@ -8,6 +8,6 @@ router = APIRouter()
 @router.post("/x-search")
 async def get_x_search_results(body: List[XSearch]):
     try:
-        return x_service.x_multi_search(data=body)
+        return await x_service.x_multi_search(data=body)
     except Exception as e:
         raise Exception(f"{str(e)}")

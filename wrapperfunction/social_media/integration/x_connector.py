@@ -5,8 +5,8 @@ from wrapperfunction.core import config
 
 def x_search(query: str, start_time: str = None, end_time: str = None, max_results: int = 10):
     try:
-        url = "https://api.x.com/2/tweets/search/recent"
-        
+        url = "https://api.x.com/2/tweets/search/recent" 
+        # url = "https://api.x.com/2/tweets/search/all" # must be changed after subscribe
         querystring = {
             "query": query,
             "start_time": start_time if start_time else datetime.datetime.now(datetime.timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),

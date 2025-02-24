@@ -373,6 +373,18 @@
       "container",
       "item"
     ],
+    "x_crawling":[
+      {
+        "query":"قطر",
+        "max_results":30
+      },
+      {
+        "query":"عقار",
+        "max_results":30,
+        "start_time":null,
+        "end_time":null
+      }
+    ],
     "crawling_urls": [{
       "last_crawl":"1-2-2025",
       "crawl_days":2,
