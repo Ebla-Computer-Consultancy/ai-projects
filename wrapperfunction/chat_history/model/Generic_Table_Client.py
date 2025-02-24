@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from azure.data.tables import  TableServiceClient,UpdateMode
 class GenericTableClient:
     def __init__(self, table_name: str,table_service_client:TableServiceClient):
+        table_name="rera"
         table_service_client.create_table_if_not_exists(table_name=table_name)
         self.table_client = table_service_client.get_table_client(table_name=table_name)
         
