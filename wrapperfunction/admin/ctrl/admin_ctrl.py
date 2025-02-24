@@ -10,6 +10,7 @@ from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import pdfs_files_filter
+from wrapperfunction.social_media.model.x_model import XSearch
 
 
 router = APIRouter()
@@ -144,6 +145,13 @@ async def update_setting(entity: Dict[str, Any]):
 async def update_schedule_setting(entity: Dict[str, Any], days: int):
     try:
         return settings_service.update_schedule_settings(new_settings=entity, days=days)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/settings/x")
+async def update_schedule_setting(new_data: List[XSearch]):
+    try:
+        return settings_service.update_x_crawling_settings(data_list=new_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
     
