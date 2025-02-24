@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import datetime
 import json
 import traceback
@@ -122,8 +123,11 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data =
             msg["tool_call_id"] = chat_payload.conversation_id
         chat_history.append(msg)
     chat_history.append(chat_payload.messages[-1].model_dump())
+    if chat_payload.filter:
+        system_message += f" Filter: {chat_payload.filter}"    
 
     return {"system_message": system_message, "chat_history": chat_history}
+
 
 
 def is_arabic(text):
@@ -131,10 +135,14 @@ def is_arabic(text):
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 
 
+
+
 def CategorizeQuery(query: str, bot_name: str) -> str:
     try:
         chatbot_settings = config.load_chatbot_settings(bot_name)
-        chatbot_settings.system_message = (
+        chatbot_settings_copy = copy.deepcopy(chatbot_settings)  
+
+        chatbot_settings_copy.system_message = (
             "You are a classification assistant. "
             "Your task is to categorize the given query based on the indexed data provided. "
             "Analyze the query and determine the most relevant category. "
@@ -142,13 +150,25 @@ def CategorizeQuery(query: str, bot_name: str) -> str:
         )
 
         prompt = [
-            {"role": "system", "content": chatbot_settings.system_message},
+            {"role": "system", "content": chatbot_settings_copy.system_message},
             {"role": "user", "content": f"Query: {query} What is the best category for this query? Reply with the category name only."}
         ]
-        result = openaiconnector.chat_completion(chatbot_settings, prompt)
+        result = openaiconnector.chat_completion(chatbot_settings_copy, prompt)
 
-        return  {"query": query, "category":f'{result["message"]["content"].strip()}'}
-    
+        return result["message"]["content"].strip() if result and "message" in result else None
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error categorizing query: {str(e)}")
+        return "Uncategorized"
 
+
+async def categorized_chat(bot_name: str, chat_payload: ChatPayload, request: Request):
+    try:
+        category_result = CategorizeQuery(chat_payload.messages[-1].content, bot_name)
+        
+        chat_payload.filter = f"category eq '{category_result}'"
+        
+        response = await chat(bot_name, chat_payload, request)
+        
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in categorize_and_chat: {str(e)}")
