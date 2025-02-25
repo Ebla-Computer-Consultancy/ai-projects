@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 
 # Load environment variables from .env file
@@ -38,10 +39,17 @@ STORAGE_ACCOUNT_KEY=os.getenv("STORAGE_ACCOUNT_KEY")
 AZURE_IMAGE_ANALYTICS_ENDPOINT=os.getenv("AZURE_IMAGE_ANALYTICS_ENDPOINT")
 AZURE_IMAGE_ANALYTICS_KEY=os.getenv("AZURE_IMAGE_ANALYTICS_KEY")
 OPENAI_API_MODEL_VERSION=os.getenv("OPENAI_API_MODEL_VERSION")
+
+VIDEO_INDEXER_KEY=os.getenv("VIDEO_INDEXER_KEY")
+VIDEO_INDEXER_ACCOUNT_ID=os.getenv("VIDEO_INDEXER_ACCOUNT_ID")
+
 COSMOS_VACATION_TABLE=os.getenv("COSMOS_VACATION_TABLE")
+NAME=os.getenv("COSMOS_FAQ_TABLE")
+
+COSMOS_FAQ_TABLE=os.getenv("COSMOS_FAQ_TABLE")
+
 COSMOS_SETTINGS_TABLE=os.getenv("COSMOS_SETTINGS_TABLE")
 DEFAULT_ENTITY_SETTINGS=os.getenv("DEFAULT_ENTITY_SETTINGS")
-SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 LDAP_SERVER=os.getenv("LDAP_SERVER")
 LDAP_DOMAIN=os.getenv("LDAP_DOMAIN")
 COSMOS_AUTH_USER_TABLE=os.getenv("COSMOS_AUTH_USER_TABLE")
@@ -51,6 +59,21 @@ JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
 BASE_URL=os.getenv("BASE_URL")
 AUTH_ENABLED=os.environ.get("AUTH_ENABLED", "false").lower() == "true"
+LDAP_ENABLED=os.environ.get("LDAP_ENABLED", "false").lower() == "true"
+TENANT_ID=os.getenv("TENANT_ID")
+CLIENT_ID=os.getenv("CLIENT_ID")
+SUBSCRIPTION_ID=os.getenv("SUBSCRIPTION_ID")
+ACCOUNT_NAME = os.getenv("ACCOUNT_NAME")
+CLIENT_SECRET_VALUE=os.getenv("CLIENT_SECRET_VALUE")
+RESOURCE_GROUP_NAME = os.getenv("RESOURCE_GROUP_NAME")
+ACCOUNT_REGION=os.getenv("ACCOUNT_REGION")
+SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
+API_VERSION = os.getenv("API_VERSION")
+SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
+SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
+COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
+
+
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
@@ -76,33 +99,40 @@ AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
 
 def load_chatbot_settings(bot_name: str):
     chatbots_settings = ENTITY_SETTINGS.get("chatbots", [])
-    chatbots = chatbots_settings if isinstance(chatbots_settings,list) else json.loads(chatbots_settings)
+    chatbots = chatbots_settings if isinstance(chatbots_settings, list) else json.loads(chatbots_settings)
     for chatbot_obj in chatbots:
         if chatbot_obj["name"] == bot_name:
             custom_settings_data = chatbot_obj.get("custom_settings", {})
             temperature = custom_settings_data.get("temperature", None)
             max_tokens = custom_settings_data.get("max_tokens", 800)
-            max_history_length= custom_settings_data.get("max_history_length", 9)
+            max_history_length = custom_settings_data.get("max_history_length", 9)
             top_p = custom_settings_data.get("top_p", 0.95)
-            tools = custom_settings_data.get("tools",None)
+            tools = custom_settings_data.get("tools", None)
             enable_history = chatbot_obj.get("enable_history", True)
-            display_in_chat = chatbot_obj.get("display_in_chat", True)
-            custom_settings = CustomSettings(temperature=temperature,
-                                            top_p=top_p,
-                                            max_tokens=max_tokens,
-                                            tools=tools,
-                                            max_history_length=max_history_length,
-                                            display_in_chat=display_in_chat
-                                        )
+            preserve_first_message = chatbot_obj.get("preserve_first_message", False)
+            display_in_chat = custom_settings_data.get("display_in_chat", True)
+            apply_sentiment = chatbot_obj.get("apply_sentiment", True) 
+
+
+            custom_settings = CustomSettings(
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
+                tools=tools,
+                max_history_length=max_history_length,
+                display_in_chat=display_in_chat,
+
+            )
+
             chatbot = ChatbotSetting(
-
-                name = chatbot_obj["name"],
-                index_name = chatbot_obj.get("index_name", None),
-                system_message = chatbot_obj["system_message"],
-                examples = chatbot_obj.get("examples", []),
-                custom_settings = custom_settings,
-                enable_history=enable_history
-
+                name=chatbot_obj["name"],
+                index_name=chatbot_obj.get("index_name", None),
+                system_message=chatbot_obj["system_message"],
+                examples=chatbot_obj.get("examples", []),
+                custom_settings=custom_settings,
+                enable_history=enable_history,
+                apply_sentiment=apply_sentiment,
+                preserve_first_message=preserve_first_message,
             )
             return chatbot
 
@@ -112,5 +142,20 @@ def load_chatbot_settings(bot_name: str):
         system_message="",
         examples=[],
         custom_settings=None,
-        enable_history=True
+        enable_history=True,
+        preserve_first_message=False,
+        apply_sentiment=True
     )
+
+
+def get_media_info() -> dict:
+    try:
+        media_settings = ENTITY_SETTINGS.get("media_settings",{})
+        info = media_settings.get("info",{}) if len(media_settings) > 0 else None
+        if info is not None and len(info) > 0: 
+            return info
+        else:
+            raise HTTPException(status_code=500, detail="There is no media setting info provided")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="There is no media setting info provided")
+

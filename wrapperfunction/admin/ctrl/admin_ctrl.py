@@ -52,6 +52,13 @@ def get_subfolders(container_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get-subfolders-blobs/{container_name}")
+def get_subfolders_blobs(container_name: str):
+    try:
+        return blob_service.get_subfolders_with_blobs(container_name=container_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/delete-subfolder")
 async def delete_subfolder(container_name: str, subfolder_name: str):
     try:
@@ -120,14 +127,21 @@ async def get_setting(entity_name: str):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Settings Error: {str(e)}")
 
-@router.post("/settings")
+@router.put("/settings")
 async def update_setting(entity: Dict[str, Any]):
     try:
         return settings_service.update_bot_settings(entity=entity)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
+
+@router.put("/settings/schedule")
+async def update_schedule_setting(entity: Dict[str, Any], days: int):
+    try:
+        return settings_service.update_schedule_settings(new_settings=entity, days=days)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
     
-@router.put("/settings")
+@router.post("/settings")
 async def add_setting(body: Dict[str, Any]):
     try:
         return await settings_service.add_setting(entity=body)
@@ -141,17 +155,10 @@ async def delete_setting(body: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Settings Error: {str(e)}")
 
-@router.post("/permission/assign")
-async def add_permission_to_user(user_id: str, permissions_ids: List[str]):
+@router.put("/permission/update")
+async def update_user_permissions(user_id: str, permissions_ids: List[str]):
     try:
-        return await auth_db_service.add_permission_to_user(user_id=user_id, per_ids=permissions_ids)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.delete("/permission/remove")
-async def remove_user_permission(user_id: str, permissions_ids: List[str]):
-    try:
-        return auth_db_service.remove_user_permission(user_id=user_id, per_ids=permissions_ids)
+        return await auth_db_service.update_user_permissions(user_id,permissions_ids)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -191,9 +198,9 @@ async def get_user_permissions(id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/user")
-async def add_user(username: str):
+async def add_user(username: str,department: str = None, employee_ID: int = None, manager_name: str = None, role: str = None):
     try:
-        return await auth_db_service.add_user(username=username)
+        return await auth_db_service.add_user(username=username,department=department,employee_ID=employee_ID,manager_name=manager_name, role=role)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -216,4 +223,12 @@ def get_sas_token(blob_url:str):
     try:
         return blob_service.generate_blob_sas_url(blob_url=blob_url)
     except Exception as e:    
+
+        raise HTTPException(status_code=500, detail=str(e))      
+
+@router.post("/update-index/{index_name}")
+async def update_index(index_name: str, data:List[dict]):
+    try:
+        return search_service.update_index(index_name, data)
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

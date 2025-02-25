@@ -55,8 +55,10 @@ def orchestrator_function(
             site_data = {
                 "ref_url": base_url,
                 "url": url.link,
+                # edit to get list of {news_text,news_date}
                 "content": relevant_text,
-                "images_urls": imgs_links
+                "images_urls": imgs_links,
+                "internal": url.internal
             }
         else:
             if response.headers.get('Content-Type') == 'application/pdf': 
@@ -64,6 +66,7 @@ def orchestrator_function(
                     "url": url.link,
                     "title": get_page_title(url.link),
                     "content": data,
+                    "internal": url.internal
                 }
                 upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=config.SUBFOLDER_NAME+'_pdf')
                 settings.deep = False
@@ -81,6 +84,7 @@ def orchestrator_function(
                     "en_title": get_page_title(url.link, en_data),
                     "ar_content": get_page_content(data, settings),
                     "en_content": get_page_content(en_data, settings),
+                    "internal": url.internal
                 }
                 
 

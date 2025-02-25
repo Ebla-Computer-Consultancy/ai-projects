@@ -1,13 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from wrapperfunction.core import config
+from wrapperfunction.function_auth.model.func_auth_model import LoginRequest
 from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.function_auth.service import auth_service
 
 router = APIRouter()
     
+@router.post("/swagger/login")
+def swagger_login(body: OAuth2PasswordRequestForm = Depends()):
+    try:
+        response = auth_service.authenticate_user(username=body.username, password=body.password)
+        return response 
+    except Exception as e:
+        raise e
+
 @router.post("/login")
-def login(body: OAuth2PasswordRequestForm = Depends()):
+def login(body: LoginRequest):
     try:
         response = auth_service.authenticate_user(username=body.username, password=body.password)
         return response 
@@ -21,6 +30,13 @@ async def update_refresh_token(token: str = Depends(jwt_service.get_token_from_h
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")    
 
+@router.get("/access-token")
+async def generate_access_token(token: str = Depends(jwt_service.get_token_from_header)):
+    try:
+        return auth_service.get_access_token(token=token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}") 
+    
 def hasAuthority(permission: str):
     if config.AUTH_ENABLED:
         async def dependency(request: Request, token: str = Depends(jwt_service.get_token_from_header)):
@@ -30,7 +46,7 @@ def hasAuthority(permission: str):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized: {str(e)}")
         return dependency
     else:
-        async def dependency():
+        async def dependency(request: Request):
             return True
         return dependency
     

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Tuple
 from fastapi import HTTPException, Request, status
 from ldap3 import NTLM, Connection, Server
@@ -31,17 +32,19 @@ def test_ldap_connection(username: str, password: str):
             password=password,
             authentication=NTLM
         )
-        
-        if conn.bind():
-            return True, conn
+        if config.AUTH_ENABLED or config.LDAP_ENABLED:
+            if conn.bind():
+                return True, conn
+            else:
+                return False, conn
         else:
-            return False, conn
+            return True, conn
     except Exception as e:
         raise Exception(f'LDAP: {str(e)}')
 
 def get_user(username) -> Tuple[User, dict]:
     try:
-        user = auth_db_service.get_user_by_name(username)
+        user = auth_db_service.get_user_by_username(username)
         if len(user) > 0:
             user_permissions = get_user_permissions(user[0]["_id"])
             all_permissions = auth_db_service.get_permissions()
@@ -57,7 +60,14 @@ def get_user(username) -> Tuple[User, dict]:
                     for permission in all_permissions
                     if (permission["_id"] in user_per_id)
                 ]  
-            return User(id=user[0]["_id"],username=username,permissions=user_permissions,never_expire=user[0]["never_expire"]),user[0]
+            return User(id=user[0]["_id"],
+                        username=username,
+                        permissions=user_permissions,
+                        never_expire=user[0]["never_expire"],
+                        employee_ID=user[0]["employee_ID"] if exist_property(user[0],"employee_ID") else None,
+                        department=user[0]["department"] if exist_property(user[0],"department") else None,
+                        role=user[0]["role"] if exist_property(user[0],"role") else None,
+                        manager_name=user[0]["manager_name"] if exist_property(user[0],"manager_name") else None),user[0]
         else: 
             raise Exception("User Not Found")
     except Exception as e:
@@ -73,14 +83,31 @@ def update_refresh_token(token: str):
         if payloads["token_type"] == "refresh":
             entity_user = auth_db_service.get_user_by_refresh_token(token=token, user_id=user.id)
             if len(entity_user) < 1:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid refresh_token")
-            new_refresh_token = jwt_service.generate_refresh_token(user=user)
+                raise Exception(f"Invalid refresh_token")
+            now = datetime.utcnow()
+            refresh_time = timedelta(minutes=int(config.ENTITY_SETTINGS["refresh_token_valid_time"]))
+            new_refresh_token = jwt_service.generate_refresh_token(user=user, time=now + refresh_time)
             jwt_service.update_refresh_token(token=new_refresh_token,user=entity_user[0])
             return {"refresh_token":new_refresh_token}
         else:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Cun't update using access_token")
+            raise Exception(f"Can't update using access_token")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"{str(e)}")
+        raise Exception(f"{str(e)}")
+
+def get_access_token(token: str):
+    try:
+        payloads = jwt_service.decode_jwt(token)
+        user = User(id=payloads["id"],username=payloads["name"],permissions=payloads["permissions"])
+        if payloads["token_type"] == "refresh":
+            entity_user = auth_db_service.get_user_by_refresh_token(token=token, user_id=user.id)
+            if len(entity_user) < 1:
+                raise Exception(f"Invalid refresh_token")
+        now = datetime.utcnow()
+        access_time = timedelta(minutes=int(config.ENTITY_SETTINGS["access_token_valid_time"]))
+        new_access_token = jwt_service.generate_access_token(user=user, time=now + access_time)
+        return {"access_token":new_access_token}
+    except Exception as e:
+        raise Exception(f"{str(e)}")
 
 ### AUTHORIZATION
 def hasAnyAuthority(request: Request, token: str, permission: str):
@@ -105,5 +132,11 @@ def hasAnyAuthority(request: Request, token: str, permission: str):
     except Exception as e:
         raise Exception(f"{str(e)}") 
             
-        
+def exist_property(dic : dict, field: str):
+    try: 
+        if dic[field]:
+            return True
+    except Exception as e:
+        return False
+            
         
