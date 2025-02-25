@@ -81,15 +81,15 @@ async def delete_blob_by_list_of_titles(blobs_name_list: list[str],subfolder_nam
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.post("/reset-index/{index_name}")
-async def reset_index(index_name: str, value: str = None, key: str = "chunk_id"):
-    try:
-        if value is None:
-            return search_service.reset_index(index_name)
-        else:
-            return search_service.delete_indexes(index_name, key=key, value=value)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/reset-index/{index_name}")
+# async def reset_index(index_name: str, value: str = None, key: str = "chunk_id"):
+#     try:
+#         if value is None:
+#             return search_service.reset_index(index_name)
+#         else:
+#             return search_service.delete_indexes(index_name, key=key, value=value)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/run-indexer/{index_name}")
 async def run_indexer(index_name: str):
