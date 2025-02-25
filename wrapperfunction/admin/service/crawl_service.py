@@ -152,11 +152,7 @@ def detect_languge_by_header(
             new_response = requestUrl(other_url, headers, payload, cookies)
             return new_response
     else:
-        # Extract the JavaScript code
-        script_tag = soup.find('script')
-        js_code = script_tag.string
-        if js_code is None:
-            try:
+        try:
                 other_url = url.split('/')
                 extracted_string = re.search(r"\('([^']*)'\)", onclick_function).group(1)
                 if len(other_url)==3:
@@ -168,13 +164,8 @@ def detect_languge_by_header(
                     new_response = requestUrl(other_url, headers, payload, cookies)
                 else:
                     new_response = requestUrl(url, headers, payload, cookies)
-            except:
+        except:
                 new_response = None
-        else:
-            # Create a JavaScript runtime environment
-            ctx = execjs.compile(js_code)
-            # Run the extracted function
-            new_response = ctx.call(onclick_function)
         return new_response
 
 def requestUrl(
