@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+from wrapperfunction.media_monitoring.model.media_model import MediaInfo
 
 # Load environment variables from .env file
 load_dotenv()
@@ -151,12 +152,14 @@ def load_chatbot_settings(bot_name: str):
     )
 
 
-def get_media_info() -> dict:
+def get_media_info() -> MediaInfo:
     try:
         media_settings = ENTITY_SETTINGS.get("media_settings",{})
         info = media_settings.get("info",{}) if len(media_settings) > 0 else None
         if info is not None and len(info) > 0: 
-            return info
+            return MediaInfo(index_name=info.get("index_name","media"),
+                             reports_container_name=info.get("reports_container_name","media-reports"),
+                             container_name=info.get("container_name","media"))
         else:
             raise HTTPException(status_code=500, detail="There is no media setting info provided")
     except Exception as e:

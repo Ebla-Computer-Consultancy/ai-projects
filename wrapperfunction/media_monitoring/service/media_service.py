@@ -60,11 +60,11 @@ async def generate_report(search_text: str,index_date_from = None,index_date_to 
         append_blob(blob=chat_res["message"]["content"],
                     metadata_3=IndexingType.GENERATED.value,
                     folder_name=config.SUBFOLDER_NAME,
-                    container_name= info["reports_container_name"],
+                    container_name= info.reports_container_name,
                     blob_name=f"{report_file_name}.txt")
         
         # Generate SAS url for the report file
-        sas_url = generate_blob_sas_url(container_name= info["reports_container_name"],
+        sas_url = generate_blob_sas_url(container_name= info.reports_container_name,
                                             blob_name=f"{config.SUBFOLDER_NAME}/{report_file_name}.txt")
         return ServiceReturn(
             status=StatusCode.CREATED,
@@ -87,7 +87,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
         )
         # Indexer
         info = config.get_media_info()
-        index_info = aisearch_connector.get_index_info(info["index_name"])
+        index_info = aisearch_connector.get_index_info(info.index_name)
         indexer_name = index_info.indexer_name
         search_indexer_client = get_search_indexer_client()
         # search_indexer_client.run_indexer(indexer_name)

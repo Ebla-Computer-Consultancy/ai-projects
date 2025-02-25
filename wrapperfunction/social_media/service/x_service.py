@@ -43,7 +43,7 @@ def prepare_x_data_and_upload(results: dict):
                 "created_at": tweet["created_at"]
             }
             media_info = config.get_media_info()
-            blob_service.append_blob(blob=json.dumps(page,ensure_ascii=False),blob_name=f"{index}_tweet.json",folder_name=f"social_media/X/{datetime.datetime.now().date()}",container_name=media_info["container_name"],metadata_2=page["url"])
+            blob_service.append_blob(blob=json.dumps(page,ensure_ascii=False),blob_name=f"{index}_tweet.json",folder_name=f"social_media/X/{datetime.datetime.now().date()}",container_name=media_info.container_name,metadata_2=page["url"])
             index += 1
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error While Uploading X data: index-{index}:{str(e)}")
