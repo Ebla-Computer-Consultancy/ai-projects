@@ -25,7 +25,7 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
                     {"content": cell["content"], "kind": cell.kind}
                 )
 
-        return chatbotservice.ask_open_ai_chatbot(
+        res = chatbotservice.ask_open_ai_chatbot(
             bot_name=bot_name,
             chat_payload=ChatPayload(
                 messages=[
@@ -39,6 +39,7 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
                 ]
             ),
         )
+        return json.loads(res[0])
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
