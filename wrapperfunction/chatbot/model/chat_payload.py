@@ -8,5 +8,5 @@ class ChatPayload(BaseModel):
     stream_id: Optional[str] = None  # Nullable stream_id string with default None
     conversation_id: Optional[str] = None
     user_id: Optional[str]=None
-    filter: Optional[str]=None
+
 
