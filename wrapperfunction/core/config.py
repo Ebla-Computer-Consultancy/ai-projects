@@ -111,7 +111,10 @@ def load_chatbot_settings(bot_name: str):
             enable_history = chatbot_obj.get("enable_history", True)
             preserve_first_message = chatbot_obj.get("preserve_first_message", False)
             display_in_chat = custom_settings_data.get("display_in_chat", True)
-            apply_sentiment = chatbot_obj.get("apply_sentiment", True) 
+            apply_sentiment = chatbot_obj.get("apply_sentiment", True)
+            categorize=chatbot_obj.get("categorize", None)
+            categorize_system_message = chatbot_obj.get("categorize_system_message", None)
+             
 
 
             custom_settings = CustomSettings(
@@ -128,11 +131,14 @@ def load_chatbot_settings(bot_name: str):
                 name=chatbot_obj["name"],
                 index_name=chatbot_obj.get("index_name", None),
                 system_message=chatbot_obj["system_message"],
+                categorize_system_message=categorize_system_message,
                 examples=chatbot_obj.get("examples", []),
                 custom_settings=custom_settings,
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
+                categorize=categorize
+
             )
             return chatbot
 
@@ -140,13 +146,14 @@ def load_chatbot_settings(bot_name: str):
         name=ENTITY_NAME,
         index_name=ENTITY_NAME,
         system_message="",
+        categorize_system_message=None,
         examples=[],
         custom_settings=None,
         enable_history=True,
         preserve_first_message=False,
-        apply_sentiment=True
+        apply_sentiment=True,
+        categorize=False
     )
-
 
 def get_media_info() -> dict:
     try:
