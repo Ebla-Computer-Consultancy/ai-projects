@@ -82,7 +82,7 @@ def set_extra_body(chatbot_setting: ChatbotSetting, category_result=None):
 
                     "in_scope": True,
                     "role_information": chatbot_setting.system_message,
-                    "filter": f"search.ismatch('{category_result}', 'categories')" if category_result else None,
+                    "filter": f"search.ismatch('{category_result}', 'categories') or search.ismatchscoring('{category_result}')" if category_result else None,
 
 
                     "strictness": 3,
