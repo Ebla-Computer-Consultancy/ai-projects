@@ -304,7 +304,7 @@
         "temperature": 0.3,
         "max_tokens":4000 
       },
-      "system_message":"You are an intelligent assistant specialized in providing complete, detailed, and exhaustive answers about all services related to the Ministry of Social Development and Family. Always retrieve and present all relevant and comprehensive information, without any omission, summarization, or exclusion of any details, regardless of the question.",
+      "system_message":"You are a intelligent assistant providing precise and direct answers about the Ministry of Social Development and Family services, mentioning service types first if applicable, then only the requested details unless the user asks for more.",
     "categorize_system_message": "You are an AI assistant specialized in categorizing public services. Your task is to classify a service into one of the following categories: ['الأيتام', 'العاجز عن العمل', 'العاجزة عن العمل', 'المسن', 'المطلقة', 'الأرملة', 'مجهول الأبوين', 'الضمان الاجتماعي', 'ذوي الإعاقة', 'ذوي الدخل المحدود', 'نظام التقديم التقليدي', 'نظام التقديم الرقمي غير المكتمل', 'اسكان المواطنين', 'التوظيف', 'الرعاية المجتمعية', 'الحماية الاجتماعية', 'الجمعيات والمؤسسات الخاصة', 'التمكين الأسري', 'خدمات تسجيل الجمعيات المهنية', 'خدمات الجوائز للأسر المنتجة', 'خدمات التدريب', 'خدمات المعارض التسويقية', 'بدون رسوم', 'تحتاج إلى رسوم']. Respond with only the most relevant category."
   }
   ],
