@@ -26,7 +26,7 @@ async def media_crawl(request:MediaCrawlRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/crawl/status")
-async def get_all_urls_crawling_status():
+def get_all_urls_crawling_status():
     try:
         return media_service.get_crawling_status()
     except Exception as e:
@@ -40,14 +40,14 @@ async def update_index_with_skills(index_name:str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/indexed-urls")
-async def get_most_indexed_urls(from_date: str = None, to_date: str = None):
+def get_most_indexed_urls(from_date: str = None, to_date: str = None):
     try:
         return media_service.return_most_indexed_urls(from_date=from_date,to_date=to_date)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/used-keywords")
-async def get_most_used_keywords(from_date: str = None, to_date: str = None):
+def get_most_used_keywords(from_date: str = None, to_date: str = None):
     try:
         return media_service.return_most_used_keywords(from_date=from_date,to_date=to_date)
     except Exception as e:
