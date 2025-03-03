@@ -82,7 +82,7 @@ def set_extra_body(chatbot_setting: ChatbotSetting):
 
                     "in_scope": True,
                     "role_information": chatbot_setting.system_message,
-                    "filter": None,
+                    "filter": chatbot_setting.custom_settings.filter_exp,
                     "strictness": 3,
                     "top_n_documents": 5,
                     "authentication": {"type": "api_key", "key": config.SEARCH_KEY},

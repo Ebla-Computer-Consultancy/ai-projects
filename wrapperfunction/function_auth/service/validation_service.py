@@ -38,10 +38,16 @@ def validate_password(password: str):
         return False, "Password must contain at least one special character."
     return True, "Valid password."
 
-def is_valid_utc_date(date_str: str) -> bool:
+def is_valid_yyyy_mm_dd(date_str: str) -> bool:
     try:
-        # Check if the date string follows the exact UTC format: YYYY-MM-DD
         datetime.strptime(date_str, "%Y-%m-%d")
         return True  
+    except ValueError:
+        return False
+
+def is_valid_iso8601_utc_date(date_str):
+    try:
+        datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+        return True
     except ValueError:
         return False

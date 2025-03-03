@@ -29,7 +29,7 @@ import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connec
 
 async def generate_report(search_text: str,index_date_from = None,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}. note: today date is {datetime.now().date()}",
         # Prepare Filter Expression
         filter_exp = concat_exp(
             prepare_dates_exp(index_date_from,index_date_to,news_date_from,news_date_to),
@@ -37,7 +37,7 @@ async def generate_report(search_text: str,index_date_from = None,index_date_to 
             )
         # Load Chatbot Settings      
         chat_settings = config.load_chatbot_settings(bot_name="media")
-        chat_settings.custom_settings.filter = filter_exp
+        chat_settings.custom_settings.filter_exp = filter_exp
         # Setup History 
         chat_history = [{"role": "system", "content": chat_settings.system_message}]
         chat_history.append({"role": "user", "content": str(user_message)})
@@ -109,8 +109,8 @@ def prepare_tags_exp(tags: list):
     return None
 
 def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
-    index_exp = " and ".join(filter(None, [f"index_date ge {index_date_from}" if index_date_from else None, f"index_date le {index_date_to}" if index_date_to else None]))
-    news_exp = " and ".join(filter(None, [f"news_date ge {news_date_from}" if news_date_from else None, f"news_date le {news_date_to}" if news_date_to else None]))
+    index_exp = " and ".join(filter(None, [f"index_date ge {validate_and_format_date(index_date_from)}" if index_date_from else None, f"index_date le {validate_and_format_date(index_date_to)}" if index_date_to else None]))
+    news_exp = " and ".join(filter(None, [f"news_date ge {validate_and_format_date(news_date_from)}" if news_date_from else None, f"news_date le {validate_and_format_date(news_date_to)}" if news_date_to else None]))
   
     return " and ".join(filter(None, [index_exp, news_exp]))
 
@@ -224,14 +224,25 @@ async def add_skills_to_knowledge_db(entity: dict):
     
 def return_most_indexed_urls(from_date: str = None, to_date: str = None):
     try:
-        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_utc_date(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_utc_date(to_date) else None]))
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_yyyy_mm_dd(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_yyyy_mm_dd(to_date) else None]))
         return db_connector.get_entities(table_name=config.MOST_INDEXED_URLS_TABLE, filter_expression=filter_exp)
     except Exception as e:
         raise Exception(str(e))
 
 def return_most_used_keywords(from_date: str = None, to_date: str = None):
     try:
-        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_utc_date(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_utc_date(to_date) else None]))
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_yyyy_mm_dd(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_yyyy_mm_dd(to_date) else None]))
         return db_connector.get_entities(table_name=config.MOST_USED_KEYWORDS_TABLE, filter_expression=filter_exp)
     except Exception as e:
         raise Exception(str(e))
+
+def validate_and_format_date(date: str):
+    try:
+        if validation_service.is_valid_iso8601_utc_date(date):
+            return date
+        else:
+            if is_valid_date(date):
+                date = parser.parse(date).replace(microsecond=0).isoformat() + "Z"
+                return date
+    except Exception as e:
+        raise Exception("Invalid Date Format date format should be in YYYY-MM-DDT00:00:00Z format")
