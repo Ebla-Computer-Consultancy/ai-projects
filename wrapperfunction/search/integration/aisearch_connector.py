@@ -1,6 +1,7 @@
 import json
 from fastapi import HTTPException
 import requests
+from wrapperfunction.admin.service import blob_service
 import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -93,6 +94,18 @@ def reset_indexed_data(index_name:str):
     
     # Delete all documents in the index
     client.upload_documents(documents=batch)
+
+def delete_blobs_and_indexed_data(container_name:str, index_name:str, deleted_url:str):
+    try:
+        subfolders = blob_service.get_subfolders_name(container_name=container_name)
+        for subfolder in subfolders["subfolders"]:    
+            blob_service.delete_blobs(metadata_key="website_url",
+                                    metadata_value=deleted_url,
+                                    subfolder_name=subfolder,
+                                    container_name=container_name)
+            delete_indexed_data(index_name=index_name,key="url",value=deleted_url)
+    except Exception as e:
+        raise Exception(f"{str(e)}")
 
 def run_indexer(index_name:str):
     # Create a search client
