@@ -121,7 +121,7 @@ async def schedule_media_crawl(RunMediaIndexer: func.TimerRequest):
     if run_indexer:
         # Retrieve index and indexer information
         info = config.get_media_info()
-        index_info = aisearch_connector.get_index_info(info["index_name"])
+        index_info = aisearch_connector.get_index_info(info.index_name)
         indexer_name = index_info.indexer_name
         index_name = index_info.index_name
 
