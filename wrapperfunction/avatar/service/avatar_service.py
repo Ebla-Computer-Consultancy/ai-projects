@@ -1,3 +1,4 @@
+import asyncio
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 from fastapi import Request
 
@@ -18,14 +19,8 @@ async def send_answer(stream_id: str, request: Request):
     jsonData = {"answer": answer}
     return avatar_connector.send_answer(stream_id, jsonData)
 
-
-async def render_text(stream_id: str, request: Request):
-    data = await request.json()
-    text = data.get("text")
-    return avatar_connector.render_text(stream_id, text)
-
 async def render_text_async(stream_id: str, text: str, is_ar: bool):
-    return avatar_connector.render_text_async(stream_id, text, is_ar)
+    return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
 
 def stop_render(stream_id: str):
     return avatar_connector.stop_render(stream_id)

@@ -19,8 +19,8 @@ async def send_answer(stream_id: str, request: Request):
 
 
 @router.post("/render-text/{stream_id}")
-async def render_text(stream_id: str, request: Request):
-    return await avatar_service.render_text(stream_id, request)
+async def render_text(stream_id: str, text: str, is_ar: bool):
+    return await avatar_service.render_text_async(stream_id, text, is_ar)
 
 @router.delete("/stop-render/{stream_id}")
 def stop_render(stream_id: str):

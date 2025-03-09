@@ -10,7 +10,6 @@ from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.model.indexer_model import IndexInfo
 from wrapperfunction.search.service import search_service
 from wrapperfunction.core.utls.helper import jsonVSfiles_filter
-from wrapperfunction.core.utls.helper import pdfs_files_filter
 from wrapperfunction.social_media.model.x_model import XSearch
 
 
