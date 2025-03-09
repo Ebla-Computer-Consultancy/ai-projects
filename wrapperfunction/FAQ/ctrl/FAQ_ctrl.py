@@ -17,5 +17,5 @@ def delete_questions(rawkey: str):
 def update_questions(rawkey: str,updated_data: Question):
     return  FAQ_service.update_question(rawkey,updated_data)
 @router.get("/questions/")
-def get_questions(bot_name: Optional[str] = None):
-    return FAQ_service.get_questions(bot_name)
+def get_questions(n: int =None,bot_name: Optional[str] = None):
+    return FAQ_service.get_questions(bot_name,n)

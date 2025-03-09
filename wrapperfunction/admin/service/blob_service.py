@@ -17,6 +17,10 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
 
+def get_blobs(container_name: str, subfolder_name: str = None):
+    _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
+    return list(blob_list)
+
 def get_containers_name():
     blob_service_client = get_blob_service_client()
     containers = blob_service_client.list_containers()
@@ -61,9 +65,10 @@ def append_blob(
     metadata_2=None,
     metadata_3: IndexingType = IndexingType.CRAWLED.value,
     metadata_4=None,
+    overwrite=True
 ):       
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
-    blob_client.upload_blob(blob, overwrite=True)
+    blob_client.upload_blob(blob, overwrite=overwrite)
     
 
     blob_metadata = blob_client.get_blob_properties().metadata or {}

@@ -16,7 +16,7 @@ def transcribe_audio_file(audio_stream: str):
 
     auto_detect_source_language_config = (
         speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
-            languages=["en-GB", "ar-QA", "es-ES"]
+            languages=["en-GB", "ar-QA", "es-ES", "fr-FR", "de-DE"]
         )
     )
 
