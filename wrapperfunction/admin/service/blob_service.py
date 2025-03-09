@@ -36,9 +36,9 @@ def get_subfolders_name(container_name):
             subfolders.add(subfolder)
     return {"subfolders": list(subfolders)}
 
-def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
+async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
     for file in files:
-        contents = file.read()
+        contents = await file.read()
 
         data = json.dumps(json.loads(contents), ensure_ascii=False)
         append_blob(blob_name= file.filename,
@@ -153,7 +153,7 @@ def delete_blobs(
         else:
             blob_client.delete_blob()
 
-def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
+def upload_files_to_blob(files: list[UploadFile],container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
         # Get the container client
         container_client, _ =  get_container_client(container_name = container_name,subfolder_name = subfolder_name)    
         for file in files:
@@ -175,10 +175,10 @@ def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER
                     blob_client.stage_block(block_id_str, chunk)
                     blocks.append(BlobBlock(block_id=block_id_str))
                     block_id += 1
-                
                 blob_client.commit_block_list(blocks)
-                metadata_storage_path =blob_client.url
-                return metadata_storage_path
+                if file.content_type == "application/pdf":
+                    metadata_storage_path =blob_client.url
+                    return metadata_storage_path
 
 def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name):
     for file in files:
