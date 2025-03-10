@@ -4,7 +4,7 @@ import wrapperfunction.chat_history.service.localization_service as localization
 
 router = APIRouter()
 
-
+ 
 @router.post("/", response_model=dict)
 async def create_label(label: localizationPayload):
     return await localizationservice.create_label(label)
