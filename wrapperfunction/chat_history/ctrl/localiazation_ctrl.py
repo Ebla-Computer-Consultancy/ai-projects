@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Request
-from wrapperfunction.chat_history.model.loclization_entity import LocalizationEntity, localizationPayload
+from fastapi import APIRouter
+from wrapperfunction.chat_history.model.loclization_entity import localizationPayload
 import wrapperfunction.chat_history.service.localization_service as localizationservice
-from typing import Optional
 
 router = APIRouter()
 

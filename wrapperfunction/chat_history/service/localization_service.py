@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from wrapperfunction.chat_history.model.loclization_entity import LocalizationEntity,LocalizationPropertyName, localizationPayload
 from wrapperfunction.chat_history.integration.cosmos_db_connector import *
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
