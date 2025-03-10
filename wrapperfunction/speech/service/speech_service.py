@@ -53,5 +53,5 @@ async def fast_file(file: bytes):
 def get_speech_token():
     return speech_connector.get_speech_token()
 
-def get_speech_authorization_access_token():
-    return speech_connector.get_speech_entra_access_token()
+def get_private_access_token():
+    return speech_connector.get_private_access_token()
