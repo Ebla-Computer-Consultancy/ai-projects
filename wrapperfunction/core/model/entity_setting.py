@@ -8,10 +8,10 @@ class CustomSettings:
         self.max_tokens = max_tokens if max_tokens is not None else 800
         self.top_p = top_p if top_p is not None else 0.95
         self.max_history_length = max_history_length if max_history_length is not None else 9
-        self.display_in_chat = display_in_chat
-        self.categorize = categorize if categorize is not None else None
-        self.categorize_field = categorize_field if categorize_field is not None else None
-        self.filter_exp = filter_exp if filter_exp else None
+        self.display_in_chat = display_in_chat #to make chatbotname display in chat
+        self.categorize = categorize if categorize is not None else None #to apply categorization in query
+        self.categorize_field = categorize_field if categorize_field is not None else None 
+        self.filter_exp = filter_exp if filter_exp else None #Filter expression to ai search
 
 
 # Class for individual chatbot information
@@ -30,9 +30,9 @@ class ChatbotSetting:
         )
         self.system_message = system_message
         self.examples = examples
-        self.enable_history = enable_history,
-        self.apply_sentiment = apply_sentiment
-        self.preserve_first_message = preserve_first_message
+        self.enable_history = enable_history,#to enable chat history for this chatbot
+        self.apply_sentiment = apply_sentiment #Applying sentiment analysis for this chatbot
+        self.preserve_first_message = preserve_first_message #to make sure the first message is not removed from chat history to avoid context loss
         self.greeting_message = greeting_message
 
 

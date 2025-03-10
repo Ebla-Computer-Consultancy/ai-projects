@@ -158,7 +158,6 @@ def load_chatbot_settings(bot_name: str):
         enable_history=True,
         preserve_first_message=False,
         apply_sentiment=True,
-        categorize=None
     )
 
 
