@@ -24,9 +24,9 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name, user_data)
         chatbot_settings = config.load_chatbot_settings(bot_name)
         category_result = None
-        if chatbot_settings.categorization_settings.categorize:
+        if chatbot_settings.custom_settings.categorize:
             category_result = categorize_query(chat_payload.messages[-1].content, bot_name)
-            chatbot_settings.custom_settings.filter_exp=f"search.ismatch('{category_result}', {chatbot_settings.categorization_settings.categorize_field}) or search.ismatchscoring('{category_result}')"
+            chatbot_settings.custom_settings.filter_exp=f"search.ismatch('{category_result}', {chatbot_settings.custom_settings.categorize_field}) or search.ismatchscoring('{category_result}')"
             
         
         if chatbot_settings.enable_history:
@@ -141,6 +141,6 @@ def categorize_query(query: str, bot_name: str) -> str:
         chatbot_settings.index_name = None
         result = openaiconnector.chat_completion(chatbot_settings, prompt)
         category = result.get("message", {}).get("content", "").strip() if result else None
-        return category if category in chatbot_settings.categorization_settings.categorize else None
+        return category if category in chatbot_settings.custom_settings.categorize else None
     except Exception:
         return None
