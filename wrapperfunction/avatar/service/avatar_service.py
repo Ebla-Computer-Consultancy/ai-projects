@@ -24,11 +24,11 @@ async def send_answer(stream_id: str, request: Request):
 async def render_text_async(stream_id: str, text: str, is_ar: bool):
     return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
 
-async def grating(stream_id: str, bot_name: str, is_ar: bool):
+async def greeting(stream_id: str, bot_name: str, is_ar: bool):
     text = (
-        config.load_chatbot_settings(bot_name).grating_message["ar"]
+        config.load_chatbot_settings(bot_name).greeting_message["ar"]
         if is_ar
-        else config.load_chatbot_settings(bot_name).grating_message["en"]
+        else config.load_chatbot_settings(bot_name).greeting_message["en"]
     )
     return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
 def stop_render(stream_id: str):
