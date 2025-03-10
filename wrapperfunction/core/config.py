@@ -138,7 +138,7 @@ def load_chatbot_settings(bot_name: str):
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
-                grating_message=chatbot_obj.get("grating_message", {"ar": "مرحباً بك", "en": "you are welcome"}),
+                grating_message=chatbot_obj.get("grating_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"}),
             )
             return chatbot
 
