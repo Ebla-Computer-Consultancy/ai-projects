@@ -113,6 +113,7 @@ def load_chatbot_settings(bot_name: str):
             display_in_chat = custom_settings_data.get("display_in_chat", True)
             apply_sentiment = chatbot_obj.get("apply_sentiment", True)
             categorize=chatbot_obj.get("categorize", None)
+            categorize_filed=chatbot_obj.get("categorize_filed", None)
 
              
 
@@ -136,7 +137,10 @@ def load_chatbot_settings(bot_name: str):
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
-                categorize=categorize
+                categorize=categorize,
+                categorize_filed=categorize_filed
+
+
 
             )
             return chatbot

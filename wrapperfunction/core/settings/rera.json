@@ -299,7 +299,10 @@
     {
       "name": "msdf",
       "index_name": "msdf-test",
-      "categorize": "You are an AI assistant specialized in categorizing public services. Your task is to classify a service into the most relevant category based on the provided description. If unable to classify, return an empty string. الأيتام، العاجز عن العمل، العاجزة عن العمل، المسن، المطلقة، الأرملة، مجهول الأبوين، الضمان الاجتماعي، ذوي الإعاقة، ذوي الدخل المحدود، نظام التقديم تقليدية، نظام التقديم رقمية غير مكتملة، اسكان المواطنين، التوظيف، الرعاية المجتمعية، الحماية الاجتماعية، الجمعيات والمؤسسات الخاصة، التمكين الأسري، خدمات تسجيل الجمعيات المهنية، خدمات الجوائز للأسر المنتجة، خدمات التدريب، خدمات المعارض التسويقية، بدون رسوم، تحتاج إلى رسوم",
+      "categorization_settings":{
+        "categorize": "You are an AI assistant specialized in categorizing public services. Your task is to classify a service into the most relevant category based on the provided description. If unable to classify, return an empty string. الأيتام، العاجز عن العمل، العاجزة عن العمل، المسن، المطلقة، الأرملة، مجهول الأبوين، الضمان الاجتماعي، ذوي الإعاقة، ذوي الدخل المحدود، نظام التقديم تقليدية، نظام التقديم رقمية غير مكتملة، اسكان المواطنين، التوظيف، الرعاية المجتمعية، الحماية الاجتماعية، الجمعيات والمؤسسات الخاصة، التمكين الأسري، خدمات تسجيل الجمعيات المهنية، خدمات الجوائز للأسر المنتجة، خدمات التدريب، خدمات المعارض التسويقية، بدون رسوم، تحتاج إلى رسوم",
+        "categorize_filed":"categories"
+      },
       "custom_settings": {
           "temperature": 0.3,
           "max_tokens": 4000
