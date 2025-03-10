@@ -499,14 +499,15 @@ async def log_error_to_db(
 async def start_video_chat(video_id: str, request: Request, bot_name: str,language:str):
     try:
         response = await vi_service.get_video_index(video_id=video_id, bot_name=bot_name, language=language)
-        content = response.get("data", {}).get("res_data", {}).get("videos", [])
+        res_data=response.get("data",{}).get("res_data",{})
+        content = res_data.get("videos", [])
         client_details = extract_client_details(request)
         conversation_id = str(uuid.uuid4())
         conv_entity = ConversationEntity(
             user_id=str(uuid.uuid4()),
             conversation_id=conversation_id,
             bot_name=bot_name,
-            title="",
+            title=res_data.get("name", ""),
             client_ip=client_details["client_ip"],
             forwarded_ip=client_details["forwarded_ip"],
             device_info=json.dumps(client_details["device_info"]),
