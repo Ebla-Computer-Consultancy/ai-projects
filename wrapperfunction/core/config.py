@@ -113,7 +113,7 @@ def load_chatbot_settings(bot_name: str):
             display_in_chat = custom_settings_data.get("display_in_chat", True)
             apply_sentiment = chatbot_obj.get("apply_sentiment", True)
             categorize=chatbot_obj.get("categorize", None)
-            categorize_system_message = chatbot_obj.get("categorize_system_message", None)
+
              
 
 
@@ -131,7 +131,6 @@ def load_chatbot_settings(bot_name: str):
                 name=chatbot_obj["name"],
                 index_name=chatbot_obj.get("index_name", None),
                 system_message=chatbot_obj["system_message"],
-                categorize_system_message=categorize_system_message,
                 examples=chatbot_obj.get("examples", []),
                 custom_settings=custom_settings,
                 enable_history=enable_history,
@@ -152,7 +151,7 @@ def load_chatbot_settings(bot_name: str):
         enable_history=True,
         preserve_first_message=False,
         apply_sentiment=True,
-        categorize=False
+        categorize=None
     )
 
 def get_media_info() -> dict:

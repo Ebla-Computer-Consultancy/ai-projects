@@ -12,7 +12,7 @@ class CustomSettings:
 # Class for individual chatbot information
 class ChatbotSetting:
     def __init__(
-        self, name, index_name, system_message,enable_history,apply_sentiment ,preserve_first_message,categorize_system_message,examples=[], custom_settings=None,categorize=False
+        self, name, index_name, system_message,enable_history,apply_sentiment ,preserve_first_message,examples=[], custom_settings=None,categorize=None
     ):  # Default to None
         self.name = name
         self.index_name = index_name
@@ -22,7 +22,6 @@ class ChatbotSetting:
             custom_settings if custom_settings is not None else CustomSettings()
         )
         self.system_message = system_message
-        self.categorize_system_message = categorize_system_message
         self.examples = examples
         self.enable_history = enable_history,
         self.apply_sentiment = apply_sentiment

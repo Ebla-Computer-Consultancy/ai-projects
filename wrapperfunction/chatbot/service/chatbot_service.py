@@ -25,7 +25,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         chatbot_settings = config.load_chatbot_settings(bot_name)
         category_result = None
         if chatbot_settings.categorize:
-            category_result = CategorizeQuery(chat_payload.messages[-1].content, bot_name)
+            category_result = categorize_query(chat_payload.messages[-1].content, bot_name)
         
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
@@ -35,7 +35,6 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         results = openaiconnector.chat_completion(
             chatbot_settings, chat_history_with_system["chat_history"], category_result
         )
-
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
                 role=Roles.Assistant.value, results=results, question_id=user_message_id, 
@@ -130,43 +129,16 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data =
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
-
-
-
-
-
-
-def CategorizeQuery(query: str, bot_name: str) -> str:
+def categorize_query(query: str, bot_name: str) -> str:
     try:
-        CATEGORIES = [
-    "الأيتام", "العاجز عن العمل", "العاجزة عن العمل", "المسن", "المطلقة", "الأرملة", "مجهول الأبوين",
-    "الضمان الاجتماعي", "ذوي الإعاقة", "ذوي الدخل المحدود", "نظام التقديم تقليدية", "نظام التقديم رقمية غير مكتملة",
-    "اسكان المواطنين", "التوظيف", "الرعاية المجتمعية", "الحماية الاجتماعية", "الجمعيات والمؤسسات الخاصة",
-    "التمكين الأسري", "خدمات تسجيل الجمعيات المهنية", "خدمات الجوائز للأسر المنتجة", "خدمات التدريب",
-    "خدمات المعارض التسويقية", "بدون رسوم", "تحتاج إلى رسوم"
-]
-
-
-
         chatbot_settings = config.load_chatbot_settings(bot_name)
-        categorize_system_message = chatbot_settings.categorize_system_message
-        
-        categorize_system_message += f" The classification categories are: {', '.join(CATEGORIES)}."
-
         prompt = [
-            {"role": "system", "content": categorize_system_message},
+            {"role": "system", "content": chatbot_settings.categorize},
             {"role": "user", "content": query}
         ]
         chatbot_settings.index_name = None
-
         result = openaiconnector.chat_completion(chatbot_settings, prompt)
-
-        if result:
-            category = result.get("message", {}).get("content", "").strip()
-            if category in CATEGORIES:
-                return category
-
-        return None
-
-    except Exception as e:
+        category = result.get("message", {}).get("content", "").strip() if result else None
+        return category if category in chatbot_settings.categorize else None
+    except Exception:
         return None
