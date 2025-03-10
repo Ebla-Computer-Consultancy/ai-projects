@@ -1,8 +1,10 @@
 import json
+from typing import List
 import uuid
 from fastapi import HTTPException
 from wrapperfunction.core import config
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
+from wrapperfunction.social_media.model.x_model import XSearch
 
 def get_all_settings():
     try:
@@ -46,6 +48,21 @@ def update_crawling_status(new_status: str,index: int,new_last_crawl=None):
         entity_settings["media_settings"]["crawling_urls"][index]["crawling_status"] = new_status
         if new_last_crawl:
             entity_settings["media_settings"]["crawling_urls"][index]["last_crawl"] = new_last_crawl
+        return update_bot_settings(entity_settings)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def update_x_crawling_settings(data_list: List[XSearch]):
+    try:
+        entity_settings = get_settings_by_entity(config.ENTITY_NAME)[0]
+        for data in data_list:
+            entity_settings["media_settings"]["x_crawling"].append({
+                "query":data.query,
+                "max_results":data.max_results,
+                "start_time":data.start_time,
+                "end_time":data.end_time
+            })
+        
         return update_bot_settings(entity_settings)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

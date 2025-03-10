@@ -7,7 +7,7 @@
       "custom_settings": {
         "temperature": 0.5
       },
-      "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to the General Authority for Real Estate Regulation."
+      "system_message":"You are an intelligent assistant specifically designed to assist users with research and answer questions related to the General Authority for Real Estate Regulation. If you do not have enough information to answer a question, respond with: 'The requested information is not available in the retrieved data. Please try a different topic or inquiry. If you are inquiring about data related to real estate indicators and statistics, you can try the real estate platform’s smart assistant.'"
     },
     {
       "name": "legal",
@@ -21,10 +21,10 @@
       "name": "media",
       "index_name": "rera-media",
       "custom_settings": {
-        "temperature": 0.5,
+        "temperature": 0.7,
         "max_tokens": 4000
       },
-      "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that writes long reports from a given results, and answers related question "
+      "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that writes long reports from a given results, and answers related question, be creative in the introduction and conclusion paragraphs while writing the reports."
     },
     {
       "name": "interactive",
@@ -384,6 +384,18 @@
       "col-md-12 col-lg-7 animated fadeInUpShort go",
       "container",
       "item"
+    ],
+    "x_crawling":[
+      {
+        "query":"قطر",
+        "max_results":30
+      },
+      {
+        "query":"عقار",
+        "max_results":30,
+        "start_time":null,
+        "end_time":null
+      }
     ],
     "crawling_urls": [{
       "last_crawl":"1-2-2025",

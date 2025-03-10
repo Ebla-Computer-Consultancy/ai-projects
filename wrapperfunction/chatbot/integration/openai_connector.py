@@ -79,12 +79,9 @@ def set_extra_body(chatbot_setting: ChatbotSetting, category_result=None):
                         "url_field": "ref_url",
                         "vector_fields": ["text_vector"],
                     },
-
                     "in_scope": True,
                     "role_information": chatbot_setting.system_message,
-                    "filter": f"search.ismatch('{category_result}', 'categories') or search.ismatchscoring('{category_result}')" if category_result else None,
-
-
+                    "filter": chatbot_setting.custom_settings.filter_exp,
                     "strictness": 3,
                     "top_n_documents":5,
                     "authentication": {"type": "api_key", "key": config.SEARCH_KEY},
