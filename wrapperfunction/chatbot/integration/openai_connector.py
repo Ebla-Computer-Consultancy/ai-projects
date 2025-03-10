@@ -10,12 +10,12 @@ client = AzureOpenAI(
 )
 
 
-def chat_completion(chatbot_setting: ChatbotSetting, chat_history):
+def chat_completion(chatbot_setting: ChatbotSetting, chat_history,category_result=None):
     extra_body = {}
     tools_description = None
     tool_choice = None
     if chatbot_setting.index_name:
-        extra_body = set_extra_body(chatbot_setting)
+        extra_body = set_extra_body(chatbot_setting,category_result)
     if chatbot_setting.custom_settings.tools:
         tools_description = chatbot_setting.custom_settings.tools
         tool_choice = "auto"
@@ -59,7 +59,7 @@ def getToolCalls(tool_calls):
         for tool_call in tool_calls
     ]
 
-def set_extra_body(chatbot_setting: ChatbotSetting):
+def set_extra_body(chatbot_setting: ChatbotSetting, category_result=None):
     return {
         "data_sources": [
             {
@@ -79,12 +79,11 @@ def set_extra_body(chatbot_setting: ChatbotSetting):
                         "url_field": "ref_url",
                         "vector_fields": ["text_vector"],
                     },
-
                     "in_scope": True,
                     "role_information": chatbot_setting.system_message,
                     "filter": chatbot_setting.custom_settings.filter_exp,
                     "strictness": 3,
-                    "top_n_documents": 5,
+                    "top_n_documents":5,
                     "authentication": {"type": "api_key", "key": config.SEARCH_KEY},
                     "embedding_dependency": {
                         "type": "deployment_name",

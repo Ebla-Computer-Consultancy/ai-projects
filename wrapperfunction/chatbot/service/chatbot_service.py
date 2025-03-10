@@ -16,44 +16,45 @@ from wrapperfunction.function_auth.service import jwt_service
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
         token = jwt_service.get_token(request)
-        user_data = jwt_service.decode_jwt(token, clear_payload=True) if token is not None else None
-        user_message_id=str(uuid.uuid4())
+        user_data = jwt_service.decode_jwt(token, clear_payload=True) if token else None
+        user_message_id = str(uuid.uuid4())
         client_details = extract_client_details(request)
         conversation_id = chat_payload.conversation_id or str(uuid.uuid4())
         chat_history_with_system = prepare_chat_history_with_system_message(chat_payload, bot_name, user_data)
         chatbot_settings = config.load_chatbot_settings(bot_name)
+        category_result = None
+        if chatbot_settings.custom_settings.categorize:
+            category_result = categorize_query(chat_payload.messages[-1].content, bot_name)
+            chatbot_settings.custom_settings.filter_exp=f"search.ismatch('{category_result}', '{chatbot_settings.custom_settings.categorize_field}') or search.ismatchscoring('{category_result}')"
+            
         
-
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                Roles.User.value,chat_payload, conversation_id,user_message_id,bot_name,None, client_details, chat_history_with_system
+                Roles.User.value, chat_payload, conversation_id, user_message_id, bot_name, None, client_details, chat_history_with_system
             )
 
-        # Get response from OpenAI ChatGPT
         results = openaiconnector.chat_completion(
-            chatbot_settings, chat_history_with_system["chat_history"]
+            chatbot_settings, chat_history_with_system["chat_history"], category_result
         )
-
         if chatbot_settings.enable_history:
             chat_history_service.save_history(
-                role=Roles.Assistant.value,results=results, question_id=user_message_id,message_id=str(uuid.uuid4()),conversation_id=conversation_id, chat_payload=chat_payload, bot_name=bot_name
+                role=Roles.Assistant.value, results=results, question_id=user_message_id, 
+                message_id=str(uuid.uuid4()), conversation_id=conversation_id, 
+                chat_payload=chat_payload, bot_name=bot_name
             )
-        if chat_payload.stream_id is not None and results["message"]["content"] is not None:
+
+        if chat_payload.stream_id and results["message"]["content"]:
             is_ar = is_arabic(results["message"]["content"][:30])
-            # await avatar connector.render_text_async(chat_payload.stream_id,results['message']['content'], is_ar)
             asyncio.create_task(
-                avatar_connector.render_text_async(
-                    chat_payload.stream_id, results["message"]["content"], is_ar
-                )
-            )            
+                avatar_connector.render_text_async(chat_payload.stream_id, results["message"]["content"], is_ar)
+            )
 
         results["message"]["conversation_id"] = conversation_id
         return results
 
     except Exception as error:
-        asyncio.create_task(chat_history_service.log_error_to_db( str(error), traceback.format_exc(), conversation_id, user_message_id))
+        asyncio.create_task(chat_history_service.log_error_to_db(str(error), traceback.format_exc(), conversation_id, user_message_id))
         return {"error": True, "message": str(error)}
-
 
 def ask_open_ai_chatbot(bot_name: str, chat_payload: ChatPayload):
     try:
@@ -125,8 +126,20 @@ def prepare_chat_history_with_system_message(chat_payload, bot_name, user_data =
     return {"system_message": system_message, "chat_history": chat_history}
 
 
+
 def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
-
-
+def categorize_query(query: str, bot_name: str) -> str:
+    try:
+        chatbot_settings = config.load_chatbot_settings(bot_name)
+        prompt = [
+            {"role": "system", "content": chatbot_settings.custom_settings.categorize},
+            {"role": "user", "content": query}
+        ]
+        chatbot_settings.index_name = None
+        result = openaiconnector.chat_completion(chatbot_settings, prompt)
+        category = result.get("message", {}).get("content", "").strip() if result else None
+        return category if category in chatbot_settings.custom_settings.categorize else None
+    except Exception:
+        return None
