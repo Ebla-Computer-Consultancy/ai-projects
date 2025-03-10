@@ -1,9 +1,11 @@
 from fastapi import HTTPException
 import requests
+import json
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
 
+video_id = config.VIDEO_ID
 
 def get_headers():
     return {
@@ -124,7 +126,7 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str):
+def render_video(video_id: str = video_id):
 
     response = requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
@@ -139,7 +141,7 @@ def render_video(video_id: str):
         ).to_dict()
 
 
-def retrieve_video(video_id: str):
+def retrieve_video(video_id: str = video_id):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers()
     )
@@ -149,9 +151,28 @@ def retrieve_video(video_id: str):
         )
     video = response.text
     return ServiceReturn(
-        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=video
+        status=StatusCode.SUCCESS, message="Rereieve video successfully Done", data=video
         ).to_dict()
-    
+
+
+def update_video(text:str, video_id: str = video_id):
+    response = retrieve_video(video_id)
+    data = json.loads(response["data"])
+    if data["status"] != "ready":
+        raise HTTPException(
+            status_code= 404, detail= "Under rendering... Please Wait!!"
+        )
+    data['slides'][0]['speech'] = text
+    response = requests.patch(
+        f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code, detail=response.reason
+        )
+    return render_video(video_id)
+
+"""
 def list_videos(page: int=1, limit:int=50, with_deleted:bool= False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos?page={page}&limit={limit}&deleted={with_deleted}", headers=get_headers()
@@ -178,3 +199,4 @@ def delete_video(video_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message=f"The video with ID: '{video_id}' has successfully Deleted"
         ).to_dict()
+"""

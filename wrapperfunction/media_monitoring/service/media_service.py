@@ -16,10 +16,9 @@ from wrapperfunction.admin.service.crawl_service import crawl_urls
 from wrapperfunction.chatbot.integration.openai_connector import  chat_completion
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
-from wrapperfunction.core.model import customskill_model
-from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
 from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
 from wrapperfunction.core.service import settings_service
+from wrapperfunction.function_auth.service import validation_service
 from wrapperfunction.search.integration import aisearch_connector
 from wrapperfunction.search.integration.aisearch_connector import get_search_indexer_client, search_query
 from azure.search.documents.indexes.models import SearchIndexer
@@ -30,7 +29,7 @@ import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connec
 
 async def generate_report(search_text: str,index_date_from = None,index_date_to = None,news_date_from = None,news_date_to = None, tags: List[str] = None):
     try:
-        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}.",
+        user_message = f"write a long report in about 2 pages(reach the max)..about:{search_text}. note: today date is {datetime.now().date()}",
         # Prepare Filter Expression
         filter_exp = concat_exp(
             prepare_dates_exp(index_date_from,index_date_to,news_date_from,news_date_to),
@@ -38,7 +37,7 @@ async def generate_report(search_text: str,index_date_from = None,index_date_to 
             )
         # Load Chatbot Settings      
         chat_settings = config.load_chatbot_settings(bot_name="media")
-        chat_settings.custom_settings.filter = filter_exp
+        chat_settings.custom_settings.filter_exp = filter_exp
         # Setup History 
         chat_history = [{"role": "system", "content": chat_settings.system_message}]
         chat_history.append({"role": "user", "content": str(user_message)})
@@ -47,8 +46,12 @@ async def generate_report(search_text: str,index_date_from = None,index_date_to 
             chatbot_setting=chat_settings,
             chat_history=chat_history
         )
-        # Collect All references urls
-        ref = {citation["url"] for citation in chat_res["message"]["context"]["citations"] if citation["url"] is not None}
+        # Renaming Title field & Collect All references urls
+        ref = []  
+        for citation in chat_res["message"]["context"]["citations"]:
+            if citation["url"] is not None:
+                citation["title"] = citation["url"]
+                ref.append(citation["url"])
         # Rename the report
         report_file_name = search_text.replace(" ","_")
         # Get media storage info info 
@@ -57,18 +60,18 @@ async def generate_report(search_text: str,index_date_from = None,index_date_to 
         append_blob(blob=chat_res["message"]["content"],
                     metadata_3=IndexingType.GENERATED.value,
                     folder_name=config.SUBFOLDER_NAME,
-                    container_name= info["reports_container_name"],
+                    container_name= info.reports_container_name,
                     blob_name=f"{report_file_name}.txt")
         
         # Generate SAS url for the report file
-        sas_url = generate_blob_sas_url(container_name= info["reports_container_name"],
+        sas_url = generate_blob_sas_url(container_name= info.reports_container_name,
                                             blob_name=f"{config.SUBFOLDER_NAME}/{report_file_name}.txt")
         return ServiceReturn(
             status=StatusCode.CREATED,
             message=f"{search_text} Report Generated Successfully",
             data={
                 "report_url": sas_url,
-                "references":list(ref),
+                "references":ref,
                 "final_response": chat_res 
             }
         ).to_dict()
@@ -84,7 +87,7 @@ async def media_crawl(urls: list[CrawlRequestUrls], settings: CrawlSettings):
         )
         # Indexer
         info = config.get_media_info()
-        index_info = aisearch_connector.get_index_info(info["index_name"])
+        index_info = aisearch_connector.get_index_info(info.index_name)
         indexer_name = index_info.indexer_name
         search_indexer_client = get_search_indexer_client()
         # search_indexer_client.run_indexer(indexer_name)
@@ -106,8 +109,8 @@ def prepare_tags_exp(tags: list):
     return None
 
 def prepare_dates_exp(index_date_from, index_date_to, news_date_from, news_date_to):
-    index_exp = " and ".join(filter(None, [f"index_date ge {index_date_from}" if index_date_from else None, f"index_date le {index_date_to}" if index_date_to else None]))
-    news_exp = " and ".join(filter(None, [f"news_date ge {news_date_from}" if news_date_from else None, f"news_date le {news_date_to}" if news_date_to else None]))
+    index_exp = " and ".join(filter(None, [f"index_date ge {validate_and_format_date(index_date_from)}" if index_date_from else None, f"index_date le {validate_and_format_date(index_date_to)}" if index_date_to else None]))
+    news_exp = " and ".join(filter(None, [f"news_date ge {validate_and_format_date(news_date_from)}" if news_date_from else None, f"news_date le {validate_and_format_date(news_date_to)}" if news_date_to else None]))
   
     return " and ".join(filter(None, [index_exp, news_exp]))
 
@@ -122,7 +125,9 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
             print(f"Checking status: {status.last_result.status}")
             
             if status.last_result.status != IndexerLastRunStatus.IN_PROGRESS.value:
-                apply_skills_on_index(index_name)
+                asyncio.create_task(
+                    apply_skills_on_index(index_name)
+                )
                 break
             time.sleep(10)
             retries += 1
@@ -216,272 +221,28 @@ async def add_skills_to_knowledge_db(entity: dict):
     except Exception as e:
         print(f'{str(e)}')
         return Exception(f'{str(e)}')
-
-async def sentiment_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            
-            text = record.data["text"]
-            if not text:
-                raise ValueError("Missing 'text' field in data")
-
-            # Analyze sentiment
-            sentiment = textanalytics_connector.analyze_sentiment([text])
-
-            # Add successful result
-            results.append(customskill_model.SkillRecord(
-                    recordId=record_id,
-                    data={
-                            csrk.SENTIMENT.value: sentiment
-                        },
-                    errors=None,
-                    warnings=None
-                        ))
     
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-    return  customskill_model.CustomSkillReturn(values=results).to_dict()
+def return_most_indexed_urls(from_date: str = None, to_date: str = None):
+    try:
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_yyyy_mm_dd(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_yyyy_mm_dd(to_date) else None]))
+        return db_connector.get_entities(table_name=config.MOST_INDEXED_URLS_TABLE, filter_expression=filter_exp)
+    except Exception as e:
+        raise Exception(str(e))
 
-async def detect_language_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            
-            text = record.data["text"]
-            if not text:
-                raise ValueError("Missing 'text' field in data")
+def return_most_used_keywords(from_date: str = None, to_date: str = None):
+    try:
+        filter_exp = " and ".join(filter(None, [f"IndexDate ge '{from_date}'" if from_date and validation_service.is_valid_yyyy_mm_dd(from_date) else None, f"IndexDate le '{to_date}'" if to_date and validation_service.is_valid_yyyy_mm_dd(to_date) else None]))
+        return db_connector.get_entities(table_name=config.MOST_USED_KEYWORDS_TABLE, filter_expression=filter_exp)
+    except Exception as e:
+        raise Exception(str(e))
 
-            # detect_language
-            detected_language = textanalytics_connector.detect_language(messages=[text])
-
-            # Add successful result
-            results.append(customskill_model.SkillRecord(
-                    recordId=record_id,
-                    data={
-                            tak.LANGUAGE_NAME.value: detected_language[tak.LANGUAGE_NAME.value],
-                            tak.LANGUAGE_ISO6391_NAME.value: detected_language[tak.LANGUAGE_ISO6391_NAME.value]
-                        },
-                    errors=None,
-                    warnings=None
-                    ))
-            
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-    return customskill_model.CustomSkillReturn(values=results).to_dict()
-    
-async def extract_key_phrases_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            
-            text = record.data["text"]
-            language = record.data["language"]
-            if not text:
-                raise ValueError("Missing 'text' field in data")
-
-            # Analyze key_phrases
-            key_phrases = textanalytics_connector.extract_key_phrases(messages=[text],language=language)
-
-            # Add successful result
-            results.append(
-                customskill_model.SkillRecord(
-                    recordId=record_id,
-                    data=
-                        {
-                            csrk.KEYPHRASES.value: key_phrases
-                        },
-                    errors=None,
-                    warnings=None
-                        ))
-            
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-    return customskill_model.CustomSkillReturn(values=results).to_dict()
-
-async def entity_recognition_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            
-            text = record.data["text"]
-            language = record.data["language"]
-            if not text:
-                raise ValueError("Missing 'text' field in data")
-
-            # Analyze entity_recognition
-            entities = textanalytics_connector.entity_recognition(messages=[text],language=language)
-
-            # Add successful result
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={
-                    "organizations": entities[tak.ORGANIZATION.value],
-                    "dateTime": entities[tak.DATETIME.value],
-                    "IPAddress": entities[tak.IPADDRESS.value],
-                    "persons": entities[tak.PERSON.value],
-                    "personsType": entities[tak.PERSON_TYPE.value],
-                    "urls": entities[tak.URL.value],
-                    "events": entities[tak.EVENT.value],
-                    "emails": entities[tak.EMAIL.value],
-                    "locations": entities[tak.LOCATION.value],
-                    "phonesNumbers": entities[tak.PHONE_NUMBER.value],
-                    "skills": entities[tak.SKILL.value],
-                    "products": entities[tak.PRODUCT.value],
-                    "quantities": entities[tak.QUANTITY.value],
-                    "addresses": entities[tak.ADDRESS.value]
-                },
-                errors=None,
-                warnings=None
-            ))
-            
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-    return  customskill_model.CustomSkillReturn(values=results).to_dict()  
-
-async def image_embedding_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            
-            url = record.data["url"]
-            if not url:
-                raise ValueError("Missing 'url' field in data")
-
-            # Vectorize Image
-            vector = imageanalytics_connector.image_embedding(img_url=url)
-
-            # Add successful result
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={
-                        csrk.IMG_VECTOR.value: vector["vector"]
-                    },
-                errors=None,
-                warnings=None
-            ))
-            
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-    return customskill_model.CustomSkillReturn(values=results).to_dict() 
-
-async def image_analysis_skill(values: list):
-    results = []
-    for record in values:
-        record_id = record.recordId  
-        try:
-            url = record.data["url"]
-            if not url:
-                raise ValueError("Missing 'url' field in data")
-
-            # Analyze Image
-            analyzed_image = imageanalytics_connector.analyze_image_from_url(img_url=url)
-
-            # Add successful result
-            img_read=""
-            for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
-               img_read += f"{line['text']}\n" 
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={
-                    csrk.IMG_CAPTION.value: analyzed_image["captionResult"]["text"],
-                    csrk.IMG_DENSE_CAPTIONS.value:[captions["text"] for captions in analyzed_image["denseCaptionsResult"]["values"]],
-                    csrk.IMG_TAGS.value: [tags["name"] for tags in analyzed_image["tagsResult"]["values"]],
-                    csrk.IMG_READ.value: img_read
-                    },
-                errors=None,
-                warnings=None
-            ))
-        except ValueError as ve:
-            # Handle missing or invalid fields
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(ve)}",
-                warnings=None
-            ))
-        except Exception as e:
-            # Catch unexpected errors
-            results.append(customskill_model.SkillRecord(
-                recordId=record_id,
-                data={},
-                errors=f"Unexpected error: {str(e)}",
-                warnings=None
-            ))
-            
-    return customskill_model.CustomSkillReturn(values=results).to_dict()
+def validate_and_format_date(date: str):
+    try:
+        if validation_service.is_valid_iso8601_utc_date(date):
+            return date
+        else:
+            if is_valid_date(date):
+                date = parser.parse(date).replace(microsecond=0).isoformat() + "Z"
+                return date
+    except Exception as e:
+        raise Exception("Invalid Date Format date format should be in YYYY-MM-DDT00:00:00Z format")
