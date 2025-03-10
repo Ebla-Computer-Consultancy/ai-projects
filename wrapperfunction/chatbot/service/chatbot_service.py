@@ -10,7 +10,6 @@ from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
-from wrapperfunction.core.model.entity_setting import ChatbotSetting
 from wrapperfunction.core.utls.helper import extract_client_details
 from wrapperfunction.function_auth.service import jwt_service
 
@@ -26,7 +25,7 @@ async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
         category_result = None
         if chatbot_settings.custom_settings.categorize:
             category_result = categorize_query(chat_payload.messages[-1].content, bot_name)
-            chatbot_settings.custom_settings.filter_exp=f"search.ismatch('{category_result}', {chatbot_settings.custom_settings.categorize_field}) or search.ismatchscoring('{category_result}')"
+            chatbot_settings.custom_settings.filter_exp=f"search.ismatch('{category_result}', '{chatbot_settings.custom_settings.categorize_field}') or search.ismatchscoring('{category_result}')"
             
         
         if chatbot_settings.enable_history:
@@ -135,7 +134,7 @@ def categorize_query(query: str, bot_name: str) -> str:
     try:
         chatbot_settings = config.load_chatbot_settings(bot_name)
         prompt = [
-            {"role": "system", "content": chatbot_settings.categorization_settings.categorize},
+            {"role": "system", "content": chatbot_settings.custom_settings.categorize},
             {"role": "user", "content": query}
         ]
         chatbot_settings.index_name = None
