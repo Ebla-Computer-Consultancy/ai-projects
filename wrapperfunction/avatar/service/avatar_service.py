@@ -1,5 +1,8 @@
+import asyncio
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 from fastapi import Request
+
+from wrapperfunction.core import config
 
 def start_stream(size: str,stream_id: str):
     return avatar_connector.start_stream(size,stream_id)
@@ -18,15 +21,16 @@ async def send_answer(stream_id: str, request: Request):
     jsonData = {"answer": answer}
     return avatar_connector.send_answer(stream_id, jsonData)
 
-
-async def render_text(stream_id: str, request: Request):
-    data = await request.json()
-    text = data.get("text")
-    return avatar_connector.render_text(stream_id, text)
-
 async def render_text_async(stream_id: str, text: str, is_ar: bool):
-    return avatar_connector.render_text_async(stream_id, text, is_ar)
+    return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
 
+async def greeting(stream_id: str, bot_name: str, is_ar: bool):
+    text = (
+        config.load_chatbot_settings(bot_name).greeting_message["ar"]
+        if is_ar
+        else config.load_chatbot_settings(bot_name).greeting_message["en"]
+    )
+    return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
 def stop_render(stream_id: str):
     return avatar_connector.stop_render(stream_id)
 
