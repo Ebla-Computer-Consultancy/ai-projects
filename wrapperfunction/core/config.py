@@ -78,7 +78,8 @@ X_KEY=os.getenv("X_KEY")
 X_TABLE=os.getenv("X_TABLE")
 MOST_INDEXED_URLS_TABLE=os.getenv("MOST_INDEXED_URLS_TABLE")
 MOST_USED_KEYWORDS_TABLE=os.getenv("MOST_USED_KEYWORDS_TABLE")
-
+SPEECH_CUSTOM_DOMAIN_NAME=os.getenv("SPEECH_CUSTOM_DOMAIN_NAME")
+SPEECH_RESOURCE_ID=os.getenv("SPEECH_RESOURCE_ID")
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service

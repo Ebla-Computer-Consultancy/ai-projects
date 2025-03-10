@@ -4,7 +4,6 @@ import requests
 import azure.cognitiveservices.speech as speechsdk
 import wrapperfunction.core.config as config
 from azure.identity import ClientSecretCredential
-from azure.core.credentials import AccessToken
 
 def transcribe_audio_file(audio_stream: str):
     speech_config = speechsdk.SpeechConfig(
@@ -68,22 +67,20 @@ def get_speech_token():
             status_code=401, detail=str(e)
         )
 
-def get_speech_entra_access_token():
+def get_private_access_token():
     tenant_id = config.TENANT_ID
     client_id = config.CLIENT_ID
     client_secret = config.CLIENT_SECRET_VALUE
-    resource_url = "https://cognitiveservices.azure.com/.default"
-    token_endpoint = f"https://login.microsoftonline.com/{tenant_id}/oauth2/token"
-    
+    speech_custom_domain_name = config.SPEECH_CUSTOM_DOMAIN_NAME
+    resource_id = config.SPEECH_RESOURCE_ID
+
     try:
-        payload = {
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "resource": resource_url
-        }
-        response = requests.post(token_endpoint, data=payload)
-        return response.access_token
+        credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+        token = credential.get_token("https://cognitiveservices.azure.com/.default").token
         
+        authorization_token = f"aad#{resource_id}#{token}"
+        endpoint = f"wss://{speech_custom_domain_name}.cognitiveservices.azure.com/stt/speech/recognition/conversation/cognitiveservices/v1"
+        
+        return {"token": authorization_token, "endpoint": endpoint}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
