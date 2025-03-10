@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Request
+from fastapi import APIRouter, HTTPException,Request
 import wrapperfunction.avatar.service.avatar_service as avatar_service
 
 router = APIRouter()
@@ -18,9 +18,12 @@ async def send_answer(stream_id: str, request: Request):
     return await avatar_service.send_answer(stream_id, request)
 
 
-@router.post("/render-text/{stream_id}")
-async def render_text(stream_id: str, text: str, is_ar: bool):
-    return await avatar_service.render_text_async(stream_id, text, is_ar)
+@router.post("/grating/{bot_name}/{stream_id}")
+async def grating(bot_name: str, stream_id: str, is_ar: bool):
+    try:
+        return await avatar_service.grating(stream_id, bot_name, is_ar)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/stop-render/{stream_id}")
 def stop_render(stream_id: str):
