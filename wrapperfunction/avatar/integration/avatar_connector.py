@@ -101,7 +101,7 @@ async def render_text_async(stream_id: str, text: str, is_ar: bool):
 
 def stop_render(stream_id: str):
     response = requests.delete(
-       f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+        f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
         headers=get_headers()
     )
     if response.status_code != 200:
