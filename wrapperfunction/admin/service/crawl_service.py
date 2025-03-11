@@ -182,6 +182,7 @@ def collect_urls(data, url, settings:CrawlSettings):
 # parse website content .
 def get_page_content(data, settings: CrawlSettings):
     try:
+        settings.selectors = settings.selectors if len(settings.selectors) else ['div']
         content = " ".join(
             set(
                 element.text
@@ -193,7 +194,7 @@ def get_page_content(data, settings: CrawlSettings):
     except Exception as error:
         raise HTTPException(
             status_code=400,
-            detail=f"Error retrieving the URLs in the site: {error.__cause__}",
+            detail=str(error),
         )
     
 
