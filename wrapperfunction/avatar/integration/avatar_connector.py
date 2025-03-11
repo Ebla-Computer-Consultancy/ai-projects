@@ -3,6 +3,7 @@ import requests
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
+import json
 
 
 def get_headers():
@@ -151,7 +152,26 @@ def retrieve_video(video_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=video
         ).to_dict()
-    
+
+
+def update_video(text:str, video_id: str):
+    response = retrieve_video(video_id)
+    data = json.loads(response["data"])
+    if data["status"] != "ready":
+        raise ServiceReturn(
+        status=StatusCode.SUCCESS, message="RENDERING"
+        ).to_dict()
+    data['slides'][0]['speech'] = text
+    response = requests.patch(
+        f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code, detail=response.reason
+        )
+    return render_video(video_id)
+
+"""
 def list_videos(page: int=1, limit:int=50, with_deleted:bool= False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos?page={page}&limit={limit}&deleted={with_deleted}", headers=get_headers()
@@ -178,3 +198,4 @@ def delete_video(video_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message=f"The video with ID: '{video_id}' has successfully Deleted"
         ).to_dict()
+"""
