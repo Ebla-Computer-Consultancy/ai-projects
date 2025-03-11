@@ -1,9 +1,12 @@
+
 from fastapi.datastructures import UploadFile
 from wrapperfunction.chat_history.bp.chat_history_blue_print import StatusCode
 from wrapperfunction.chatbot.integration import openai_connector
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn
 from wrapperfunction.video_indexer.integration import vi_connector
+from io import StringIO
+import xml.etree.ElementTree as ET
 
 
 async def get_all_videos():
@@ -28,8 +31,8 @@ async def get_video_index(video_id: str,bot_name: str,language:str):
         else:
             summary_content = transcript
             summary = summarize_with_openai(summary_content, bot_name, language)                    
-        video_stream_url = await vi_connector.get_stream_url(video_id,"video/mp4")
-        audio_stream_url = await vi_connector.get_stream_url(video_id,"audio/mp4")
+        video_stream_url = await get_stream_url(video_id,"video/mp4")
+        audio_stream_url = await get_stream_url(video_id,"audio/mp4")
         video_download_url=await vi_connector.get_video_download_url(video_id)
         video_caption=await vi_connector.get_video_caption_url(video_id)
         return ServiceReturn(status=StatusCode.SUCCESS,message=f"Indexing completed successfully for video ID: {video_id}",data={"res_data": res_data,"summary": summary,"video_stream_url": video_stream_url,"audio_stream_url":audio_stream_url,"video_download_url":video_download_url,"video_caption":video_caption}).to_dict()
@@ -100,3 +103,15 @@ def summarize_with_openai(content: str, bot_name: str, language: str):
         return response["message"]["content"].strip()
     except Exception as e:
         return f"Error summarizing content: {str(e)}"
+
+async def get_stream_url(video_id,content_type):
+        mpd_data = await vi_connector.get_stream_url(video_id)
+        try:
+            for event, elem in ET.iterparse(StringIO(mpd_data), events=("start",)):
+                if elem.tag.endswith("Representation") and elem.attrib.get("mimeType") == content_type:
+                    base_url = elem.find(".//BaseURL", namespaces={"": "urn:mpeg:dash:schema:mpd:2011"})
+                    if base_url is not None:
+                        return base_url.text
+        except ET.ParseError:
+            return None 
+ 

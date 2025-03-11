@@ -1,6 +1,5 @@
-from io import StringIO
+
 import json
-import xml.etree.ElementTree as ET
 import requests
 import httpx
 from typing import Dict
@@ -227,7 +226,7 @@ def get_video_thumbnail(video_id):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def get_stream_url(video_id: str, content_type: str):
+async def get_stream_url(video_id: str):
     try:
         access_token = get_access_token()["data"]
         url = f"https://api.videoindexer.ai/{config.ACCOUNT_REGION}/Accounts/{config.VIDEO_INDEXER_ACCOUNT_ID}/Videos/{video_id}/streaming-url"
@@ -248,15 +247,7 @@ async def get_stream_url(video_id: str, content_type: str):
                 return None
 
             mpd_data = manifest_response.text.strip()
-            try:
-                for event, elem in ET.iterparse(StringIO(mpd_data), events=("start",)):
-                    if elem.tag.endswith("Representation") and elem.attrib.get("mimeType") == content_type:
-                        base_url = elem.find(".//BaseURL", namespaces={"": "urn:mpeg:dash:schema:mpd:2011"})
-                        if base_url is not None:
-                            return base_url.text
-            except ET.ParseError:
-                return None
-
+            return mpd_data
         return None
     except Exception:
         return None
