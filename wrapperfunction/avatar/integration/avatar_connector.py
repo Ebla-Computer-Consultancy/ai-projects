@@ -125,9 +125,9 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str):
+async def render_video(video_id: str):
 
-    response = requests.post(
+    response = await requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
     )
     if response.status_code != 200:
@@ -154,7 +154,7 @@ def retrieve_video(video_id: str):
         ).to_dict()
 
 
-def update_video(text:str, video_id: str):
+def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
     response = retrieve_video(video_id)
     data = json.loads(response["data"])
     if data["status"] != "ready":

@@ -72,7 +72,7 @@ API_VERSION = os.getenv("API_VERSION")
 SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
 COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
-
+ELAI_VIDEO_ID = os.getenv("elai_VIDEO_ID")
 
 
 def load_entity_settings():
@@ -94,7 +94,7 @@ def load_entity_settings():
                 return entity
 
 ENTITY_SETTINGS = load_entity_settings()
-AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
+# AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
 
 
 def load_chatbot_settings(bot_name: str):

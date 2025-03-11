@@ -30,6 +30,10 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return avatar_service.close_stream(stream_id)
 
+@router.post("/update-video")
+def update_video(text: str):
+    return avatar_service.update_video(text)
+
 @router.post("/render-video/{video_id}")
 def render_video(video_id: str):
     return avatar_service.render_video(video_id)

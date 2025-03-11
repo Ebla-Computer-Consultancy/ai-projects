@@ -33,6 +33,9 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return avatar_connector.close_stream(stream_id)
 
+def update_video(text: str):
+    return avatar_connector.update_video(text)
+
 def render_video(video_id: str):
     return avatar_connector.render_video(video_id)
 
