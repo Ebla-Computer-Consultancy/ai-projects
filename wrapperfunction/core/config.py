@@ -152,7 +152,6 @@ def load_chatbot_settings(bot_name: str):
         name=ENTITY_NAME,
         index_name=ENTITY_NAME,
         system_message="",
-        categorize_system_message=None,
         examples=[],
         custom_settings=None,
         enable_history=True,
