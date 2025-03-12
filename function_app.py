@@ -11,4 +11,3 @@ app.register_functions(media_bp)
 app.register_functions(chat_history_bp)
 app.register_functions(social_bp)
 
-
