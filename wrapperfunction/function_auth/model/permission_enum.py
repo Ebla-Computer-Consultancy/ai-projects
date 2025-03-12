@@ -14,3 +14,4 @@ class PermissionTypes(Enum):
     SOCIAL_MEDIA = "SOCIAL_MEDIA"
     FAQ = "FAQ"
     VIDEO_INDEXER = "VIDEO_INDEXER"
+    LOCALIZATION = "LOCALIZATION"

@@ -10,8 +10,8 @@ async def create_label(label: localizationPayload):
     return await localizationservice.create_label(label)
 
 
-@router.get("/{lookup_key}", response_model=dict)
-async def read_label(lookup_key: str):
+@router.get("/", response_model=dict)
+async def read_label(lookup_key: str =None):
     return await localizationservice.read_label(lookup_key)
 
 

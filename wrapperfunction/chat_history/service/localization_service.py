@@ -16,22 +16,34 @@ async def create_label(label: Optional[localizationPayload]=None):
         ).to_dict()
 
 
+
 async def read_label(lookup_key: str):
     filter_expression = f"{LocalizationPropertyName.LOOKUP_KEY.value} eq '{lookup_key}'"
-    entities = get_entities(table_name=config.LOCALIZATION_TABLE_NAME, filter_expression=filter_expression)
-    if entities:
-        return ServiceReturn(
-        status=StatusCode.SUCCESS,message= "Done",data= entities[0]
-        ).to_dict()
+    if lookup_key is not None:
+        entities = get_entities(table_name=config.LOCALIZATION_TABLE_NAME, filter_expression=filter_expression)
+        if len(entities) != 0:
+            return ServiceReturn(
+            status=StatusCode.SUCCESS,message= "Done",data= entities[0]
+            ).to_dict()
+        else:
+            return ServiceReturn(
+            status=StatusCode.NOT_FOUND,message= "This localization item not found"
+            ).to_dict()
     else:
-        return ServiceReturn(
-        status=StatusCode.NOT_FOUND,message= "This localization item not found"
-        ).to_dict()
-    
+        entities = get_entities(table_name=config.LOCALIZATION_TABLE_NAME, filter_expression=None)
+        if len(entities) != 0:
+            return ServiceReturn(
+            status=StatusCode.SUCCESS,message= "Done",data= entities
+            ).to_dict()
+        else:
+            return ServiceReturn(
+            status=StatusCode.NOT_FOUND,message= "This localization item not found"
+            ).to_dict()
+        
 async def update_label(lookup_key: str, label: Optional[localizationPayload]=None):
     filter_expression = f"{LocalizationPropertyName.LOOKUP_KEY.value} eq '{lookup_key}'"
     entities = get_entities(table_name=config.LOCALIZATION_TABLE_NAME, filter_expression=filter_expression)
-    if entities:
+    if len(entities) != 0:
         label_data = label.to_dict()
         entities[0].update(lookup_key=label_data["lookup_key"], ar_name=label_data["ar_name"], en_name= label_data["en_name"])
         update_entity(table_name=config.LOCALIZATION_TABLE_NAME, entity=entities[0])
@@ -47,7 +59,7 @@ async def update_label(lookup_key: str, label: Optional[localizationPayload]=Non
 async def delete_label(lookup_key: str):
     filter_expression = f"{LocalizationPropertyName.LOOKUP_KEY.value} eq '{lookup_key}'"
     entities = get_entities(table_name=config.LOCALIZATION_TABLE_NAME, filter_expression=filter_expression)
-    if entities:
+    if len(entities) != 0:
         delete_entity(table_name=config.LOCALIZATION_TABLE_NAME, entity=entities[0])
         return ServiceReturn(
         status=StatusCode.SUCCESS,message= "The localization item has successfully Deleted"

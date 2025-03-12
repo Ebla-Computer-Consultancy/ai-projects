@@ -45,5 +45,5 @@ app.include_router(localiazation_ctrl.router,prefix="/api/v1/localization", tags
 app.include_router(x_ctrl.router, prefix="/api/v1/social", tags=["social"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.SOCIAL_MEDIA.value))])
 app.include_router(vi_ctrl.router, prefix="/api/v1/vi", tags=["video-indexer"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.VIDEO_INDEXER.value))])
 app.include_router(FAQ_ctrl.router, prefix="/api/v1/FAQ", tags=["FAQ"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.FAQ.value))])
-
+app.include_router(localiazation_ctrl.router,prefix="/api/v1/localization", tags=["Localization"],dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.LOCALIZATION.value))])
 
