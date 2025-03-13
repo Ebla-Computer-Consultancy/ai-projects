@@ -7,8 +7,8 @@
                 "temperature":0.3
             },
             "greeting_message": {
-                "ar": " معكم المساعد الذكي للهيئة العامة لتنظيم القطاع العقاري, كيف يمكنني مساعدتك؟ ",
-                "en": "This is the Real Estate Regulatory Authority's smart assistant. How can I help you?"
+                "ar": " مرحبا بك في المساعد الذكي, كيف يمكنني مساعدتك؟ ",
+                "en": "Welcome to the smart assistant, how can I help you?"
             },
             "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions."
         },
@@ -19,8 +19,8 @@
                 "temperature":0.3
             },
             "greeting_message": {
-                "ar": " معكم المساعد الذكي للهيئة العامة لتنظيم القطاع العقاري, كيف يمكنني مساعدتك؟ ",
-                "en": "This is the Real Estate Regulatory Authority's smart assistant. How can I help you?"
+                "ar": مرحبا بك في المساعد الذكي, كيف يمكنني مساعدتك؟ ",
+                "en": "Welcome to the smart assistant, how can I help you?"
             },
             "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions."
         }
