@@ -140,7 +140,7 @@ def render_video(video_id: str):
         ).to_dict()
 
 
-def retrieve_video(video_id: str):
+def retrieve_video(video_id: str=config.ELAI_VIDEO_ID):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers()
     )
@@ -148,19 +148,26 @@ def retrieve_video(video_id: str):
         raise HTTPException(
             status_code=response.status_code, detail=response.reason
         )
-    video = response.text
-    return ServiceReturn(
-        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=video
+    data = json.loads(response.text)
+    print(data["status"])
+    print(data["url"])
+    if data["status"] != "ready":
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
+    else:    
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=data["url"]
         ).to_dict()
 
 
 def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
     response = retrieve_video(video_id)
     data = json.loads(response["data"])
-    #if data["status"] != "ready":
-    #    raise ServiceReturn(
-    #    status=StatusCode.SUCCESS, message="RENDERING"
-    #    ).to_dict()
+    if data["status"] != "ready":
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
     data['slides'][0]['speech'] = text
     data['slides'][0]['status'] = "edited"
     response = requests.patch(

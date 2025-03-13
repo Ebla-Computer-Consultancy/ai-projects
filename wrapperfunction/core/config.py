@@ -94,7 +94,7 @@ def load_entity_settings():
                 return entity
 
 ENTITY_SETTINGS = load_entity_settings()
-# AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
+AR_DICT = ENTITY_SETTINGS.get("dict_AR", {})
 
 
 def load_chatbot_settings(bot_name: str):
