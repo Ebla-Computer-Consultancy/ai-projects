@@ -7,6 +7,10 @@
       "custom_settings": {
         "temperature": 0.5
       },
+      "greeting_message": {
+        "ar": " معكم المساعد الذكي للهيئة العامة لتنظيم القطاع العقاري, كيف يمكنني مساعدتك؟ ",
+        "en": "This is the Real Estate Regulatory Authority's smart assistant. How can I help you?"
+      },
       "system_message":"You are an intelligent assistant specifically designed to assist users with research and answer questions related to the General Authority for Real Estate Regulation. If you do not have enough information to answer a question, respond with: 'The requested information is not available in the retrieved data. Please try a different topic or inquiry. If you are inquiring about data related to real estate indicators and statistics, you can try the real estate platform’s smart assistant.'"
     },
     {
@@ -14,6 +18,10 @@
       "index_name": "rera-legal",
       "custom_settings": {
         "temperature": 0.5
+      },
+      "greeting_message": {
+        "ar": "معكم المساعد القانوني الذكي للهيئة العامة لتنظيم القطاع العقاري, كيف يمكنني مساعدتك؟",
+        "en": "This is the Real Estate Regulatory Authority's smart legal assistant. How can I help you?"
       },
       "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions related to a legal documents for a General Authority for Real Estate Regulation."
     },
