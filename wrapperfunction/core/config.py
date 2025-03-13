@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
+from wrapperfunction.media_monitoring.model.media_model import MediaInfo
 
 # Load environment variables from .env file
 load_dotenv()
@@ -73,6 +74,11 @@ SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
 COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
 ELAI_VIDEO_ID = os.getenv("elai_VIDEO_ID")
+X_KEY=os.getenv("X_KEY")
+X_TABLE=os.getenv("X_TABLE")
+MOST_INDEXED_URLS_TABLE=os.getenv("MOST_INDEXED_URLS_TABLE")
+MOST_USED_KEYWORDS_TABLE=os.getenv("MOST_USED_KEYWORDS_TABLE")
+
 
 
 def load_entity_settings():
@@ -111,7 +117,12 @@ def load_chatbot_settings(bot_name: str):
             enable_history = chatbot_obj.get("enable_history", True)
             preserve_first_message = chatbot_obj.get("preserve_first_message", False)
             display_in_chat = custom_settings_data.get("display_in_chat", True)
-            apply_sentiment = chatbot_obj.get("apply_sentiment", True) 
+            apply_sentiment = chatbot_obj.get("apply_sentiment", True)
+            categorize=custom_settings_data.get("categorize", None)
+            categorize_filed=custom_settings_data.get("categorize_filed", None)
+            greeting_message=chatbot_obj.get("greeting_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"})
+
+             
 
 
             custom_settings = CustomSettings(
@@ -121,6 +132,8 @@ def load_chatbot_settings(bot_name: str):
                 tools=tools,
                 max_history_length=max_history_length,
                 display_in_chat=display_in_chat,
+                categorize=categorize,
+                categorize_field=categorize_filed
 
             )
 
@@ -133,7 +146,7 @@ def load_chatbot_settings(bot_name: str):
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
-            )
+                greeting_message=greeting_message)
             return chatbot
 
     return ChatbotSetting(
@@ -144,16 +157,20 @@ def load_chatbot_settings(bot_name: str):
         custom_settings=None,
         enable_history=True,
         preserve_first_message=False,
-        apply_sentiment=True
+        apply_sentiment=True,
+        greeting_message=greeting_message
     )
 
 
-def get_media_info() -> dict:
+def get_media_info() -> MediaInfo:
+
     try:
         media_settings = ENTITY_SETTINGS.get("media_settings",{})
         info = media_settings.get("info",{}) if len(media_settings) > 0 else None
         if info is not None and len(info) > 0: 
-            return info
+            return MediaInfo(index_name=info.get("index_name","media"),
+                             reports_container_name=info.get("reports_container_name","media-reports"),
+                             container_name=info.get("container_name","media"))
         else:
             raise HTTPException(status_code=500, detail="There is no media setting info provided")
     except Exception as e:

@@ -1,10 +1,12 @@
 from fastapi import HTTPException
 import requests
+import json
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
 import json
 
+video_id = config.VIDEO_ID
 
 def get_headers():
     return {
@@ -100,7 +102,7 @@ async def render_text_async(stream_id: str, text: str, is_ar: bool):
 
 def stop_render(stream_id: str):
     response = requests.delete(
-       f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+        f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
         headers=get_headers()
     )
     if response.status_code != 200:
@@ -125,7 +127,7 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str):
+def render_video(video_id: str = video_id):
 
     response = requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
@@ -138,6 +140,7 @@ def render_video(video_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message="Render video successfully Done", data=video
         ).to_dict()
+
 
 
 def retrieve_video(video_id: str=config.ELAI_VIDEO_ID, internal = False):
@@ -173,6 +176,7 @@ def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
         ).to_dict()
     data['slides'][0]['speech'] = text
     data['slides'][0]['status'] = "edited"
+
     response = requests.patch(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
     )
