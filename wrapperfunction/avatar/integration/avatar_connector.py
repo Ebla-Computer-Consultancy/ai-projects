@@ -140,7 +140,7 @@ def render_video(video_id: str):
         ).to_dict()
 
 
-def retrieve_video(video_id: str=config.ELAI_VIDEO_ID):
+def retrieve_video(video_id: str=config.ELAI_VIDEO_ID, internal = False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers()
     )
@@ -149,8 +149,11 @@ def retrieve_video(video_id: str=config.ELAI_VIDEO_ID):
             status_code=response.status_code, detail=response.reason
         )
     data = json.loads(response.text)
-    print(data["status"])
-    print(data["url"])
+    if internal:
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=response.text
+        ).to_dict()
+    
     if data["status"] != "ready":
         return ServiceReturn(
         status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
@@ -162,9 +165,9 @@ def retrieve_video(video_id: str=config.ELAI_VIDEO_ID):
 
 
 def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
-    response = retrieve_video(video_id)
-    data = json.loads(response["data"])
-    if data["status"] != "ready":
+    response = retrieve_video(video_id,True)
+    data = json.loads(response["data"]) or None
+    if data == None:
         return ServiceReturn(
         status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
         ).to_dict()
