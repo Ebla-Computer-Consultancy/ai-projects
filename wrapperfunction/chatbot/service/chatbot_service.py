@@ -2,16 +2,22 @@ import asyncio
 import datetime
 import json
 import traceback
+from typing import Optional
 import uuid
 from fastapi import Request
 from wrapperfunction.chatbot.model.chat_payload import ChatPayload
-from wrapperfunction.chatbot.model.chat_message import Roles
+from wrapperfunction.chatbot.model.chat_message import MessageType, Roles
 from wrapperfunction.core import config
 import wrapperfunction.chatbot.integration.openai_connector as openaiconnector
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
 import wrapperfunction.chat_history.service.chat_history_service as chat_history_service
+from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from wrapperfunction.core.utls.helper import extract_client_details
+from wrapperfunction.document_intelligence.integration.document_intelligence_connector import analyze_file
 from wrapperfunction.function_auth.service import jwt_service
+from wrapperfunction.chat_history.model.message_entity import MessageEntity
+from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity 
+
 
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
@@ -131,8 +137,8 @@ def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 def categorize_query(query: str, bot_name: str) -> str:
-    try:
 
+    try:
         chatbot_settings = config.load_chatbot_settings(bot_name)
         prompt = [
             {"role": "system", "content": chatbot_settings.custom_settings.categorize},
@@ -144,3 +150,42 @@ def categorize_query(query: str, bot_name: str) -> str:
         return category if category in chatbot_settings.custom_settings.categorize else None
     except Exception:
         return None
+
+async def upload_documents(files, bot_name, conversation_id: Optional[str] = None):
+    try:
+        content = ""
+        for file in files:
+            extracted_text = analyze_file(file, model_id='prebuilt-read').content
+            content += extracted_text
+        if not conversation_id:
+            conversation_id = str(uuid.uuid4())
+            title = content[:20].strip()
+
+            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+            conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title)
+            await chat_history_service.add_entity(message_entity=user_message_entity, conv_entity=conv_entity)
+        else:
+            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+
+            await chat_history_service.add_entity(message_entity=user_message_entity)
+
+        return ServiceReturn(
+            status=StatusCode.SUCCESS, message="file uploaded successfully", data=conversation_id
+        ).to_dict()
+
+    except Exception as e:
+        return ServiceReturn(
+            status=StatusCode.INTERNAL_SERVER_ERROR, message=f"Error occurred: {str(e)}"
+        ).to_dict()
+def get_openai_instruction(prompt, bot_name):
+    chat_history = [
+        {"role": "user", "content": prompt},
+    ]
+    chatbot_settings = config.load_chatbot_settings(bot_name)
+
+    try:
+        response = openaiconnector.chat_completion(chatbot_settings, chat_history)
+       
+        return response['message']['content']
+    except Exception as e:
+        return {"error": f"Error with Azure OpenAI API: {e}"}
