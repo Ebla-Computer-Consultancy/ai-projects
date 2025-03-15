@@ -20,12 +20,11 @@ azure-data-tables
 bs4==0.0.2
 lxml
 azure-ai-vision-imageanalysis==1.0.0b2
-
-
 pypdf
-
 validators
-
-
 user_agents
+PyJWT==2.10.1
+ldap3==2.9.1
+azure-identity
+
 

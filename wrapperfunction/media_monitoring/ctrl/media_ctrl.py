@@ -9,7 +9,12 @@ router = APIRouter()
 @router.post("/generate-report/")
 async def generate_report(request:MediaRequest):
     try:
-        return await media_service.generate_report(request.search_text)
+        return await media_service.generate_report(request.search_text,
+                                                   index_date_from=request.index_date_from,
+                                                   index_date_to=request.index_date_to,
+                                                   news_date_from=request.news_date_from,
+                                                   news_date_to=request.news_date_to,
+                                                   tags=request.tags)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -20,6 +25,34 @@ async def media_crawl(request:MediaCrawlRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/crawl/status")
+def get_all_urls_crawling_status():
+    try:
+        return media_service.get_crawling_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/index/{index_name}")
+async def update_index_with_skills(index_name:str):
+    try:
+        return await media_service.apply_skills_on_index(index_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/indexed-urls")
+def get_most_indexed_urls(from_date: str = None, to_date: str = None):
+    try:
+        return media_service.return_most_indexed_urls(from_date=from_date,to_date=to_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/used-keywords")
+def get_most_used_keywords(from_date: str = None, to_date: str = None):
+    try:
+        return media_service.return_most_used_keywords(from_date=from_date,to_date=to_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.post("/sentiment/")   
 async def sentiment(request:CustomSkillRequest):
     try:

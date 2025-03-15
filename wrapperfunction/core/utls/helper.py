@@ -1,5 +1,7 @@
 import re
+from fastapi import Request
 from num2words import num2words
+from user_agents import parse
 import wrapperfunction.core.config as config
 
 
@@ -57,12 +59,32 @@ def get_title(url, title=""):
 def sanitize_filename(filename):
     return re.sub(r'[<>:"\\|?*]', "", filename)
 
-def pdfs_files_filter(files):
+def jsonVSfiles_filter(files):
     json_files=[]
     pdf_files=[]
+    other_files = []
     for file in files:
         if file.content_type == "application/pdf":
             pdf_files.append(file)
-        else:
+        elif file.content_type == "application/json":
             json_files.append(file)
-    return pdf_files, json_files
+        else:
+            other_files.append(file)
+    return pdf_files, json_files,other_files
+
+def extract_client_details(request: Request) -> dict:
+    
+    client_ip = request.client.host if request.client else "Unknown"
+    forwarded_ip = request.headers.get("X-Forwarded-For", "Unknown")
+    user_agent = request.headers.get("User-Agent", "")
+    user_agent_parsed = parse(user_agent)
+    device_info = {
+        "browser": user_agent_parsed.browser.family,
+        "os": user_agent_parsed.os.family,
+        "device_type": user_agent_parsed.device.family,
+    }
+    return {
+        "client_ip": client_ip,
+        "forwarded_ip": forwarded_ip,
+        "device_info": device_info,
+    }  

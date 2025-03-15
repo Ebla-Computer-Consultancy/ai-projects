@@ -19,7 +19,7 @@ class VacationTypes(Enum):
     SickLeave="Sick Leave"
     PersonalLeave="Personal Leave"
     PublicHolidays="Public Holidays"
-    UnpaidLeave= "Unpaid Leave",
+    UnpaidLeave= "Unpaid Leave"
     YearVacation="Year Vacation"
     
     def to_list():
@@ -44,6 +44,15 @@ class DepartmentTypes(Enum):
            DepartmentTypes.HR.value,
            DepartmentTypes.SE.value,
            DepartmentTypes.IT.value 
+        ]
+
+class RoleTypes(Enum):
+    MANAGER = "manager"
+    EMPLOYEE = "employee"
+    def to_list():
+        return[
+           RoleTypes.MANAGER.value,
+           RoleTypes.EMPLOYEE.value,
         ]
 class VacationForm(BaseModel):
     vacation_type: str

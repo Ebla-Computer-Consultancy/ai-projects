@@ -1,4 +1,7 @@
 import json
+from fastapi import HTTPException
+import requests
+from wrapperfunction.admin.service import blob_service
 import wrapperfunction.core.config as config
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -21,6 +24,7 @@ def search_query(
     search_text,
     filter_by=None,
     sort_order=None,
+    k = 50,
     page_size=1000000,
     page_number=1,
 ):
@@ -34,7 +38,7 @@ def search_query(
                     "kind": "text",
                     "text":search_text,
                     "fields": "text_vector",
-                    # "k": 10,
+                    "k": k,
                 }
             ],
             query_type="semantic",
@@ -91,6 +95,18 @@ def reset_indexed_data(index_name:str):
     # Delete all documents in the index
     client.upload_documents(documents=batch)
 
+def delete_blobs_and_indexed_data(container_name:str, index_name:str, deleted_url:str):
+    try:
+        subfolders = blob_service.get_subfolders_name(container_name=container_name)
+        for subfolder in subfolders["subfolders"]:    
+            blob_service.delete_blobs(metadata_key="website_url",
+                                    metadata_value=deleted_url,
+                                    subfolder_name=subfolder,
+                                    container_name=container_name)
+            delete_indexed_data(index_name=index_name,key="url",value=deleted_url)
+    except Exception as e:
+        raise Exception(f"{str(e)}")
+
 def run_indexer(index_name:str):
     # Create a search client
     search_indexer_client = get_search_indexer_client()
@@ -127,3 +143,18 @@ def get_index_info(index_name:str):
             data_storage_name =data_storage_name,
             skillset_name=skillset_name
         )
+
+def update_index(index_name: str, data):
+    url = f"{config.SEARCH_ENDPOINT}/indexes/{index_name}/docs/index?api-version={config.SEARCH_API_VERSION}"
+    body = {"value":data}
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": config.SEARCH_KEY  
+    }
+    
+    res = requests.post(url=url,data=json.dumps(body, ensure_ascii=False),headers=headers)
+    if res.ok:
+        return res
+    else:
+        print(f"Error While updating '{index_name}' Index: {str(res.content)}")
+        return HTTPException(status_code=res.status_code, detail=str(res.content))
