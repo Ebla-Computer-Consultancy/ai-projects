@@ -1,4 +1,5 @@
-from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client,get_blob_service_client
+
+from wrapperfunction.admin.integration.blob_storage_integration import generate_sas_token, get_blob_client,get_container_client,get_blob_service_client
 from azure.storage.blob import BlobBlock
 import urllib.parse
 from fastapi import HTTPException, UploadFile
@@ -6,7 +7,6 @@ from fastapi.responses import JSONResponse
 import json
 import os
 from azure.storage.blob import BlobBlock
-
 from wrapperfunction.core import config
 from wrapperfunction.admin.model.crawl_settings import IndexingType
 from wrapperfunction.admin.integration.blob_storage_integration import get_blob_client,get_container_client
@@ -16,6 +16,10 @@ def get_blobs_name(container_name: str, subfolder_name: str= "jsondata"):
     _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
     blobs = [blob.name for blob in blob_list]
     return {"blobs": blobs}
+
+def get_blobs(container_name: str, subfolder_name: str = None):
+    _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
+    return list(blob_list)
 
 def get_containers_name():
     blob_service_client = get_blob_service_client()
@@ -32,9 +36,9 @@ def get_subfolders_name(container_name):
             subfolders.add(subfolder)
     return {"subfolders": list(subfolders)}
 
-def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
+async def add_blobs(container_name, subfolder_name, metadata_1, metadata_2, metadata_4, files: list[UploadFile]):
     for file in files:
-        contents = file.read()
+        contents = await file.read()
 
         data = json.dumps(json.loads(contents), ensure_ascii=False)
         append_blob(blob_name= file.filename,
@@ -61,9 +65,10 @@ def append_blob(
     metadata_2=None,
     metadata_3: IndexingType = IndexingType.CRAWLED.value,
     metadata_4=None,
+    overwrite=True
 ):       
     blob_client = get_blob_client(container_name, blob_name=f"{folder_name}/{blob_name}")
-    blob_client.upload_blob(blob, overwrite=True)
+    blob_client.upload_blob(blob, overwrite=overwrite)
     
 
     blob_metadata = blob_client.get_blob_properties().metadata or {}
@@ -148,7 +153,7 @@ def delete_blobs(
         else:
             blob_client.delete_blob()
 
-def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
+def upload_files_to_blob(files: list[UploadFile],container_name :str = config.BLOB_CONTAINER_NAME, subfolder_name="pdfdata"):
         # Get the container client
         container_client, _ =  get_container_client(container_name = container_name,subfolder_name = subfolder_name)    
         for file in files:
@@ -170,10 +175,10 @@ def upload_files_to_blob(files: list,container_name :str = config.BLOB_CONTAINER
                     blob_client.stage_block(block_id_str, chunk)
                     blocks.append(BlobBlock(block_id=block_id_str))
                     block_id += 1
-                
                 blob_client.commit_block_list(blocks)
-                metadata_storage_path =blob_client.url
-                return metadata_storage_path
+                if file.content_type == "application/pdf":
+                    metadata_storage_path =blob_client.url
+                    return metadata_storage_path
 
 def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name):
     for file in files:
@@ -193,3 +198,26 @@ def read_and_upload_pdfs(files,container_name,store_pdf_subfolder,subfolder_name
                     metadata_3= IndexingType.NOT_CRAWLED.value,
                     metadata_4= "pdf")
         print(f"Uploaded OCR results for {filename} to Azure Storage.")
+def generate_blob_sas_url(container_name: str=None, blob_name: str=None,blob_url: str = None):
+    try:
+        if blob_url:
+            sas_token= generate_sas_token(blob_url=blob_url)
+            return f"{blob_url}?{sas_token}"
+        blob_service_client = get_blob_client(container_name, blob_name)
+        sas_token = generate_sas_token(blob_url=None, container_name=container_name, blob_name=blob_name, account_name=blob_service_client.account_name)
+        blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+        return blob_url
+    except Exception as e:
+
+        return(f"Error generating SAS URL: {str(e)}")        
+
+def get_subfolders_with_blobs(container_name):
+    subfolders = get_subfolders_name(container_name)
+    results = {}
+    for subfolder_name in subfolders["subfolders"]:
+        _ , blob_list = get_container_client(container_name = container_name, subfolder_name= subfolder_name)
+        results[f"{subfolder_name}"] = [blob.name for blob in blob_list]
+    
+    return results
+
+

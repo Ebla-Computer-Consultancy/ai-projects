@@ -1,0 +1,275 @@
+from wrapperfunction.admin.integration import imageanalytics_connector
+from wrapperfunction.admin.integration import textanalytics_connector
+from wrapperfunction.core.model import customskill_model
+from wrapperfunction.core.model.customskill_model import CustomSkillReturnKeys as csrk
+from wrapperfunction.admin.model.textanalytics_model import TextAnalyticsKEYS as tak
+
+
+async def sentiment_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # Analyze sentiment
+            sentiment = textanalytics_connector.analyze_sentiment([text])
+
+            # Add successful result
+            results.append(customskill_model.SkillRecord(
+                    recordId=record_id,
+                    data={
+                            csrk.SENTIMENT.value: sentiment
+                        },
+                    errors=None,
+                    warnings=None
+                        ))
+    
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+    return  customskill_model.CustomSkillReturn(values=results).to_dict()
+
+async def detect_language_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # detect_language
+            detected_language = textanalytics_connector.detect_language(messages=[text])
+
+            # Add successful result
+            results.append(customskill_model.SkillRecord(
+                    recordId=record_id,
+                    data={
+                            tak.LANGUAGE_NAME.value: detected_language[tak.LANGUAGE_NAME.value],
+                            tak.LANGUAGE_ISO6391_NAME.value: detected_language[tak.LANGUAGE_ISO6391_NAME.value]
+                        },
+                    errors=None,
+                    warnings=None
+                    ))
+            
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+    return customskill_model.CustomSkillReturn(values=results).to_dict()
+    
+async def extract_key_phrases_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            language = record.data["language"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # Analyze key_phrases
+            key_phrases = textanalytics_connector.extract_key_phrases(messages=[text],language=language)
+
+            # Add successful result
+            results.append(
+                customskill_model.SkillRecord(
+                    recordId=record_id,
+                    data=
+                        {
+                            csrk.KEYPHRASES.value: key_phrases
+                        },
+                    errors=None,
+                    warnings=None
+                        ))
+            
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+    return customskill_model.CustomSkillReturn(values=results).to_dict()
+
+async def entity_recognition_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            text = record.data["text"]
+            language = record.data["language"]
+            if not text:
+                raise ValueError("Missing 'text' field in data")
+
+            # Analyze entity_recognition
+            entities = textanalytics_connector.entity_recognition(messages=[text],language=language)
+
+            # Add successful result
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={
+                    "organizations": entities[tak.ORGANIZATION.value],
+                    "dateTime": entities[tak.DATETIME.value],
+                    "IPAddress": entities[tak.IPADDRESS.value],
+                    "persons": entities[tak.PERSON.value],
+                    "personsType": entities[tak.PERSON_TYPE.value],
+                    "urls": entities[tak.URL.value],
+                    "events": entities[tak.EVENT.value],
+                    "emails": entities[tak.EMAIL.value],
+                    "locations": entities[tak.LOCATION.value],
+                    "phonesNumbers": entities[tak.PHONE_NUMBER.value],
+                    "skills": entities[tak.SKILL.value],
+                    "products": entities[tak.PRODUCT.value],
+                    "quantities": entities[tak.QUANTITY.value],
+                    "addresses": entities[tak.ADDRESS.value]
+                },
+                errors=None,
+                warnings=None
+            ))
+            
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+    return  customskill_model.CustomSkillReturn(values=results).to_dict()  
+
+async def image_embedding_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            
+            url = record.data["url"]
+            if not url:
+                raise ValueError("Missing 'url' field in data")
+
+            # Vectorize Image
+            vector = imageanalytics_connector.image_embedding(img_url=url)
+
+            # Add successful result
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={
+                        csrk.IMG_VECTOR.value: vector["vector"]
+                    },
+                errors=None,
+                warnings=None
+            ))
+            
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+    return customskill_model.CustomSkillReturn(values=results).to_dict() 
+
+async def image_analysis_skill(values: list):
+    results = []
+    for record in values:
+        record_id = record.recordId  
+        try:
+            url = record.data["url"]
+            if not url:
+                raise ValueError("Missing 'url' field in data")
+
+            # Analyze Image
+            analyzed_image = imageanalytics_connector.analyze_image_from_url(img_url=url)
+
+            # Add successful result
+            img_read=""
+            for line in analyzed_image["readResult"]["blocks"][0]["lines"]:
+               img_read += f"{line['text']}\n" 
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={
+                    csrk.IMG_CAPTION.value: analyzed_image["captionResult"]["text"],
+                    csrk.IMG_DENSE_CAPTIONS.value:[captions["text"] for captions in analyzed_image["denseCaptionsResult"]["values"]],
+                    csrk.IMG_TAGS.value: [tags["name"] for tags in analyzed_image["tagsResult"]["values"]],
+                    csrk.IMG_READ.value: img_read
+                    },
+                errors=None,
+                warnings=None
+            ))
+        except ValueError as ve:
+            # Handle missing or invalid fields
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(ve)}",
+                warnings=None
+            ))
+        except Exception as e:
+            # Catch unexpected errors
+            results.append(customskill_model.SkillRecord(
+                recordId=record_id,
+                data={},
+                errors=f"Unexpected error: {str(e)}",
+                warnings=None
+            ))
+            
+    return customskill_model.CustomSkillReturn(values=results).to_dict()

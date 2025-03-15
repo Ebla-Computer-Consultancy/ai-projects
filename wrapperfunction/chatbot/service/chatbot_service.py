@@ -18,6 +18,7 @@ from wrapperfunction.function_auth.service import jwt_service
 from wrapperfunction.chat_history.model.message_entity import MessageEntity
 from wrapperfunction.chat_history.model.conversation_entity import ConversationEntity 
 
+
 async def chat(bot_name: str, chat_payload: ChatPayload, request: Request):
     try:
         token = jwt_service.get_token(request)
@@ -136,6 +137,7 @@ def is_arabic(text):
     arabic_range = (0x0600, 0x06FF)  # Arabic script range
     return any(arabic_range[0] <= ord(char) <= arabic_range[1] for char in text)
 def categorize_query(query: str, bot_name: str) -> str:
+
     try:
         chatbot_settings = config.load_chatbot_settings(bot_name)
         prompt = [

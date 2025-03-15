@@ -7,4 +7,5 @@ class CrawlRequestUrls(BaseModel):
     headers: dict = {}
     cookies: dict = {}
     payload: dict = None
+    internal: bool = False
     settings: CrawlSettings = None

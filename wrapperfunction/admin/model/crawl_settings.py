@@ -10,6 +10,7 @@ class CrawlSettings(BaseModel):
     mediaCrawling: bool = False
     topics: list[str] = set()
     containerName: str = config.BLOB_CONTAINER_NAME
+    schedule_by_days: int = 0
 
 class IndexingType(Enum):
     CRAWLED = "crawled"
