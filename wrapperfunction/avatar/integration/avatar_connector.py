@@ -173,6 +173,8 @@ def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
         ).to_dict()
     data['slides'][0]['speech'] = text
     data['slides'][0]['status'] = "edited"
+    data['data']['musicVolume'] = 0.0
+    data['data']['musicUrl'] = False
     response = requests.patch(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
     )
