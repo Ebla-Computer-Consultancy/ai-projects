@@ -41,6 +41,6 @@ def close_stream(stream_id: str):
 def update_video(text: str):
     return avatar_service.update_video(text)
 
-  @router.get("/retrieve-video")
+@router.get("/retrieve-video")
 def retrieve_video():
     return avatar_service.retrieve_video()
