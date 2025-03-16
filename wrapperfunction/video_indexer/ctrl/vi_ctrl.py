@@ -28,15 +28,23 @@ async def list_videos():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload")
-async def upload_video(file: UploadFile):
+async def upload_video(file: UploadFile,language: str):
     try:
-        return await vi_service.upload_video(video_file=file)
+        return await vi_service.upload_video(video_file=file,language=language)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.post("/start-video-chat")
-async def Start_video_chat(video_id: str, request: Request,bot_name: str):
+async def Start_video_chat(video_id: str, request: Request,bot_name: str,language: str):
     try:
-        return await start_video_chat(video_id=video_id, request=request,bot_name=bot_name)
+        return await start_video_chat(video_id=video_id, request=request,bot_name=bot_name,language=language)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))  
+
+
+@router.post("/supported-languages")
+def get_supported_languages():
+    try:
+        return vi_service.get_supported_languages()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))      

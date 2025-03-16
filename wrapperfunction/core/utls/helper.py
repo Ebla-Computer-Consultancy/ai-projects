@@ -59,15 +59,18 @@ def get_title(url, title=""):
 def sanitize_filename(filename):
     return re.sub(r'[<>:"\\|?*]', "", filename)
 
-def pdfs_files_filter(files):
+def jsonVSfiles_filter(files):
     json_files=[]
     pdf_files=[]
+    other_files = []
     for file in files:
         if file.content_type == "application/pdf":
             pdf_files.append(file)
-        else:
+        elif file.content_type == "application/json":
             json_files.append(file)
-    return pdf_files, json_files
+        else:
+            other_files.append(file)
+    return pdf_files, json_files,other_files
 
 def extract_client_details(request: Request) -> dict:
     
