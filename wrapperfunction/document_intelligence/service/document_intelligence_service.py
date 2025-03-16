@@ -65,19 +65,36 @@ def analyze_file(model_id: str, bot_name: str, file: UploadFile = File()):
 
 def detection(text,bot_name,criteria:Optional[str] = None):
     if not criteria:
+
         prompt = (
-            "The following text is extracted from file. Identify the best practice to split this file. "
-            "Return the results as a Python list of page number ranges without any extra text. Example: [[1, 10], [11, 20]].\n\n"
-            f"{text}"
-        )
+        "The text below is extracted from a PDF document, with pages labeled as 'Page_number X'.\n"
+        "Your task is to identify **optimal page ranges** that should be grouped together while preserving context.\n"
+        "\n"
+        "**Guidelines:**\n"
+        "- Every page **must be included** in exactly one range.\n"
+        "- Ensure pages are grouped **logically and contextually**.\n"
+        "- Maintain **sequential order** with no gaps or overlaps.\n"
+        "- Return output as a **Python list of lists** in this format: [[1, 5], [6, 12]].\n"
+        "- If a single page does not fit a group, return it as **[X, X]** (e.g., [[3, 3]]).\n"
+        "- **Do NOT** include extra text, explanations, or formatting—only return the list.\n"
+        "\n"
+        f"{text}"
+    )
     else:
         prompt = (
-    f"The following text is extracted from a file. Split the file based on the following criteria: {criteria}. "
-    "If splitting based on this criteria is not possible, identify the best practice for splitting the file. "
-    "Return the results as a Python list of page number ranges (e.g., [[1, 10], [11, 20]])with no additional text. "
-    "If no split is possible, return an empty list `[]` with no additional text.\n\n"
-    f"{text}"
-)
+        "The text below is extracted from a PDF document, with pages labeled as 'Page_number X'.\n"
+        f"Your task is to segment the document based on the following criteria: **{criteria}**.\n"
+        "\n"
+        "**Guidelines:**\n"
+        "- Every page **must be included** in exactly one range.\n"
+        "- Maintain **contextual integrity** while ensuring logical page groupings.\n"
+        "- Keep all page numbers in **sequential order** with no missing pages.\n"
+        "- Return only a **Python list of lists** (e.g., [[1, 6], [7, 12]]), without explanations .\n"
+        "- **Do NOT** include extra text, explanations, or formatting—only return the list.\n"
+        "- If no logical split is possible, return an empty list: [].\n"
+        "\n"
+        f"{text}"
+    )
     try:
         content=chatbotservice.get_openai_instruction(prompt,bot_name)
         ranges = ast.literal_eval(content)
@@ -92,10 +109,15 @@ def detection(text,bot_name,criteria:Optional[str] = None):
 
 
 def extract_text_from_pdf(result) -> List[str]:
-    return [
-        "\n".join([line.content for line in page.lines])
-        for page in result.pages
-    ]
+
+    text_per_page = []
+    
+    for page in result.pages:
+        if hasattr(page, "lines") and page.lines: 
+            text = "\n".join([line.content for line in page.lines])
+        text_per_page.append(text)
+    
+    return text_per_page
 
 def get_page_ranges(full_text: str, criteria: str,bot_name) -> List[List[int]]:
     ranges = detection(full_text, bot_name,criteria)
@@ -134,7 +156,7 @@ def auto_split_pdf(pdf: UploadFile, criteria: str,bot_name) -> Dict:
     try:
         result =documentintelligenceconnector.analyze_file(pdf)
         text_per_page = extract_text_from_pdf(result)
-        full_text = "\n".join(f"Page {i + 1}:\n{text}" for i, text in enumerate(text_per_page))
+        full_text = "\n".join([f"Page_number {i}:\n{text}" for i, text in enumerate(text_per_page, start=1)])     
         page_ranges = get_page_ranges(full_text, criteria,bot_name)
         page_ranges.append([len(result.pages) + 1])
         reader = PdfReader(pdf.file)

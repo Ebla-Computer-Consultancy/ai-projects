@@ -151,3 +151,15 @@ def categorize_query(query: str, bot_name: str) -> str:
     except Exception:
         return None
 
+def get_openai_instruction(prompt, bot_name):
+    chatbot_settings=config.load_chatbot_settings(bot_name)
+    chat_history = [
+        {"role": "system", "content": chatbot_settings.system_message},
+        {"role": "user", "content": prompt}
+    ]
+    try:
+        response = openaiconnector.chat_completion(chatbot_settings, chat_history)
+       
+        return response['message']['content']
+    except Exception as e:
+        return {"error": f"Error with Azure OpenAI API: {e}"}
