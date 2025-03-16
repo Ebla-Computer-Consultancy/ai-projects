@@ -6,7 +6,6 @@ import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
 import json
 
-video_id = config.VIDEO_ID
 
 def get_headers():
     return {
@@ -127,7 +126,7 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str = video_id):
+def render_video(video_id: str = config.ELAI_VIDEO_ID):
 
     response = requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
