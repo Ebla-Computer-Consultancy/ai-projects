@@ -19,7 +19,7 @@ async def add_faq_to_archive(faqs_data: List[Dict],bot_name: str):
     return await FAQ_service.add_faqs_to_archive(faqs_data,bot_name)
 
 @router.put("/faqs/archive/")
-def update_archived_faq(row_key: str, updated_data: Question):
+def update_archived_faq(row_key: str, updated_data: dict):
     return FAQ_service.update_archived_faq(row_key, updated_data)
 
 @router.delete("/faqs/archive/")
