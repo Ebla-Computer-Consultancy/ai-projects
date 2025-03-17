@@ -1,5 +1,5 @@
-from wrapperfunction.chat_history.model.loclization_entity import LocalizationEntity,LocalizationPropertyName, localizationPayload
-from wrapperfunction.chat_history.integration.cosmos_db_connector import *
+from wrapperfunction.localization.model.loclization_entity import LocalizationEntity,LocalizationPropertyName, localizationPayload
+from wrapperfunction.localization.integration.cosmos_db_connector import *
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 from typing import Optional
 from wrapperfunction.core import config

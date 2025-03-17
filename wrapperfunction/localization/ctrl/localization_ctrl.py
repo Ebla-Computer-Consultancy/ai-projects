@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from wrapperfunction.chat_history.model.loclization_entity import localizationPayload
-import wrapperfunction.chat_history.service.localization_service as localizationservice
+from wrapperfunction.localization.model.loclization_entity import localizationPayload
+import wrapperfunction.localization.service.localization_service as localizationservice
 
 router = APIRouter()
 
