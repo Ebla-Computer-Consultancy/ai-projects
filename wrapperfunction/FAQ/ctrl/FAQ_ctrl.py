@@ -15,8 +15,8 @@ def get_archived_faqs(bot_name: str, limit: Optional[int] = None):
     return FAQ_service.get_archived_faqs(bot_name, limit)
 
 @router.post("/faqs/archive/")
-async def add_faq_to_archive(faqs_data: List[Dict]):
-    return await FAQ_service.add_faqs_to_archive(faqs_data)
+async def add_faq_to_archive(faqs_data: List[Dict],bot_name: str):
+    return await FAQ_service.add_faqs_to_archive(faqs_data,bot_name)
 
 @router.put("/faqs/archive/")
 def update_archived_faq(row_key: str, updated_data: Question):

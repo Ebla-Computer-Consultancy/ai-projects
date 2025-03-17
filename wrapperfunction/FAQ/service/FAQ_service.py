@@ -6,14 +6,16 @@ from wrapperfunction.core.model.service_return import ServiceReturn
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
 from wrapperfunction.FAQ.model.question_entity import QuestionPropertyName
 
-def get_max_order_index() -> int:
+def get_max_order_index(bot_name: str) -> int:
     try:
-        results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE)
+        filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'"
+        results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE, filter_condition)
         if not results:
             return 0
         return max(item.get("OrderIndex", 0) for item in results)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve max order index: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve max order index for bot '{bot_name}': {str(e)}")
+
 
 def get_all_faqs() -> List[dict]:
     try:
@@ -44,10 +46,9 @@ def get_archived_faqs(bot_name: str, limit: Optional[int] = None) -> List[Questi
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve archived FAQs: {str(e)}")  
 
-async def add_faqs_to_archive(faqs_data: list) -> dict:
+async def add_faqs_to_archive(faqs_data: list, bot_name: str) -> dict:
     try:
-        max_order = get_max_order_index()
-        
+        max_order = get_max_order_index(bot_name)
         for faq_data in faqs_data:
             max_order += 1
             faq_data["OrderIndex"] = max_order
