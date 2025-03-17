@@ -9,10 +9,10 @@ from wrapperfunction.FAQ.model.question_entity import QuestionPropertyName
 def get_max_order_index(bot_name: str) -> int:
     try:
         filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'"
-        results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE, filter_condition)
+        results = db_connector.get_entities(table_name=config.COSMOS_ARCHIVED_FAQ_TABLE, filter_expression=filter_condition,select=QuestionPropertyName.ORDER_INDEX.value)
         if not results:
             return 0
-        return max(item.get("OrderIndex", 0) for item in results)
+        return max(item.get(QuestionPropertyName.ORDER_INDEX.value, 0) for item in results)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve max order index for bot '{bot_name}': {str(e)}")
 
