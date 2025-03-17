@@ -49,15 +49,20 @@ def get_archived_faqs(bot_name: str, limit: Optional[int] = None) -> List[Questi
 
 async def add_faqs_to_archive(faqs_data: list, bot_name: str) -> dict:
     try:
+        existing_faqs = {faq[QuestionPropertyName.ACTUAL_QUESTION.value] for faq in get_archived_faqs(bot_name)}
         max_order = get_max_order_index(bot_name)
+
         for faq_data in faqs_data:
+            if faq_data["ActualQuestion"] in existing_faqs:
+                continue
             max_order += 1
             faq_data["OrderIndex"] = max_order
             await db_connector.add_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, faq_data)
-        
+
         return ServiceReturn(status=StatusCode.SUCCESS, message="FAQs added to archive.").to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to archive FAQs: {str(e)}")
+
 def get_archived_faq(row_key: str) -> dict:
     try:
         filter_condition = f"{QuestionPropertyName.ROW_KEY.value} eq '{row_key}'"
