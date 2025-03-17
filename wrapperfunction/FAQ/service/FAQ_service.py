@@ -65,9 +65,10 @@ def get_archived_faq(row_key: str) -> dict:
     try:
         filter_condition = f"{QuestionPropertyName.ROW_KEY.value} eq '{row_key}'"
         results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE, filter_condition)
-        if results:
+        if results and len(results) > 0:
             return results[0]
-        raise HTTPException(status_code=404, detail="FAQ not found in archive.")
+        else:
+            return None
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve archived FAQ: {str(e)}")
 
