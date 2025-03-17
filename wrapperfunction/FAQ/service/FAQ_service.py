@@ -17,15 +17,16 @@ def get_max_order_index(bot_name: str) -> int:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve max order index for bot '{bot_name}': {str(e)}")
 
 
-def get_all_faqs() -> List[dict]:
+def get_all_faqs(bot_name: str) -> List[dict]:
     try:
-        return db_connector.get_entities(config.COSMOS_FAQ_TABLE)
+        filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'" 
+        return db_connector.get_entities(config.COSMOS_FAQ_TABLE, filter_condition)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve all FAQs: {str(e)}")
     
 def get_archived_faqs(bot_name: str, limit: Optional[int] = None) -> List[Question]:
     try:
-        filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'" if bot_name else None
+        filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'"
         results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE, filter_condition)
         sorted_results = sorted(
             (

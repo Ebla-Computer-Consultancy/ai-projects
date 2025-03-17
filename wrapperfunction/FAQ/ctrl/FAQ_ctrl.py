@@ -7,7 +7,7 @@ from wrapperfunction.FAQ.service import FAQ_service
 router = APIRouter()
 
 @router.get("/faqs/")
-def get_all_faqs():
+def get_all_faqs(bot_name:str):
     return FAQ_service.get_all_faqs()
 
 @router.get("/faqs/archive/")
