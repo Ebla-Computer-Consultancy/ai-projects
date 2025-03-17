@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 from fastapi import APIRouter
-from wrapperfunction.FAQ.model.question_model import Question
 from wrapperfunction.FAQ.service import FAQ_service 
 
 

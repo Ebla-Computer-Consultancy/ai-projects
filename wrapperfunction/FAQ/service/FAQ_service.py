@@ -1,5 +1,4 @@
 from typing import List, Optional
-from wrapperfunction.FAQ.model.question_model import Question
 from wrapperfunction.chat_history.service.chat_history_service import HTTPException, StatusCode
 from wrapperfunction.core import config
 from wrapperfunction.core.model.service_return import ServiceReturn
@@ -10,9 +9,8 @@ def get_max_order_index(bot_name: str) -> int:
     try:
         filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'"
         results = db_connector.get_entities(table_name=config.COSMOS_ARCHIVED_FAQ_TABLE, filter_expression=filter_condition,select=QuestionPropertyName.ORDER_INDEX.value)
-        if not results:
-            return 0
-        return max(item.get(QuestionPropertyName.ORDER_INDEX.value, 0) for item in results)
+        order_indices = [item.get(QuestionPropertyName.ORDER_INDEX.value, 0) for item in results]
+        return max(order_indices, default=0)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve max order index for bot '{bot_name}': {str(e)}")
 
@@ -24,7 +22,7 @@ def get_all_faqs(bot_name: str) -> List[dict]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve all FAQs: {str(e)}")
     
-def get_archived_faqs(bot_name: str, limit: Optional[int] = None) -> List[Question]:
+def get_archived_faqs(bot_name: str, limit: Optional[int] = None) :
     try:
         filter_condition = f"{QuestionPropertyName.BOT_NAME.value} eq '{bot_name}'"
         results = db_connector.get_entities(config.COSMOS_ARCHIVED_FAQ_TABLE, filter_condition)
