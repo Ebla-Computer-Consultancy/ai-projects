@@ -78,7 +78,7 @@ def update_archived_faq(row_key: str, updated_data: dict) -> dict:
         if faq:
             db_connector.update_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, {**faq, **updated_data})
             return ServiceReturn(status=StatusCode.SUCCESS, message="FAQ updated in archive.").to_dict()
-        raise HTTPException(status_code=404, detail="FAQ not found in archive.")
+        return ServiceReturn(status=StatusCode.NOT_FOUND, message="FAQ not found in archive.").to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update archived FAQ: {str(e)}")
 
