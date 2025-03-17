@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/faqs/")
 def get_all_faqs(bot_name:str):
-    return FAQ_service.get_all_faqs()
+    return FAQ_service.get_all_faqs(bot_name)
 
 @router.get("/faqs/archive/")
 def get_archived_faqs(bot_name: str, limit: Optional[int] = None):
