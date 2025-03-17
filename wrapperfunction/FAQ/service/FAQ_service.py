@@ -73,11 +73,11 @@ def get_archived_faq(row_key: str) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve archived FAQ: {str(e)}")
 
-def update_archived_faq(row_key: str, updated_data: Question) -> dict:
+def update_archived_faq(row_key: str, updated_data: dict) -> dict:
     try:
         faq = get_archived_faq(row_key)
         if faq:
-            db_connector.update_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, {**faq, **updated_data.model_dump()})
+            db_connector.update_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, {**faq, **updated_data})
             return ServiceReturn(status=StatusCode.SUCCESS, message="FAQ updated in archive.").to_dict()
         raise HTTPException(status_code=404, detail="FAQ not found in archive.")
     except Exception as e:
