@@ -83,7 +83,7 @@ MOST_USED_KEYWORDS_TABLE=os.getenv("MOST_USED_KEYWORDS_TABLE")
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
     settings = settings_service.get_settings_by_entity(ENTITY_NAME)
-    if len(settings) > 0:
+    if len(settings) == 0:
         return settings[0]
     else:
         file_path = os.path.join(os.path.dirname(__file__), f"settings/{DEFAULT_ENTITY_SETTINGS}.json")
