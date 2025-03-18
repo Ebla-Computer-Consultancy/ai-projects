@@ -187,6 +187,7 @@ def get_page_content(data, settings: CrawlSettings):
             set(
                 element.text
                 for element in data.select(", ".join(str(s) for s in settings.selectors))
+                if not element.find_parent("nav")
             )
         )
         content = " ".join(re.sub("[\t\n]", " ", content).split()).strip()
