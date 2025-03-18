@@ -2,9 +2,25 @@
     "chatbots": [
         {
             "name":"internal",
-            "index_name":"rayyan",
+            "index_name":"internal",
             "custom_settings":{
                 "temperature":0.3
+            },
+            "greeting_message": {
+                "ar": " مرحبا بك في المساعد الذكي, كيف يمكنني مساعدتك؟ ",
+                "en": "Welcome to the smart assistant, how can I help you?"
+            },
+            "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions."
+        },
+        {
+            "name":"external",
+            "index_name":"external",
+            "custom_settings":{
+                "temperature":0.3
+            },
+            "greeting_message": {
+                "ar": "مرحبا بك في المساعد الذكي, كيف يمكنني مساعدتك؟ ",
+                "en": "Welcome to the smart assistant, how can I help you?"
             },
             "system_message": "You are an intelligent assistant specifically designed to help users with research and answer questions."
         }

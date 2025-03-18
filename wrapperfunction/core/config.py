@@ -74,17 +74,19 @@ API_VERSION = os.getenv("API_VERSION")
 SPEECH_SERVICE_ENDPOINT=os.getenv("SPEECH_SERVICE_ENDPOINT")
 SEARCH_API_VERSION=os.getenv("SEARCH_API_VERSION")
 COSMOS_MEDIA_KNOWLEDGE_TABLE=os.getenv("COSMOS_MEDIA_KNOWLEDGE_TABLE")
-VIDEO_ID= os.getenv("elai_VIDEO_ID")
+ELAI_VIDEO_ID = os.getenv("elai_VIDEO_ID")
 X_KEY=os.getenv("X_KEY")
 X_TABLE=os.getenv("X_TABLE")
 MOST_INDEXED_URLS_TABLE=os.getenv("MOST_INDEXED_URLS_TABLE")
 MOST_USED_KEYWORDS_TABLE=os.getenv("MOST_USED_KEYWORDS_TABLE")
+COSMOS_ARCHIVED_FAQ_TABLE=os.getenv("COSMOS_ARCHIVED_FAQ_TABLE")
+
 
 
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
     settings = settings_service.get_settings_by_entity(ENTITY_NAME)
-    if len(settings) > 0:
+    if len(settings) == 1:
         return settings[0]
     else:
         file_path = os.path.join(os.path.dirname(__file__), f"settings/{DEFAULT_ENTITY_SETTINGS}.json")
@@ -120,6 +122,7 @@ def load_chatbot_settings(bot_name: str):
             apply_sentiment = chatbot_obj.get("apply_sentiment", True)
             categorize=custom_settings_data.get("categorize", None)
             categorize_filed=custom_settings_data.get("categorize_filed", None)
+            greeting_message=chatbot_obj.get("greeting_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"})
 
              
 
@@ -145,20 +148,19 @@ def load_chatbot_settings(bot_name: str):
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
-                greeting_message=chatbot_obj.get("greeting_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"}),
-            )
+                greeting_message=greeting_message)
             return chatbot
 
     return ChatbotSetting(
         name=ENTITY_NAME,
         index_name=ENTITY_NAME,
         system_message="",
-        categorize_system_message=None,
         examples=[],
         custom_settings=None,
         enable_history=True,
         preserve_first_message=False,
         apply_sentiment=True,
+        greeting_message=greeting_message
     )
 
 

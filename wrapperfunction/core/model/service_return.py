@@ -8,6 +8,7 @@ class StatusCode(Enum):
     NOT_FOUND = 404
     INTERNAL_SERVER_ERROR = 500
     PENDING = 102
+    RENDERING = 103
     # Add other status codes as needed
 
 class ServiceReturn:
