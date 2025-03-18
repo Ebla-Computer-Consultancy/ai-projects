@@ -122,10 +122,10 @@ def crawl_site(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     )
     response = requestUrl(url, headers, payload, cookies)
-    other_response = detect_languge_by_header(response, url, headers, payload, cookies, main_lang)
     if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
+        other_response = detect_languge_by_header(response, url, headers, payload, cookies, main_lang)
         return BeautifulSoup(other_response.text, "lxml"), BeautifulSoup(response.text, "lxml"), response
 
 def detect_languge_by_header(
