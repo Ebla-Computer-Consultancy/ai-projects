@@ -91,7 +91,7 @@ def orchestrator_function(
         json_data = json.dumps(site_data, ensure_ascii=False)
         blob_name = f"item_{process_text_name(url.link)}.json"
         append_blob(
-            folder_name=config.SUBFOLDER_NAME,
+            folder_name= base_url if settings.mediaCrawling else config.SUBFOLDER_NAME,
             blob_name=blob_name,
             blob=json_data,
             container_name=settings.containerName,
@@ -238,10 +238,12 @@ def collect_urls(data, url, settings:CrawlSettings):
 # parse website content .
 def get_page_content(data, settings: CrawlSettings):
     try:
+        settings.selectors = settings.selectors if len(settings.selectors) else ['div']
         content = " ".join(
             set(
                 element.text
                 for element in data.select(", ".join(str(s) for s in settings.selectors))
+                if not element.find_parent("nav")
             )
         )
         content = " ".join(re.sub("[\t\n]", " ", content).split()).strip()
@@ -249,7 +251,7 @@ def get_page_content(data, settings: CrawlSettings):
     except Exception as error:
         raise HTTPException(
             status_code=400,
-            detail=f"Error retrieving the URLs in the site: {error.__cause__}",
+            detail=str(error),
         )
     
 

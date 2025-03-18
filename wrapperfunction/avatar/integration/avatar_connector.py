@@ -1,8 +1,10 @@
 from fastapi import HTTPException
 import requests
+import json
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
+import json
 
 
 def get_headers():
@@ -99,7 +101,7 @@ async def render_text_async(stream_id: str, text: str, is_ar: bool):
 
 def stop_render(stream_id: str):
     response = requests.delete(
-       f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+        f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
         headers=get_headers()
     )
     if response.status_code != 200:
@@ -124,7 +126,7 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str):
+def render_video(video_id: str = config.ELAI_VIDEO_ID):
 
     response = requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
@@ -139,7 +141,8 @@ def render_video(video_id: str):
         ).to_dict()
 
 
-def retrieve_video(video_id: str):
+
+def retrieve_video(video_id: str=config.ELAI_VIDEO_ID, internal = False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers()
     )
@@ -147,11 +150,43 @@ def retrieve_video(video_id: str):
         raise HTTPException(
             status_code=response.status_code, detail=response.reason
         )
-    video = response.text
-    return ServiceReturn(
-        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=video
+    data = json.loads(response.text)
+    if internal:
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=response.text
         ).to_dict()
     
+    if data["status"] != "ready":
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
+    else:    
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=data["url"]
+        ).to_dict()
+
+
+def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
+    response = retrieve_video(video_id,True)
+    data = json.loads(response["data"]) or None
+    if data == None:
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
+    data['slides'][0]['speech'] = text
+    data['slides'][0]['status'] = "edited"
+    data['data']['musicVolume'] = 0.0
+    data['data']['musicUrl'] = False
+    response = requests.patch(
+        f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code, detail=response.reason
+        )
+    return render_video(video_id)
+
+"""
 def list_videos(page: int=1, limit:int=50, with_deleted:bool= False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos?page={page}&limit={limit}&deleted={with_deleted}", headers=get_headers()
@@ -178,3 +213,4 @@ def delete_video(video_id: str):
     return ServiceReturn(
         status=StatusCode.SUCCESS, message=f"The video with ID: '{video_id}' has successfully Deleted"
         ).to_dict()
+"""

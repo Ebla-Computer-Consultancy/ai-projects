@@ -1,8 +1,10 @@
 import json
+from typing import List
 import uuid
 from fastapi import HTTPException
 from wrapperfunction.core import config
 import wrapperfunction.chat_history.integration.cosmos_db_connector as db_connector
+from wrapperfunction.social_media.model.x_model import XSearch
 
 def get_all_settings():
     try:
@@ -27,6 +29,8 @@ def get_chatbot_settings_by_entity(entity_name,chatbot_name):
     
 def update_bot_settings(entity):
     try:
+        if len(get_settings_by_entity(entity_name=entity["entity_name"])) == 0:
+            raise Exception(f"There is no settings for '{entity["entity_name"]}' entity")
         res =  db_connector.update_entity(config.COSMOS_SETTINGS_TABLE,add_format_settings(entity))
         return res
     except Exception as e:
@@ -50,8 +54,25 @@ def update_crawling_status(new_status: str,index: int,new_last_crawl=None):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-async def add_setting(entity):
+def update_x_crawling_settings(data_list: List[XSearch]):
     try:
+        entity_settings = get_settings_by_entity(config.ENTITY_NAME)[0]
+        for data in data_list:
+            entity_settings["media_settings"]["x_crawling"].append({
+                "query":data.query,
+                "max_results":data.max_results,
+                "start_time":data.start_time,
+                "end_time":data.end_time
+            })
+        
+        return update_bot_settings(entity_settings)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def add_setting(entity):
+    try:     
+        if len(get_settings_by_entity(entity_name=entity["entity_name"])) > 0:
+            raise Exception(f"'{entity["entity_name"]}' settings already exist")
         entity["PartitionKey"] = str(uuid.uuid4())
         entity["RowKey"] = str(uuid.uuid4())
         res = await db_connector.add_entity(config.COSMOS_SETTINGS_TABLE,add_format_settings(entity))
