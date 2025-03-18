@@ -35,6 +35,15 @@
       "system_message": "You are an intelligent assistant and expert in writing structured reports in a good way that writes long reports from a given results, and answers related question, be creative in the introduction and conclusion paragraphs while writing the reports."
     },
     {
+      "name": "document-spliter",
+      "index_name": null,
+      "custom_settings": {
+        "temperature": 0,
+        "max_tokens": 4096
+      },
+      "system_message": "You are an intelligent assistant specializing in document segmentation, ensuring all pages are included in logical, sequential groups while maintaining context"
+    },
+    {
       "name": "interactive",
       "index_name": null,
       "custom_settings": {

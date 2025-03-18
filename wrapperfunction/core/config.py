@@ -83,6 +83,8 @@ COSMOS_ARCHIVED_FAQ_TABLE=os.getenv("COSMOS_ARCHIVED_FAQ_TABLE")
 
 
 
+SPLITER_CONTAINER_NAME = os.getenv("SPLITER_CONTAINER_NAME")
+
 def load_entity_settings():
     from wrapperfunction.core.service import settings_service
     settings = settings_service.get_settings_by_entity(ENTITY_NAME)
