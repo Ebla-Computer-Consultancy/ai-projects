@@ -13,10 +13,10 @@ class GenericTableClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    def get_entities(self, filter_expression: Optional[str] = None) -> list:
+    def get_entities(self, filter_expression: Optional[str] = None, select: Optional[str] = None) -> list:
         try:
             if filter_expression:
-                entities = self.table_client.query_entities(filter_expression)
+                entities = self.table_client.query_entities(query_filter=filter_expression,select=select)
             else:
                 entities = self.table_client.list_entities()
             return list(entities)
