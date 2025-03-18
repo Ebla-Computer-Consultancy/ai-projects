@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import HTTPException, UploadFile
 import validators
+import execjs
+
 
 from wrapperfunction.document_intelligence.service.document_intelligence_service import inline_read_scanned_pdf
 from wrapperfunction.core import config
@@ -44,8 +46,8 @@ def orchestrator_function(
     settings: CrawlSettings,
 ):
     try:
-        data, response = crawl_site(
-            url.link, cookies=url.cookies, headers=url.headers, payload=url.payload
+        en_data, data, response = crawl_site(
+            url.link, main_lang= url.settings.main_lang, cookies=url.cookies, headers=url.headers, payload=url.payload
         )
 
         if settings.mediaCrawling:
@@ -69,10 +71,19 @@ def orchestrator_function(
                 upload_files_to_blob(files=[UploadFile(file=BytesIO(response.content), filename=get_page_title(url.link), headers=response.headers)], container_name=settings.containerName, subfolder_name=config.SUBFOLDER_NAME+'_pdf')
                 settings.deep = False
             else:
-                site_data = {
+                if en_data is None:
+                    site_data = {
                     "url": url.link,
                     "title": get_page_title(url.link, data),
-                    "content": get_page_content(data, settings),
+                    "content": get_page_content(data, settings)
+                }
+                else:
+                    site_data = {
+                    "url": url.link,
+                    "ar_title": get_page_title(url.link, data),
+                    "en_title": get_page_title(url.link, en_data),
+                    "ar_content": get_page_content(data, settings),
+                    "en_content": get_page_content(en_data, settings),
                     "internal": url.internal
                 }
                 
@@ -102,6 +113,7 @@ def orchestrator_function(
 
 def crawl_site(
     url: str,
+    main_lang:str,
     headers: dict,
     payload: dict,
     cookies: dict = {},
@@ -113,8 +125,52 @@ def crawl_site(
     if response.headers.get('Content-Type') == 'application/pdf':
         return inline_read_scanned_pdf(None, response.content), response
     else:
-        return BeautifulSoup(response.text, "lxml"), response
+        other_response = detect_languge_by_header(response, url, headers, payload, cookies, main_lang)
+        return BeautifulSoup(other_response.text, "lxml"), BeautifulSoup(response.text, "lxml"), response
 
+def detect_languge_by_header(
+        response,
+        url: str,
+        headers: str,
+        payload: str,
+        cookies: dict,
+        main_lang: str= "en"):
+    
+    if main_lang == "en":
+        translateTo ='العربية'
+    else:
+        translateTo ='English'
+
+    soup = BeautifulSoup(response.text, 'lxml')
+    # Find the button tag containing the text "English"
+    button_tag = soup.find('a', text= translateTo)
+
+    # Extract the function name from the onclick attribute
+    try:
+        onclick_function = button_tag['onclick'].strip('()')
+    except:
+        onclick_function=None
+    if onclick_function is None:
+        other_url = button_tag['href']
+        if validators.url(other_url):
+            new_response = requestUrl(other_url, headers, payload, cookies)
+            return new_response
+    else:
+        try:
+                other_url = url.split('/')
+                extracted_string = re.search(r"\('([^']*)'\)", onclick_function).group(1)
+                if len(other_url)==3:
+                    other_url.append(extracted_string)
+                else:    
+                    other_url.insert(3,extracted_string)
+                other_url = "/".join(other_url)
+                if validators.url(other_url):
+                    new_response = requestUrl(other_url, headers, payload, cookies)
+                else:
+                    new_response = requestUrl(url, headers, payload, cookies)
+        except:
+                new_response = None
+        return new_response
 
 def requestUrl(
     url: str,
