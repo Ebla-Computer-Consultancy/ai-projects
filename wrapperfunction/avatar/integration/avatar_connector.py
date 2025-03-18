@@ -4,8 +4,8 @@ import json
 from wrapperfunction.core.model.service_return import ServiceReturn, StatusCode
 import wrapperfunction.core.config as config
 import wrapperfunction.core.utls.helper as helper
+import json
 
-video_id = config.VIDEO_ID
 
 def get_headers():
     return {
@@ -126,7 +126,7 @@ def close_stream(stream_id: str):
 
 #Video
 
-def render_video(video_id: str = video_id):
+def render_video(video_id: str = config.ELAI_VIDEO_ID):
 
     response = requests.post(
         f"{config.AVATAR_API_URL}/videos/render/{video_id}", headers=get_headers()
@@ -141,7 +141,8 @@ def render_video(video_id: str = video_id):
         ).to_dict()
 
 
-def retrieve_video(video_id: str = video_id):
+
+def retrieve_video(video_id: str=config.ELAI_VIDEO_ID, internal = False):
     response = requests.get(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers()
     )
@@ -149,20 +150,33 @@ def retrieve_video(video_id: str = video_id):
         raise HTTPException(
             status_code=response.status_code, detail=response.reason
         )
-    video = response.text
-    return ServiceReturn(
-        status=StatusCode.SUCCESS, message="Rereieve video successfully Done", data=video
+    data = json.loads(response.text)
+    if internal:
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=response.text
+        ).to_dict()
+    
+    if data["status"] != "ready":
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
+    else:    
+        return ServiceReturn(
+        status=StatusCode.SUCCESS, message="Retrieve video successfully Done", data=data["url"]
         ).to_dict()
 
 
-def update_video(text:str, video_id: str = video_id):
-    response = retrieve_video(video_id)
-    data = json.loads(response["data"])
-    if data["status"] != "ready":
-        raise HTTPException(
-            status_code= 404, detail= "Under rendering... Please Wait!!"
-        )
+def update_video(text:str, video_id: str=config.ELAI_VIDEO_ID):
+    response = retrieve_video(video_id,True)
+    data = json.loads(response["data"]) or None
+    if data == None:
+        return ServiceReturn(
+        status=StatusCode.RENDERING, message="please wait!! video There is a video under rendering"
+        ).to_dict()
     data['slides'][0]['speech'] = text
+    data['slides'][0]['status'] = "edited"
+    data['data']['musicVolume'] = 0.0
+    data['data']['musicUrl'] = False
     response = requests.patch(
         f"{config.AVATAR_API_URL}/videos/{video_id}", headers=get_headers(),json=data
     )

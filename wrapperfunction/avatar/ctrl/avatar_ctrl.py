@@ -18,9 +18,9 @@ async def send_answer(stream_id: str, request: Request):
     return await avatar_service.send_answer(stream_id, request)
 
 
-# @router.post("/render-text/{stream_id}")
-# async def render_text(stream_id: str, text: str, is_ar: bool = True):
-#     return await avatar_service.render_text_async(stream_id, text, is_ar)
+@router.post("/render-text/{stream_id}")
+async def render_text(stream_id: str, text: str, is_ar: bool = True):
+    return await avatar_service.render_text_async(stream_id, text, is_ar)
 
 @router.post("/greeting/{bot_name}/{stream_id}")
 async def greeting(bot_name: str, stream_id: str, is_ar: bool = True):
@@ -37,19 +37,10 @@ def stop_render(stream_id: str):
 def close_stream(stream_id: str):
     return avatar_service.close_stream(stream_id)
 
+@router.post("/update-video")
+def update_video(text: str):
+    return avatar_service.update_video(text)
+
 @router.get("/retrieve-video")
 def retrieve_video():
     return avatar_service.retrieve_video()
-
-@router.patch("/update-video")
-def update_video(text: str):
-    return avatar_service.update_video(text)
-'''
-@router.get("/list-videos")
-def list_videos(page: int=1, limit:int=50, with_deleted:bool= False):
-    return avatar_service.list_videos(page, limit, with_deleted)
-
-@router.delete("/delete-video/{video_id}")
-def delete_video(video_id: str):
-    return avatar_service.delete_video(video_id)
-'''
