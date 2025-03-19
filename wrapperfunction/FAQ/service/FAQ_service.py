@@ -93,7 +93,8 @@ def delete_archived_faqs(faqs_data: list, bot_name: str) -> dict:
             for index, faq in enumerate(remaining_faqs)
         ]
         
-        db_connector.batch_update(config.COSMOS_ARCHIVED_FAQ_TABLE, updates)
+        if len(remaining_faqs)>0:
+            db_connector.batch_update(config.COSMOS_ARCHIVED_FAQ_TABLE, updates)
 
         return ServiceReturn(status=StatusCode.SUCCESS, message="FAQs deleted and order updated.").to_dict()
     

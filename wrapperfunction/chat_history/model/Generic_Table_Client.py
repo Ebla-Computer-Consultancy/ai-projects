@@ -41,7 +41,7 @@ class GenericTableClient:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     def batch_update_entities(self, entities: List[Dict[str, Any]]) -> None:
-        if not entities:
+        if not entities or len(entities)==0:
             raise HTTPException(status_code=400, detail="No entities provided for batch update.")
 
         batch_operations = []
