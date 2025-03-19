@@ -1,6 +1,6 @@
-from typing import Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 from fastapi import HTTPException
-from azure.data.tables import  TableServiceClient,UpdateMode
+from azure.data.tables import  TableServiceClient,UpdateMode,TransactionOperation
 class GenericTableClient:
     def __init__(self, table_name: str,table_service_client:TableServiceClient):
         table_service_client.create_table_if_not_exists(table_name=table_name)
@@ -35,4 +35,21 @@ class GenericTableClient:
             self.table_client.delete_entity(entity=entity)
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
+    def batch_update_entities(self, entities: list) -> None:
+        try:
+            self.table_client.submit_transaction(entities)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    def batch_update_entities(self, entities: List[Dict[str, Any]]) -> None:
+        if not entities:
+            raise HTTPException(status_code=400, detail="No entities provided for batch update.")
+
+        batch_operations = []
+        try:
+            for entity in entities:
+                batch_operations.append(("update", entity, {"mode": UpdateMode.MERGE}))
+
+            self.table_client.submit_transaction(batch_operations)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Batch update failed: {str(e)}")
 

@@ -22,5 +22,5 @@ def update_archived_faq(row_key: str, updated_data: dict):
     return FAQ_service.update_archived_faq(row_key, updated_data)
 
 @router.delete("/faqs/archive/")
-def delete_archived_faq(faqs_data: List[Dict]):
-    return FAQ_service.delete_archived_faqs(faqs_data)
+def delete_archived_faq(faqs_data: List[Dict],bot_name: str):
+    return FAQ_service.delete_archived_faqs(faqs_data,bot_name)
