@@ -15,7 +15,7 @@ from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctr
 from wrapperfunction.chat_history.ctrl import chat_history_ctrl
 from wrapperfunction.media_monitoring.ctrl import media_ctrl
 from wrapperfunction.video_indexer.ctrl import vi_ctrl
-from wrapperfunction.chat_history.ctrl import localization_ctrl
+from wrapperfunction.localization.ctrl import localization_ctrl
 
 app = FastAPI()
 app.add_middleware(

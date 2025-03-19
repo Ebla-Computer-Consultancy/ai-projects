@@ -30,7 +30,7 @@ def get_chatbot_settings_by_entity(entity_name,chatbot_name):
 def update_bot_settings(entity):
     try:
         if len(get_settings_by_entity(entity_name=entity["entity_name"])) == 0:
-            raise Exception(f"There is no settings for '{entity["entity_name"]}' entity")
+            raise Exception(f"There is no settings for '{entity['entity_name']}' entity")
         res =  db_connector.update_entity(config.COSMOS_SETTINGS_TABLE,add_format_settings(entity))
         return res
     except Exception as e:
@@ -72,7 +72,7 @@ def update_x_crawling_settings(data_list: List[XSearch]):
 async def add_setting(entity):
     try:     
         if len(get_settings_by_entity(entity_name=entity["entity_name"])) > 0:
-            raise Exception(f"'{entity["entity_name"]}' settings already exist")
+            raise Exception(f"'{entity['entity_name']}' settings already exist")
         entity["PartitionKey"] = str(uuid.uuid4())
         entity["RowKey"] = str(uuid.uuid4())
         res = await db_connector.add_entity(config.COSMOS_SETTINGS_TABLE,add_format_settings(entity))
