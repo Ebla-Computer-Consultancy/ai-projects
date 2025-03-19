@@ -82,24 +82,20 @@ def update_archived_faq(row_key: str, updated_data: dict) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update archived FAQ: {str(e)}")
 
-
 def delete_archived_faqs(faqs_data: list, bot_name: str) -> dict:
-    if not faqs_data or len(faqs_data) == 0:
-        raise HTTPException(status_code=400, detail="No FAQs provided for deletion.")
     try:
+        if not faqs_data or len(faqs_data) == 0:
+            raise HTTPException(status_code=400, detail="No FAQs provided for deletion.")
         for faq in faqs_data:
             db_connector.delete_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, faq)
-
         remaining_faqs = get_archived_faqs(bot_name)
-
-        if remaining_faqs:
+        if len(remaining_faqs)>0:
             updates = [
-                {**faq, QuestionPropertyName.ORDER_INDEX.value: index + 1}
-                for index, faq in enumerate(remaining_faqs)
-            ]
+            {**faq, QuestionPropertyName.ORDER_INDEX.value: index + 1}
+            for index, faq in enumerate(remaining_faqs)]
             db_connector.batch_update(config.COSMOS_ARCHIVED_FAQ_TABLE, updates)
 
         return ServiceReturn(status=StatusCode.SUCCESS, message="FAQs deleted and order updated.").to_dict()
-
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete and reorder FAQs: {str(e)}")
