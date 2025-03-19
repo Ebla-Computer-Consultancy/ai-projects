@@ -122,8 +122,6 @@ def load_chatbot_settings(bot_name: str):
             apply_sentiment = chatbot_obj.get("apply_sentiment", True)
             categorize=custom_settings_data.get("categorize", None)
             categorize_filed=custom_settings_data.get("categorize_filed", None)
-            greeting_message=chatbot_obj.get("greeting_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"})
-
              
 
 
@@ -148,7 +146,7 @@ def load_chatbot_settings(bot_name: str):
                 enable_history=enable_history,
                 apply_sentiment=apply_sentiment,
                 preserve_first_message=preserve_first_message,
-                greeting_message=greeting_message)
+                greeting_message=chatbot_obj.get("greeting_message", {"ar": "مرحبا بك، كيف يمكنني مساعدتك", "en": "Welcome, how can I help you"}))
             return chatbot
 
     return ChatbotSetting(
@@ -160,7 +158,7 @@ def load_chatbot_settings(bot_name: str):
         enable_history=True,
         preserve_first_message=False,
         apply_sentiment=True,
-        greeting_message=greeting_message
+        greeting_message=""
     )
 
 

@@ -211,7 +211,7 @@ async def upload_documents(files, bot_name,  request: Request,conversation_id: O
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
             title = content[:20].strip()
-            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value)
+            user_message_entity = MessageEntity(content=content, conversation_id=conversation_id, role=Roles.User.value, context="", type=MessageType.Document.value,display_in_chat=False)
             client_details = extract_client_details(request)
             conv_entity = ConversationEntity(user_id=str(uuid.uuid4()), conversation_id=conversation_id, bot_name=bot_name, title=title,client_ip=client_details["client_ip"],forwarded_ip=client_details["forwarded_ip"],device_info=json.dumps(client_details["device_info"]))
             await add_entity(message_entity=user_message_entity, conv_entity=conv_entity)

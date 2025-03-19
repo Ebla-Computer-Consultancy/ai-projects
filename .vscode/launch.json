@@ -2,6 +2,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "wrapperfunction.main:app",
+                "--reload"
+            ],
+            "jinja": true
+        },
+        {
             "type": "debugpy",
             "name": "Python: main.py",
             "request": "launch",
