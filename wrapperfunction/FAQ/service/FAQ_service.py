@@ -84,6 +84,8 @@ def update_archived_faq(row_key: str, updated_data: dict) -> dict:
 
 def delete_archived_faqs(faqs_data: list, bot_name: str) -> dict:
     try:
+        if not faqs_data or len(faqs_data) == 0:
+            raise HTTPException(status_code=400, detail="No FAQs provided for deletion.")
         for faq in faqs_data:
             db_connector.delete_entity(config.COSMOS_ARCHIVED_FAQ_TABLE, faq)
         remaining_faqs = get_archived_faqs(bot_name)
