@@ -15,6 +15,7 @@ from wrapperfunction.document_intelligence.ctrl import document_intelligence_ctr
 from wrapperfunction.chat_history.ctrl import chat_history_ctrl
 from wrapperfunction.media_monitoring.ctrl import media_ctrl
 from wrapperfunction.video_indexer.ctrl import vi_ctrl
+from wrapperfunction.chat_history.ctrl import localization_ctrl
 
 app = FastAPI()
 app.add_middleware(
@@ -43,4 +44,5 @@ app.include_router(media_ctrl.router, prefix="/api/v1/media", tags=["media"], de
 app.include_router(x_ctrl.router, prefix="/api/v1/social", tags=["social"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.SOCIAL_MEDIA.value))])
 app.include_router(vi_ctrl.router, prefix="/api/v1/vi", tags=["video-indexer"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.VIDEO_INDEXER.value))])
 app.include_router(FAQ_ctrl.router, prefix="/api/v1/FAQ", tags=["FAQ"], dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.FAQ.value))])
+app.include_router(localization_ctrl.router,prefix="/api/v1/localization", tags=["Localization"],dependencies=[Depends(func_auth_ctrl.hasAuthority(PermissionTypes.LOCALIZATION.value))])
 

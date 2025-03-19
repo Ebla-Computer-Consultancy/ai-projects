@@ -20,10 +20,11 @@ class MessagePropertyName(Enum):
     IS_ANSWERED = "is_answered"
     QUESTION_ID = "question_id"
     Exception = "Exception"
+    DisplayInChat = "display_in_chat"
 
 
 class MessageEntity:
-    def __init__(self, content: str, conversation_id: str, role: Roles, context: str,message_id,type:MessageType=MessageType.Message.value,completion_tokens=None,prompt_tokens=None,total_tokens=None,question_id=None,exception=None):
+    def __init__(self, content: str, conversation_id: str, role: Roles, context: str,message_id=None,display_in_chat=True,type:MessageType=MessageType.Message.value,completion_tokens=None,prompt_tokens=None,total_tokens=None,question_id=None,exception=None):
 
         self.partition_key = str(uuid4())
         self.row_key = str(uuid4())
@@ -37,10 +38,10 @@ class MessageEntity:
         self.completion_tokens=completion_tokens
         self.prompt_tokens=prompt_tokens
         self.total_tokens=total_tokens
-        self.feedback="undefined"
         self.is_answered="undefined"
         self.question_id=question_id
         self.exception=exception
+        self.display_in_chat=display_in_chat
 
 
 
@@ -62,6 +63,7 @@ class MessageEntity:
             MessagePropertyName.TOTALTOKENS.value: self.total_tokens,
             MessagePropertyName.IS_ANSWERED.value: self.is_answered,
             MessagePropertyName.QUESTION_ID.value: self.question_id,
-            MessagePropertyName.Exception.value: self.exception
+            MessagePropertyName.Exception.value: self.exception,
+            MessagePropertyName.DisplayInChat.value: self.display_in_chat
             
         }
