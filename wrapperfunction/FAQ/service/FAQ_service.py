@@ -82,7 +82,6 @@ def update_archived_faq(row_key: str, updated_data: dict) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update archived FAQ: {str(e)}")
 
-from fastapi import HTTPException
 
 def delete_archived_faqs(faqs_data: list, bot_name: str) -> dict:
     if not faqs_data or len(faqs_data) == 0:
