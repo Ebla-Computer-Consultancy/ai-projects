@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import HTTPException
 from wrapperfunction.core.model.entity_setting import ChatbotSetting, CustomSettings
 from wrapperfunction.media_monitoring.model.media_model import MediaInfo
+from wrapperfunction.core.service import settings_service
 
 # Load environment variables from .env file
 load_dotenv()
@@ -84,9 +85,8 @@ COSMOS_ARCHIVED_FAQ_TABLE=os.getenv("COSMOS_ARCHIVED_FAQ_TABLE")
 
 
 def load_entity_settings():
-    from wrapperfunction.core.service import settings_service
     settings = settings_service.get_settings_by_entity(ENTITY_NAME)
-    if len(settings) == 1:
+    if len(settings) >= 1:
         return settings[0]
     else:
         file_path = os.path.join(os.path.dirname(__file__), f"settings/{DEFAULT_ENTITY_SETTINGS}.json")
