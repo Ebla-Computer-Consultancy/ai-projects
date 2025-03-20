@@ -76,25 +76,24 @@ def send_answer(stream_id: str, jsonData: dict):
 
 def render_text(stream_id: str, text: str):
     print(f"Rendering text on stream: {stream_id}")
-    
-    response = requests.post(
-        f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
-        headers=get_headers(),
-        json={"text": text},
-    )
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=f'Failed to render text: {response.text}')
-    return ServiceReturn(
-        status=StatusCode.SUCCESS, message="Text rendered successfully"
-    ).to_dict()
-
-
-def render_text_async(stream_id: str, text: str, is_ar: bool):
     try:
-        return render_text(stream_id, helper.clean_text(text, is_ar))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        response = requests.post(
+            f"{config.AVATAR_API_URL}/streams/render/{stream_id}",
+            headers=get_headers(),
+            json={"text": text},
+        )
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code, detail=f"Failed to render text {response.text}"
+            )
+        print("Text rendered successfully")
+    except Exception as error:
+        print(f"Failed to render text: {str(error)}")
+        raise
+
+
+async def render_text_async(stream_id: str, text: str, is_ar: bool):
+    render_text(stream_id, helper.clean_text(text, is_ar))
 
 
 def stop_render(stream_id: str):

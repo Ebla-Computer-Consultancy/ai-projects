@@ -21,11 +21,8 @@ async def send_answer(stream_id: str, request: Request):
 
 @router.post("/render-text/{stream_id}")
 async def render_text(stream_id: str, body: TextRenderingPayload):
-    try:
-        return await avatar_service.render_text_async(stream_id, body.text, body.is_ar)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+    return await avatar_service.render_text_async(stream_id, body.text, body.is_ar)
+
 @router.post("/greeting/{bot_name}/{stream_id}")
 async def greeting(bot_name: str, stream_id: str, is_ar: bool = True):
     try:
