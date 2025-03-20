@@ -62,7 +62,10 @@ def get_speech_token():
             headers=headers,
         )
         response.raise_for_status()
-        return JSONResponse(content={"token": response.text, "region": speech_region})
+        return JSONResponse(content={"token": response.text, "region": speech_region, "avatar" : {
+            "character":config.MS_AVATAR_CHARACTER,
+            "style":[config.MS_AVATAR_CHARACTER_STYLE]
+            }})
     except Exception as e:
         raise HTTPException(
             status_code=401, detail=str(e)

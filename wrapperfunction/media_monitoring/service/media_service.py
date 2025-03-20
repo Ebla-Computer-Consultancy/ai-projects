@@ -138,11 +138,13 @@ def monitor_indexer(indexer_client: SearchIndexerClient, indexer_name: str, inde
 async def apply_skills_on_index(index_name: str):
     try:
         start_time = time.time()
-        results = search_query(search_text="*",search_index=index_name, k=1000)
+        results = search_query(search_text="*",search_index=index_name, k=10000)
+        results_len = len(results['rs'])
         docs = 0
         for index in results["rs"]:
             update = False
-            index["index_date"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+            if index["index_date"] == None:
+                index["index_date"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
             chunk = index["chunk"]
             if chunk is not None:
                 if index["language"] is None:
@@ -173,9 +175,10 @@ async def apply_skills_on_index(index_name: str):
                     await add_skills_to_knowledge_db(index)
             
             docs += 1
-            print(f"{docs}/{len(results['rs'])}...")            
+            print(f"{docs}/{results_len}...")            
         end_time = time.time()
         print(f"Total time: {end_time - start_time:.5f} sec")
+        return f"Index '{index_name}' Updated Successfully|{docs}/{results_len}"
     except Exception as e:
         update_index(index_name=index_name, data=results["rs"])
         end_time = time.time()
