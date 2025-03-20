@@ -168,6 +168,7 @@ def collect_urls(data, url, settings:CrawlSettings):
                     site_link_data = CrawlRequestUrls
                     site_link_data.link = absolute_url
                     site_link_data.cookies = url.cookies
+                    site_link_data.internal = url.internal
                     site_link_data.headers = url.headers
                     site_link_data.payload = url.payload
                     orchestrator_function(site_link_data, settings)
