@@ -1,6 +1,6 @@
 import asyncio
 import wrapperfunction.avatar.integration.avatar_connector as avatar_connector
-from fastapi import Request
+from fastapi import HTTPException, Request
 
 from wrapperfunction.core import config
 
@@ -21,9 +21,11 @@ async def send_answer(stream_id: str, request: Request):
     jsonData = {"answer": answer}
     return avatar_connector.send_answer(stream_id, jsonData)
 
-async def render_text_async(stream_id: str, text: str, is_ar: bool):
-    return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
-
+def render_text_async(stream_id: str, text: str, is_ar: bool):
+    try:
+        return asyncio.create_task(avatar_connector.render_text_async(stream_id, text, is_ar))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 async def greeting(stream_id: str, bot_name: str, is_ar: bool):
     text = (
         config.load_chatbot_settings(bot_name).greeting_message["ar"]
